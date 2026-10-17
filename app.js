@@ -50,17 +50,17 @@ function navigateTo(screenId) {
     appState.currentScreen = screenId;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-
-  // Atualizar barra de demonstração rápida no rodapé
-  const demoButtons = document.querySelectorAll('.demo-chip-btn');
-  demoButtons.forEach(btn => {
-    btn.classList.remove('active');
-    const attr = btn.getAttribute('onclick');
-    if (attr && attr.includes(screenId)) {
-      btn.classList.add('active');
-    }
-  });
 }
+
+function toggleSupervisorView() {
+  if (appState.currentScreen === 'screen-manager') {
+    navigateTo('screen-dashboard');
+  } else {
+    navigateTo('screen-manager');
+    showToast('Acesso concedido: Centro de Controle do Supervisor Fábio.');
+  }
+}
+
 
 // ==========================================================================
 // 2. Autenticação e PIN Pad (Tela 1)

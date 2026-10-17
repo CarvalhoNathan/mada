@@ -41,6 +41,11 @@
           <span class="status-sub">Intranet • Operação local</span>
         </div>
       </div>
+
+      <button class="header-supervisor-btn" id="btnSupervisorToggle" onclick="toggleSupervisorView()" title="Centro de Controle do Supervisor">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Supervisão Fábio</span>
+      </button>
     </div>
   </header>
 
@@ -670,6 +675,10 @@
           <button class="btn-outline-sm" style="color: var(--danger); border-color: var(--danger);" onclick="showToast('Resíduo direcionado para tambor de coleta ambiental.')">
             Descartar Sobra como Resíduo Químico (Refugo)
           </button>
+
+          <button class="btn-outline-sm" onclick="navigateTo('screen-dashboard')" style="font-weight: 700;">
+            ← Voltar ao Painel da Cabine
+          </button>
         </div>
       </div>
     </section>
@@ -678,6 +687,12 @@
          TELA 7: Dashboard Gerencial (Visão do Fábio / Mada)
          ==================================================================== -->
     <section id="screen-manager" class="screen-view">
+      <div style="margin-bottom: 16px;">
+        <button class="btn-outline-sm" onclick="navigateTo('screen-dashboard')" style="font-weight: 700;">
+          ← Voltar ao Terminal da Cabine
+        </button>
+      </div>
+
       <div class="section-header">
         <div class="section-tag">PAINEL SUPERVISOR QUÍMICO • TELEMETRIA FABRIL</div>
         <h2 class="section-title">Centro de Controle Operacional & Químico</h2>
@@ -827,18 +842,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Barra Fixa de Demonstração Rápida (Para Apresentação de Segunda) -->
-  <nav class="demo-nav-bar">
-    <span style="color: #94a3b8; font-size: 0.78rem; font-weight: 700; margin-right: 6px;">DEMO RUSH:</span>
-    <button class="demo-chip-btn active" onclick="navigateTo('screen-auth')">1. Login</button>
-    <button class="demo-chip-btn" onclick="navigateTo('screen-dashboard')">2. Dashboard</button>
-    <button class="demo-chip-btn" onclick="navigateTo('screen-os')">3. Vincular OS</button>
-    <button class="demo-chip-btn" onclick="navigateTo('screen-recipe')">4. Gabarito Receita</button>
-    <button class="demo-chip-btn" onclick="openAntiErrorModal()">5. Alerta Anti-Erro</button>
-    <button class="demo-chip-btn" onclick="navigateTo('screen-return')">6. Devolver Sobras</button>
-    <button class="demo-chip-btn" onclick="navigateTo('screen-manager')">7. Visão Fábio</button>
-  </nav>
 
   <!-- Rodapé Operacional -->
   <footer class="footer-bar">
