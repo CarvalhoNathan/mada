@@ -52,7 +52,7 @@ export function DataTable<T>({
               <tr key={keyExtractor(row)}>
                 {columns.map((col) => (
                   <td key={col.key} style={{ textAlign: col.align || 'left' }}>
-                    {col.render ? col.render(row) : (row as any)[col.key]}
+                    {col.render ? col.render(row) : (row as Record<string, React.ReactNode>)[col.key]}
                   </td>
                 ))}
               </tr>

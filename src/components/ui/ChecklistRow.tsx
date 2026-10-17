@@ -27,6 +27,7 @@ export const ChecklistRow: React.FC<ChecklistRowProps> = ({
 }) => {
   return (
     <div
+      id={id}
       className={`ds-checklist-row ${checked ? 'is-checked' : ''} ${disabled ? 'is-disabled' : ''}`}
       onClick={() => !disabled && onChange(!checked)}
       role="checkbox"
