@@ -38,7 +38,7 @@ O resultado são proporções erradas, latas abertas que voltam ao estoque sem r
 | 🛑  | **Trava anti-erro**                | Alerta quando a quantidade retirada passa da receita, com justificativa obrigatória. |
 | 📅  | **Prioridade por validade (FEFO)** | Mostra qual lata usar primeiro, para reduzir perdas por vencimento.                  |
 | 🏷️  | **QR Code**                        | Identifica latas e ordens de serviço e gera nova etiqueta para as sobras.            |
-| 📊  | **Painel do gestor**               | Compara consumo previsto e real e acompanha o custo por cliente e ambiente.          |
+| 📊  | **Painel do gestor** _(planejado)_ | Compara consumo previsto e real e acompanha o custo por cliente e ambiente.          |
 
 ## 🔄 Como funciona
 
@@ -59,10 +59,10 @@ flowchart LR
 |  ![Login](docs/screens/01-login.png)  | ![Dashboard](docs/screens/02-dashboard.png) |    ![Vincular OS](docs/screens/03-os.png)    |
 | PIN de 4 dígitos com foto do operador |     Ações grandes e alerta de validade      | Cliente, projeto e ambiente em poucos toques |
 
-|                 Receita                 |           Alerta anti-erro            |             Devolução de sobras             |           Painel do gestor            |
-| :-------------------------------------: | :-----------------------------------: | :-----------------------------------------: | :-----------------------------------: |
-| ![Receita](docs/screens/04-receita.png) | ![Alerta](docs/screens/05-alerta.png) | ![Devolução](docs/screens/06-devolucao.png) | ![Painel](docs/screens/07-painel.png) |
-|         Calculadora de mistura          |      Trava ao exceder a receita       |          Nova etiqueta com QR Code          |       Consumo previsto vs. real       |
+|                 Receita                 |           Alerta de excesso (modal)           |             Devolução de sobras             |
+| :-------------------------------------: | :-------------------------------------------: | :-----------------------------------------: |
+| ![Receita](docs/screens/04-receita.png) |     ![Alerta](docs/screens/05-alerta.png)     | ![Devolução](docs/screens/06-devolucao.png) |
+|         Calculadora de mistura          | Trava de segurança com senha de supervisor    |          Nova etiqueta com QR Code          |
 
 ## 🎯 Impacto esperado
 
@@ -77,20 +77,23 @@ flowchart LR
 flowchart TB
     subgraph Interfaces
         T["📱 Tablet dos operadores<br/>React + TypeScript"]
-        P["🖥️ Painel do gestor (PC)"]
+        P["🖥️ Painel do gestor (PC)<br/>(planejado)"]
     end
     R["Camada de repositórios<br/>(src/data/)"]
     M["Dados simulados<br/>(MVP atual: VITE_DATA_SOURCE=mock)"]
     S[("Supabase / PostgreSQL<br/>(integração planejada)")]
     D["Regras de negócio puras<br/>(src/domain/)"]
     T --> R
-    P --> R
+    P -.->|planejado| R
     T -.-> D
     R -->|implementado| M
     R -->|integração planejada| S
 ```
 
-A camada de repositórios (`src/data/`) está **implementada** e isola a origem dos dados: o MVP roda com repositórios simulados em memória (`VITE_DATA_SOURCE=mock`) e, quando o acesso ao banco da empresa for disponibilizado, a troca para o Supabase é feita por configuração de ambiente. As regras de cálculo (frações de mistura, tolerância de pesagem, consumo de sobras e ordenação FEFO) estão isoladas como funções puras em `src/domain/`, desacopladas da camada visual.
+- **Camada de repositórios (`src/data/`):** Implementada para isolar a origem dos dados. O MVP roda com repositórios simulados em memória (`VITE_DATA_SOURCE=mock`). A troca para o Supabase é prevista por configuração de ambiente.
+- **Regras de negócio puras (`src/domain/`):** Cálculos de frações de mistura, tolerâncias de pesagem, aproveitamento de sobras e ordenação FEFO desacoplados de qualquer camada visual.
+- **Navegação por estado:** A alternância entre telas é gerenciada por estado local (`useState<ScreenId>`), sem biblioteca de roteamento externa (sem roteador).
+- **Leitura de QR Code:** No MVP atual, a leitura é simulada via software; a leitura real por câmera via WebRTC é planejada.
 
 ### 📁 Estrutura do projeto
 
@@ -130,10 +133,10 @@ mada/
 ├── .editorconfig                 # Padronização de indentação e formatação
 ├── .env.example                  # Modelo de variáveis de ambiente (prefixo VITE_)
 ├── .gitignore                    # Regras de exclusão do Git
-├── .nvmrc                        # Versão do Node.js suportada (24.18.0)
+├── .nvmrc                        # Versão do Node.js recomendada (24.18.0)
 ├── .prettierrc                   # Regras de formatação do Prettier
 ├── design-system.html            # Catálogo estático isolado dos design tokens
-├── eslint.config.js              # Configuração do ESLint 9 (Flat Config)
+├── eslint.config.js              # Configuração do ESLint 10 (Flat Config)
 ├── index.html                    # Ponto de entrada HTML do Vite
 ├── package.json                  # Dependências, scripts e metadados
 ├── tsconfig.json                 # Configuração do TypeScript
@@ -144,11 +147,11 @@ mada/
 
 | Camada | Tecnologia | Situação |
 | :--- | :--- | :--- |
-| **Interface** | React 19, TypeScript 5.8, HTML5, CSS com design tokens | Implementado |
-| **Ferramenta de Build** | Vite 6 (servidor local na porta 3000) | Implementado |
+| **Interface** | React 19, TypeScript 6, HTML5, CSS com design tokens | Implementado |
+| **Ferramenta de Build** | Vite 8 (servidor local na porta 3000) | Implementado |
 | **Camada de Dados (MVP)** | Repositórios em memória com dados simulados (`src/data/`) | Implementado |
 | **Regras de Negócio** | Módulos puros em TypeScript isolados (`src/domain/`) | Implementado |
-| **Qualidade & Testes** | Vitest, ESLint 9 (Flat Config), Prettier | Implementado |
+| **Qualidade & Testes** | Vitest 5, ESLint 10 (Flat Config), Prettier 3 | Implementado |
 | **Design** | Design system próprio, tema escuro e alto contraste, _tablet-first_ | Implementado |
 | **Banco de Dados** | PostgreSQL via Supabase | Planejado |
 | **Identificação** | Leitura de QR Code via câmera/WebRTC | Planejado (simulado no MVP) |
@@ -157,10 +160,10 @@ mada/
 
 O projeto conta com ferramentas de verificação estática, formatação e testes automatizados:
 
-- **Testes unitários (`npm run test`):** Executados via Vitest, com **16 testes unitários** passando em 4 suítes, cobrindo 100% dos cálculos e regras de negócio da camada `src/domain/` (`mixture.test.ts`, `tolerance.test.ts`, `fefo.test.ts` e `leftover.test.ts`).
-- **Análise estática (`npm run lint`):** Validado com ESLint 9 (Flat Config), com 0 erros e 0 avisos.
-- **Checagem de tipos (`npm run typecheck`):** Verificação estrita de tipagem TypeScript via `tsc --noEmit`, com 0 erros.
-- **Empacotamento (`npm run build`):** Build de produção validado via Vite.
+- **Testes unitários (`npm run test`):** Executados via Vitest, com 16 testes unitários em 4 arquivos de teste, cobrindo os cálculos e regras de negócio da camada `src/domain/` (`mixture.test.ts`, `tolerance.test.ts`, `fefo.test.ts` e `leftover.test.ts`).
+- **Análise estática (`npm run lint`):** Executa a verificação e padronização de código com ESLint 10 (Flat Config).
+- **Checagem de tipos (`npm run typecheck`):** Validação estrita de tipagem TypeScript via `tsc --noEmit`.
+- **Empacotamento (`npm run build`):** Compilação do bundle de produção com Vite 8.
 
 ```bash
 npm run test        # Executa as suítes de testes unitários com Vitest
@@ -179,7 +182,7 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 - [x] Dashboard operacional com alerta de validade FEFO (Tela 2)
 - [x] Vinculação de cliente, projeto e ambiente por Ordem de Serviço (Tela 3)
 - [x] Receita com calculadora dinâmica de proporções (Tela 4)
-- [x] Dosagem com trava anti-erro e liberação por supervisor (Tela 5)
+- [x] Alerta de excesso crítico com liberação por supervisor (Modal)
 - [x] Devolução de sobras com cálculo de saldo e emissão de etiqueta QR (Tela 6)
 - [x] Leitura de QR Code simulada via software
 - [x] Camada de repositórios com alternância de fonte de dados (`VITE_DATA_SOURCE=mock`)
@@ -187,7 +190,8 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 
 **Próximos passos**
 
-- [ ] Painel do gestor (Tela 7: previsto vs. real e custos por ambiente)
+- [ ] Tela de dosagem dedicada com NumberStepper para pesagem individual por produto
+- [ ] Painel do gestor (planejado; existem apenas os componentes KpiCard e DataTable)
 - [ ] Leitura real de QR Code via câmera do tablet (WebRTC)
 - [ ] Integração com o Supabase da empresa
 - [ ] Recebimento de lotes e validades no estoque
@@ -211,7 +215,7 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 
 ### Pré-requisitos
 
-- **Node.js:** Versão `>=24.18.0` (definida em `.nvmrc` e validada no `package.json`).
+- **Node.js:** Mínimo comprovado `>=22.12.0` (exigido por Vitest e Vite); versão recomendada e testada: `24.18.0` (definida em `.nvmrc`).
 - **npm:** Gerenciador de pacotes padrão do Node.
 
 ### Passo a passo
@@ -226,6 +230,19 @@ npm run dev
 A aplicação será iniciada em modo de desenvolvimento em `http://localhost:3000`.
 
 > **Nota:** Por padrão, o MVP roda imediatamente com dados simulados (`VITE_DATA_SOURCE=mock`) e **não exige a criação de arquivo `.env` para execução local**.
+
+### 👤 Operadores e PINs de demonstração (fictícios)
+
+O protótipo utiliza dados simulados para teste imediato de interface (`src/data/mock/mockData.ts`). Todos os nomes, fotos e credenciais são **fictícios**:
+
+| Perfil | Usuário | PIN de Demonstração | Papel no Protótipo |
+| :--- | :--- | :--- | :--- |
+| **Operador** | Carlos Silva | `1234` | Pintor Líder • Cabine 01 |
+| **Operador** | Ana Souza | `1234` | Aplicadora PU • Cabine 02 |
+| **Operador** | Marcos Lima | `1234` | Auxiliar de Cabine |
+| **Supervisor** | Fábio | `9999` (ou `1234`) | Autorização de excesso crítico no modal |
+
+_Qualquer outro PIN digitado (como `0000`) exibe o estado de erro tátil na interface._
 
 ### Variáveis de ambiente (opcional / integração futura)
 

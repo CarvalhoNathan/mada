@@ -143,4 +143,4 @@ Protótipo de aplicação web **"tablet-first"**, concebido especificamente para
 
 ---
 
-> 📄 Para consultar as atas completas das reuniões e o parecer detalhado da professora, veja [DECISOES_E_REUNIOES.md](file:///c:/Users/Usuario/Desktop/mada/DECISOES_E_REUNIOES.md).
+> 📄 Para consultar as atas completas das reuniões e o parecer detalhado da professora, veja [DECISOES_E_REUNIOES.md](./DECISOES_E_REUNIOES.md).

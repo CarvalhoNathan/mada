@@ -69,9 +69,9 @@ Legenda: `[x]` = tela prototipada e navegável (com dados simulados).
 - [x] **6. Devolução de Sobras & Etiquetagem de Saldo**
   - [x] Registro do volume restante que volta ao almoxarifado (ex: lata de 1L com 400 ml de sobra)
   - [x] Emissão simulada da nova etiqueta com QR Code para identificação do frasco aberto
-- [x] **7. Painel do Gestor (Visão do Fábio)**
-  - [x] Indicadores de consumo, taxa de reintegração de sobras e custo previsto vs. realizado (dados simulados)
-  - [x] Visão geral das cabines de pintura (**ilustrativa**: telemetria de cabines e balanças **não faz parte do escopo atual**)
+- [ ] **7. Painel do Gestor (planejado; existem apenas os componentes KpiCard e DataTable)**
+  - [ ] Indicadores de consumo, taxa de reintegração de sobras e custo previsto vs. realizado (planejado)
+  - [ ] Visão geral das cabines de pintura (**ilustrativa**: telemetria de cabines e balanças **não faz parte do escopo atual**)
 
 ---
 
@@ -339,7 +339,7 @@ O guia de design completo e as especificações de interface para chão de fábr
 
 ### Painel de Gerência (PC):
 
-7. **Visão do Gestor:** Indicadores de consumo, desperdício e custo previsto vs. realizado, além de cadastros de receitas, marcas e produtos.
+7. **Visão do Gestor (Planejado):** Indicadores de consumo, desperdício e custo previsto vs. realizado, além de cadastros de receitas, marcas e produtos (planejado; existem apenas os componentes KpiCard e DataTable).
 
 ### 📸 Telas do Sistema
 
@@ -349,9 +349,9 @@ O guia de design completo e as especificações de interface para chão de fábr
 | :----------------------------: | :------------------------------------: | :----------------------: |
 | ![Login](screens/01-login.png) | ![Dashboard](screens/02-dashboard.png) | ![OS](screens/03-os.png) |
 
-|              Receita               |         Alerta Anti-Erro         |               Devolução                |         Painel do Gestor         |
-| :--------------------------------: | :------------------------------: | :------------------------------------: | :------------------------------: |
-| ![Receita](screens/04-receita.png) | ![Alerta](screens/05-alerta.png) | ![Devolução](screens/06-devolucao.png) | ![Painel](screens/07-painel.png) |
+|              Receita               |    Alerta de Excesso (Modal)     |               Devolução                |
+| :--------------------------------: | :------------------------------: | :------------------------------------: |
+| ![Receita](screens/04-receita.png) | ![Alerta](screens/05-alerta.png) | ![Devolução](screens/06-devolucao.png) |
 
 ---
 
@@ -457,21 +457,21 @@ erDiagram
 
 ## 11. Tecnologias Utilizadas
 
-- **Linguagem Principal:** [TypeScript](https://www.typescriptlang.org/)
-- **Interface:** React 19 + TypeScript, Web Responsive / Tablet-First (HTML5 e CSS com variáveis de design tokens)
-- **Ferramenta de Build:** [Vite](https://vite.dev/) (porta 3000)
+- **Linguagem Principal:** [TypeScript 6](https://www.typescriptlang.org/)
+- **Interface:** React 19 + TypeScript 6, Web Responsive / Tablet-First (HTML5 e CSS com variáveis de design tokens)
+- **Ferramenta de Build:** [Vite 8](https://vite.dev/) (porta 3000)
 - **Camada de Dados (MVP):** Repositórios em memória com dados simulados (`src/data/`, seletor `VITE_DATA_SOURCE=mock`)
 - **Regras de Negócio:** Módulos de domínio em TypeScript com funções puras (`src/domain/`)
 - **Banco de Dados e Backend como Serviço:** PostgreSQL via [Supabase](https://supabase.com/) (integração planejada)
 - **Identificação:** QR Code simulado no MVP (leitura real via WebRTC / câmera planejada)
-- **Qualidade & Testes:** Vitest (16 testes unitários no domínio), ESLint 9 (Flat Config), Prettier
+- **Qualidade & Testes:** Vitest 5 (16 testes unitários no domínio), ESLint 10 (Flat Config), Prettier 3
 
 ---
 
 ## 12. Como Executar
 
 ### Pré-requisitos
-- **Node.js:** `>=24.18.0` (indicado em `.nvmrc`)
+- **Node.js:** Mínimo comprovado `>=22.12.0` (versão recomendada `24.18.0` indicada em `.nvmrc`)
 - **npm:** Gerenciador de pacotes padrão
 
 ```bash
