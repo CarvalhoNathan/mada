@@ -40,6 +40,13 @@ const appState = {
   returnSobra: {
     volume: 400, // em ml
     maxVolume: 1000
+  },
+  criticalJustification: null,
+  supervisorPinValid: false,
+  returnChecklist: {
+    chk1: false,
+    chk2: false,
+    chk3: false
   }
 };
 
@@ -120,12 +127,14 @@ function setupOperatorCards() {
 
       appState.selectedOperator = { name, role, avatar: photo };
 
-      // Atualizar títulos do PIN e do AppShell Header
+      // Atualizar títulos do PIN, AppShell Header e Etiqueta
       document.getElementById('pinTargetName').textContent = `PIN de ${name}`;
       document.getElementById('dashOpName').textContent = name.split(' ')[0];
       document.getElementById('headerOpName').textContent = name;
       document.getElementById('headerOpRole').textContent = role;
       document.getElementById('headerOpAvatar').src = photo;
+      const elStickerOp = document.getElementById('stickerOpName');
+      if (elStickerOp) elStickerOp.textContent = name;
 
       clearPin();
     });
@@ -313,9 +322,10 @@ function setTotalVolume(vol) {
   appState.recipe.totalVolume = vol;
   recalculateRecipe();
 
-  document.querySelectorAll('.preset-chip').forEach(chip => {
+  document.querySelectorAll('.preset-chip-btn').forEach(chip => {
     chip.classList.remove('active');
-    if (chip.textContent.includes(vol.toString())) {
+    const chipText = chip.textContent.replace(/\./g, '');
+    if (chipText.includes(vol.toString())) {
       chip.classList.add('active');
     }
   });
@@ -365,41 +375,114 @@ function recalculateRecipe() {
 }
 
 function confirmRecipeWeighing() {
-  showToast('✓ Proporções confirmadas na balança! Consumo registrado na OS.', 'success');
+  showToast('✓ Proporções confirmadas na balança! Consumo registrado na OS.', 'success', 3000);
   navigateTo('screen-dashboard');
 }
 
 // ==========================================================================
-// 6. Modal Alerta de Excesso (Tela 5)
+// 6. Modal Crítico de Alerta de Excesso (Tela 5)
 // ==========================================================================
 function openAntiErrorModal() {
   const modal = document.getElementById('modalAntiError');
-  if (modal) modal.style.display = 'flex';
+  if (modal) modal.classList.add('active');
+
+  // Resetar seleções e inputs do modal
+  appState.criticalJustification = null;
+  appState.supervisorPinValid = false;
+  document.querySelectorAll('.just-chip-btn').forEach(b => b.classList.remove('selected'));
+
+  const supBox = document.getElementById('supervisorPinBox');
+  if (supBox) supBox.classList.remove('visible');
+
+  const supInput = document.getElementById('supervisorPinInput');
+  if (supInput) supInput.value = '';
+
+  const supFeedback = document.getElementById('supervisorPinFeedback');
+  if (supFeedback) {
+    supFeedback.textContent = 'Supervisor cadastrado: PIN 9999 ou 1234';
+    supFeedback.style.color = 'var(--text-muted)';
+  }
+
+  const btnConfirm = document.getElementById('btnConfirmWaste');
+  if (btnConfirm) {
+    btnConfirm.disabled = true;
+    btnConfirm.title = 'Selecione um motivo antes de confirmar desperdício';
+  }
 }
 
 function closeAntiErrorModal(action) {
   const modal = document.getElementById('modalAntiError');
-  if (modal) modal.style.display = 'none';
+  if (modal) modal.classList.remove('active');
 
   if (action === 'discard') {
-    showToast('Medição descartada. Balança re-tarada.', 'info');
-  } else if (action === 'confirm') {
-    showToast('⚠ Desperdício de Catalisador registrado (+R$ 86,40 debitado da OS).', 'warn');
-    navigateTo('screen-dashboard');
+    showToast('Medição descartada da balança. Balança re-tarada em zero.', 'info', 3000);
   }
 }
 
-function selectJustChip(chip) {
-  document.querySelectorAll('.just-chip').forEach(c => {
-    c.classList.remove('selected');
-    const check = c.querySelector('span');
-    if (check) check.remove();
-  });
+function selectJustChipBtn(btn, reason) {
+  document.querySelectorAll('.just-chip-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  appState.criticalJustification = reason;
 
-  chip.classList.add('selected');
-  const span = document.createElement('span');
-  span.textContent = '✓ ';
-  chip.prepend(span);
+  const supBox = document.getElementById('supervisorPinBox');
+  const btnConfirm = document.getElementById('btnConfirmWaste');
+
+  if (reason === 'supervisor') {
+    if (supBox) {
+      supBox.classList.add('visible');
+      const input = document.getElementById('supervisorPinInput');
+      if (input) input.focus();
+    }
+    // Permanece desabilitado até digitar PIN válido
+    if (btnConfirm) {
+      btnConfirm.disabled = !appState.supervisorPinValid;
+      btnConfirm.title = appState.supervisorPinValid ? 'Segure por 1,5s para confirmar' : 'Digite o PIN do supervisor';
+    }
+  } else {
+    if (supBox) supBox.classList.remove('visible');
+    // Qualquer outro motivo habilita o botão de confirmação
+    if (btnConfirm) {
+      btnConfirm.disabled = false;
+      btnConfirm.title = 'Segure por 1,5s para confirmar desperdício e baixar estoque';
+    }
+  }
+}
+
+function handleSupervisorPinInput() {
+  const input = document.getElementById('supervisorPinInput');
+  const feedback = document.getElementById('supervisorPinFeedback');
+  const btnConfirm = document.getElementById('btnConfirmWaste');
+  if (!input || !feedback) return;
+
+  const val = input.value.trim();
+  if (val === '9999' || val === '1234') {
+    appState.supervisorPinValid = true;
+    feedback.textContent = '✓ Autorização confirmada pelo Supervisor Fábio';
+    feedback.style.color = 'var(--ok)';
+    if (btnConfirm) {
+      btnConfirm.disabled = false;
+      btnConfirm.title = 'Segure por 1,5s para confirmar desperdício';
+    }
+  } else if (val.length === 4) {
+    appState.supervisorPinValid = false;
+    feedback.textContent = 'PIN inválido. Tente 9999 ou 1234.';
+    feedback.style.color = 'var(--danger)';
+    if (btnConfirm) btnConfirm.disabled = true;
+  } else {
+    appState.supervisorPinValid = false;
+    feedback.textContent = 'Digite o PIN de 4 dígitos para autorizar';
+    feedback.style.color = 'var(--text-muted)';
+    if (btnConfirm) btnConfirm.disabled = true;
+  }
+}
+
+function recalculateRecipeForExcess() {
+  // Catalisador aumentou +200ml (250ml + 200ml = 450ml).
+  // Para manter a proporção homologada de 25%:
+  // Novo volume total da batelada = 450ml / 0.25 = 1.800ml
+  setTotalVolume(1800);
+  closeAntiErrorModal();
+  showToast('✓ Receita recalculada para 1.800 ml: proporções químicas re-balanceadas!', 'success', 4000);
 }
 
 // ==========================================================================
@@ -423,25 +506,79 @@ function adjustReturnVolume(delta) {
   if (elStickerVol) elStickerVol.textContent = `${newVol} ml`;
 }
 
-function confirmReturnPrint() {
-  const chk1 = document.getElementById('chkContam');
-  const chk2 = document.getElementById('chkVedacao');
-  const chk3 = document.getElementById('chkPureza');
+function toggleChecklist(rowEl, checkId) {
+  const isChecked = !rowEl.classList.contains('checked');
+  if (isChecked) {
+    rowEl.classList.add('checked');
+  } else {
+    rowEl.classList.remove('checked');
+  }
+  appState.returnChecklist[checkId] = isChecked;
 
-  if (!chk1?.checked || !chk2?.checked || !chk3?.checked) {
-    showToast('Atenção: Valide todos os critérios de integridade.', 'warn');
+  const allChecked = !!(appState.returnChecklist.chk1 &&
+                        appState.returnChecklist.chk2 &&
+                        appState.returnChecklist.chk3);
+
+  const btnConfirm = document.getElementById('btnConfirmReturn');
+  if (btnConfirm) {
+    btnConfirm.disabled = !allChecked;
+    btnConfirm.title = allChecked ? 'Toque para imprimir etiqueta e salvar sobra' : 'Marque os 3 itens do checklist antes de confirmar';
+  }
+}
+
+function confirmReturnPrint() {
+  const allChecked = !!(appState.returnChecklist.chk1 &&
+                        appState.returnChecklist.chk2 &&
+                        appState.returnChecklist.chk3);
+  if (!allChecked) {
+    showToast('Atenção: Marque todos os 3 itens do checklist de integridade.', 'warn');
     return;
   }
 
-  showToast(`🖨️ Etiqueta de sobra impressa! ${appState.returnSobra.volume}ml devolvidos ao estoque.`, 'success');
+  showToast(`🖨️ Etiqueta de sobra impressa! ${appState.returnSobra.volume}ml devolvidos ao estoque.`, 'success', 3500);
   setTimeout(() => {
     navigateTo('screen-dashboard');
   }, 1200);
 }
 
 // ==========================================================================
-// 8. Utilitários: Toast no Topo & Simulações
+// 8. Utilitários: Hold to Confirm (1,5s), Toast no Topo & Simulações
 // ==========================================================================
+function setupHoldToConfirm(btnId, barId, durationMs, onConfirm) {
+  const btn = document.getElementById(btnId);
+  const bar = document.getElementById(barId);
+  if (!btn || !bar) return;
+
+  let timer = null;
+
+  function startHold(e) {
+    if (btn.disabled) return;
+    bar.style.transition = `width ${durationMs}ms linear`;
+    bar.style.width = '100%';
+
+    timer = setTimeout(() => {
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+      timer = null;
+      onConfirm();
+    }, durationMs);
+  }
+
+  function cancelHold() {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    bar.style.transition = 'width 0.15s ease-out';
+    bar.style.width = '0%';
+  }
+
+  btn.addEventListener('pointerdown', startHold);
+  btn.addEventListener('pointerup', cancelHold);
+  btn.addEventListener('pointerleave', cancelHold);
+  btn.addEventListener('pointercancel', cancelHold);
+}
+
 function simulateQRScan() {
   showToast('📷 Câmera do tablet ativa: Lendo QR Code...', 'info', 1000);
   setTimeout(() => {
@@ -492,4 +629,16 @@ function showToast(message, type = 'info', duration = 3000) {
 document.addEventListener('DOMContentLoaded', () => {
   setupOperatorCards();
   recalculateRecipe();
+
+  // Configurar HoldToConfirm para ações destrutivas (1,5s com barra animada)
+  setupHoldToConfirm('btnConfirmWaste', 'holdBarWaste', 1500, () => {
+    closeAntiErrorModal();
+    showToast('🗑 Desperdício confirmado e registrado na OS (+200ml de catalisador).', 'warn', 3500);
+    navigateTo('screen-dashboard');
+  });
+
+  setupHoldToConfirm('btnDiscardRefugo', 'holdBarRefugo', 1500, () => {
+    showToast('🗑 Sobra de 400ml descartada como refugo químico.', 'danger', 3500);
+    navigateTo('screen-dashboard');
+  });
 });
