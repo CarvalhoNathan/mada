@@ -4,12 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mada Marcenaria — Gerenciador de Químicos & Receitas</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="design-system.css">
   <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231d58d8'><path d='M19 19H5V8h14m-3-7v2H8V1H6v2H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563EB'><path d='M19 19H5V8h14m-3-7v2H8V1H6v2H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1'/></svg>">
 </head>
 <body>
 
-  <!-- Top Header Operacional -->
+  <!-- Faixa de Status Offline (StatusBanner - Sem conexão com Wi-Fi/Servidor) -->
+  <div class="status-banner-offline" id="statusBannerOffline">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>Sem conexão com a rede Wi-Fi ou Servidor local • Modo somente leitura ativado (Ações de entrar e salvar estão desabilitadas).</span>
+  </div>
+
+  <!-- Toast de Notificação do Topo (Some sozinho em 3s, nunca cobre botões) -->
+  <div id="appToast" role="status" aria-live="polite">
+    <span id="appToastIcon">✓</span>
+    <span id="appToastMsg">Mensagem</span>
+  </div>
+
+  <!-- Top Header Operacional (AppShell Fixo) -->
   <header class="top-header">
     <div class="header-brand" id="brandHeader" onclick="navigateTo('screen-dashboard')">
       <div class="brand-icon-box">
@@ -21,27 +35,39 @@
       </div>
       <div class="brand-text">
         <h1>Gerenciador de Químicos</h1>
-        <span>MADA MARCENARIA • SETOR DE PINTURA</span>
+        <span>MADA MARCENARIA • CABINE DE PINTURA</span>
       </div>
     </div>
 
     <div class="header-status-group">
-      <div class="status-badge">
+      <!-- Status Wi-Fi -->
+      <div class="status-badge" id="statusWifi">
         <div class="status-dot"></div>
-        <div class="status-info">
-          <span class="status-title">Wi-Fi conectado</span>
-          <span class="status-sub">Rede: Marcenaria_Industrial</span>
+        <span id="wifiLabel">Wi-Fi Conectado</span>
+      </div>
+
+      <!-- Status Servidor Local -->
+      <div class="status-badge" id="statusServer">
+        <div class="status-dot"></div>
+        <span id="serverLabel">Servidor Ativo</span>
+      </div>
+
+      <!-- Botão para Testar / Simular Queda de Conexão -->
+      <button class="header-network-toggle" id="btnToggleNetwork" onclick="toggleNetworkConnection()" title="Simular queda ou retorno de conexão para verificar StatusBanner">
+        <span>🔌</span>
+        <span id="toggleNetworkLabel">Simular Offline</span>
+      </button>
+
+      <!-- Operador Logado no AppShell -->
+      <div class="header-operator-badge" id="headerOperatorBadge" onclick="navigateTo('screen-auth')" title="Toque para trocar de operador">
+        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="header-operator-photo" id="headerOpAvatar">
+        <div class="header-operator-info">
+          <span class="header-operator-name" id="headerOpName">Ana Souza</span>
+          <span class="header-operator-role" id="headerOpRole">Operador(a) conectado(a)</span>
         </div>
       </div>
 
-      <div class="status-badge">
-        <div class="status-dot"></div>
-        <div class="status-info">
-          <span class="status-title">Servidor local disponível</span>
-          <span class="status-sub">Intranet • Operação local</span>
-        </div>
-      </div>
-
+      <!-- Centro de Controle do Supervisor -->
       <button class="header-supervisor-btn" id="btnSupervisorToggle" onclick="toggleSupervisorView()" title="Centro de Controle do Supervisor">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         <span>Supervisão Fábio</span>
@@ -49,30 +75,30 @@
     </div>
   </header>
 
-  <!-- Viewport Principal -->
+  <!-- Viewport Principal (Tablet 1280x800) -->
   <main class="main-viewport">
 
     <!-- ====================================================================
-         TELA 1: Autenticação Rápida & PIN (Identificação)
+         TELA 1: Identificação & PIN (Login do Operador)
          ==================================================================== -->
     <section id="screen-auth" class="screen-view active">
-      <div class="section-header">
+      <div class="section-header-compact">
         <div class="section-tag">01 / IDENTIFICAÇÃO</div>
         <h2 class="section-title">Quem vai usar o sistema?</h2>
-        <p class="section-desc">Toque na sua foto. Depois, digite seu PIN ao lado para assumir a cabine.</p>
+        <p class="section-desc">Toque na sua foto e digite seu PIN de 4 dígitos para entrar.</p>
       </div>
 
       <div class="auth-grid">
-        <!-- Grade de Operadores -->
+        <!-- Grade de Operadores (Cards Táteis) -->
         <div class="operators-column">
           <div class="operators-grid" id="operatorsGrid">
             <!-- Operador 1 -->
-            <div class="operator-card selected" data-name="Ana Souza" data-role="Operadora Líder PU">
+            <div class="operator-card selected" data-name="Ana Souza" data-role="Operador(a) Líder PU">
               <span class="operator-check-badge">✓</span>
               <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80" alt="Ana Souza" class="operator-photo">
               <div class="operator-card-body">
                 <span class="operator-name">Ana Souza</span>
-                <span class="operator-status-label">Selecionada</span>
+                <span class="operator-status-label">Selecionado(a)</span>
               </div>
             </div>
 
@@ -138,27 +164,29 @@
           </div>
         </div>
 
-        <!-- Coluna PIN e Teclado -->
+        <!-- Coluna PIN e Teclado Numérico -->
         <div class="pin-column">
           <div class="pin-pad-card">
-            <div class="pin-header">
-              <h3 class="pin-title" id="pinTargetName">PIN de Ana Souza</h3>
-              <div class="pin-lock-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div>
+              <div class="pin-header">
+                <h3 class="pin-title" id="pinTargetName">PIN de Ana Souza</h3>
+                <div class="pin-lock-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
               </div>
-            </div>
-            <p class="pin-sub">Digite seu PIN de 4 dígitos no teclado abaixo.</p>
+              <p class="pin-sub">Digite seu código de 4 dígitos no teclado tátil.</p>
 
-            <!-- Slots de Dígitos -->
-            <div class="pin-slots" id="pinSlots">
-              <div class="pin-slot"><span class="pin-dot"></span></div>
-              <div class="pin-slot"><span class="pin-dot"></span></div>
-              <div class="pin-slot"><span class="pin-dot"></span></div>
-              <div class="pin-slot"><span class="pin-dot"></span></div>
+              <!-- Slots de Dígitos do PIN -->
+              <div class="pin-slots" id="pinSlots">
+                <div class="pin-slot"><span class="pin-dot"></span></div>
+                <div class="pin-slot"><span class="pin-dot"></span></div>
+                <div class="pin-slot"><span class="pin-dot"></span></div>
+                <div class="pin-slot"><span class="pin-dot"></span></div>
+              </div>
+              <div class="pin-hint" id="pinHint">Insira 4 dígitos</div>
             </div>
-            <div class="pin-hint" id="pinHint">Insira 4 dígitos</div>
 
-            <!-- Teclado Numérico -->
+            <!-- Teclado Numérico de 90px / Táteis -->
             <div class="keypad-grid">
               <button class="key-btn" onclick="pressKey('1')">1</button>
               <button class="key-btn" onclick="pressKey('2')">2</button>
@@ -174,9 +202,9 @@
               <button class="key-btn action-key" onclick="backspacePin()">⌫ Apagar</button>
             </div>
 
-            <!-- Botão Entrar -->
-            <button class="btn-primary-action" id="btnPinSubmit" onclick="submitAuth()">
-              Entrar no Sistema →
+            <!-- Botão Entrar (Design System Component) -->
+            <button class="ds-btn ds-btn-primary ds-btn-md" id="btnPinSubmit" onclick="submitAuth()" style="width: 100%; font-size: 20px;">
+              Entrar no sistema →
             </button>
           </div>
         </div>
@@ -187,80 +215,91 @@
          TELA 2: Dashboard Operacional (Central de Ações)
          ==================================================================== -->
     <section id="screen-dashboard" class="screen-view">
-      <div class="dashboard-top-row">
-        <div>
-          <div class="section-tag">02 / CENTRAL DE AÇÕES</div>
-          <h2 class="section-title">O que vamos fazer, <span id="dashOpName">Ana</span>?</h2>
-          <p class="section-desc">Escolha uma ação operacional para a Cabine de Pintura.</p>
-        </div>
-
-        <div class="operator-header-badge">
-          <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="badge-avatar" id="dashOpAvatar">
-          <div class="badge-info">
-            <h4 id="dashOpFullName">Ana Souza</h4>
-            <span>Operadora conectada</span>
+      <div class="screen-content-area">
+        <div class="dashboard-top-row">
+          <div>
+            <div class="section-tag">02 / CENTRAL DE AÇÕES</div>
+            <h2 class="section-title">O que vamos fazer, <span id="dashOpName">Ana</span>?</h2>
+            <p class="section-desc">Escolha uma ação operacional para a Cabine de Pintura.</p>
           </div>
-          <button class="btn-outline-sm" onclick="navigateTo('screen-auth')">Trocar operador</button>
         </div>
-      </div>
 
-      <!-- Tríade de Ações Principais -->
-      <div class="actions-triad-grid">
-        <!-- Ação 1: Nova Preparação -->
-        <div class="action-card card-primary" onclick="navigateTo('screen-os')">
-          <div class="action-card-header">
-            <div class="action-icon-circle">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 2v7.31L4.14 20a2 2 0 0 0 1.72 3h12.28a2 2 0 0 0 1.72-3L14 9.31V2"/><path d="M8.5 2h7"/></svg>
+        <!-- Alerta de Validade: "Use Primeiro" (Sem sigla FEFO) -->
+        <div class="use-first-banner" id="bannerUseFirst" onclick="openUseFirstModal()" title="Toque para ver a lista de latas que vencem primeiro">
+          <div class="use-first-left">
+            <div class="use-first-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
-            <svg class="action-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </div>
-          <div class="action-card-body">
-            <h3 class="action-title">Nova Preparação<br><span style="font-size: 1rem; opacity: 0.9; font-weight: 600;">(Consultar Receita)</span></h3>
-            <p class="action-desc">Consulte o gabarito oficial e prepare a mistura por cliente, projeto e ambiente.</p>
-          </div>
-        </div>
-
-        <!-- Ação 2: Devolver Sobras -->
-        <div class="action-card card-white" onclick="navigateTo('screen-return')">
-          <div class="action-card-header">
-            <div class="action-icon-circle">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            <div class="use-first-info">
+              <h3>Use primeiro: 3 latas de Verniz PU vencem esta semana (Prateleira A-02)</h3>
+              <p>Priorize latas já abertas no almoxarifado antes de violar novas latas lacradas.</p>
             </div>
-            <svg class="action-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </div>
-          <div class="action-card-body">
-            <h3 class="action-title">Devolver Sobras</h3>
-            <p class="action-desc">Pese o que sobrou na lata, emita etiqueta com QR Code e devolva o saldo ao estoque.</p>
+          <div class="use-first-action">
+            <span>Ver latas prioritárias →</span>
           </div>
         </div>
 
-        <!-- Ação 3: Painel de Alertas FEFO -->
-        <div class="action-card card-alert" onclick="showToast('Aviso: 3 latas de Verniz PU lote #SY-8821 vencem em 4 dias. Use primeiro!')">
-          <div class="action-card-header">
-            <div class="action-icon-circle" style="background: rgba(180, 83, 9, 0.15); color: #b45309;">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <!-- Tríade de Ações Principais do Chão de Fábrica -->
+        <div class="actions-triad-grid">
+          <!-- Ação 1: Nova Preparação -->
+          <div class="action-card card-primary" onclick="navigateTo('screen-os')">
+            <div class="action-card-header">
+              <div class="action-icon-circle">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 2v7.31L4.14 20a2 2 0 0 0 1.72 3h12.28a2 2 0 0 0 1.72-3L14 9.31V2"/><path d="M8.5 2h7"/></svg>
+              </div>
+              <svg class="action-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </div>
-            <span style="font-weight: 800; font-size: 0.8rem; text-transform: uppercase;">Prioridade FEFO</span>
+            <div class="action-card-body">
+              <h3 class="action-title">Nova preparação</h3>
+              <p class="action-desc">Consulte a receita oficial e prepare a mistura por cliente, projeto e ambiente.</p>
+            </div>
           </div>
-          <div class="action-card-body">
-            <h3 class="action-title" style="color: #92400e;">Atenção: 3 latas de Verniz PU vencem esta semana!</h3>
-            <p class="action-desc" style="color: #78350f;"><strong>Priorize o uso!</strong> Latas abertas no almoxarifado têm prioridade de saída antes de novas latas lacradas.</p>
-          </div>
-        </div>
-      </div>
 
-      <!-- Card Inferior Largo: Escanear QR Code -->
-      <div class="qr-wide-card" onclick="simulateQRScan()">
-        <div class="qr-wide-left">
-          <div class="qr-icon-box">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+          <!-- Ação 2: Devolver Sobras -->
+          <div class="action-card card-white" onclick="navigateTo('screen-return')">
+            <div class="action-card-header">
+              <div class="action-icon-circle">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              </div>
+              <svg class="action-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div class="action-card-body">
+              <h3 class="action-title">Devolver sobras</h3>
+              <p class="action-desc">Pese a sobra na lata, emita etiqueta com QR Code e devolva o saldo ao estoque.</p>
+            </div>
           </div>
-          <div class="qr-wide-info">
-            <h3>Escanear Etiqueta (QR Code da Peça ou da Lata)</h3>
-            <p>Identifique instantaneamente a Ordem de Serviço ou consulte o saldo restante de uma lata devolvida.</p>
+
+          <!-- Ação 3: Escanear QR Code -->
+          <div class="action-card card-qr" onclick="simulateQRScan()">
+            <div class="action-card-header">
+              <div class="action-icon-circle">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+              </div>
+              <svg class="action-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div class="action-card-body">
+              <h3 class="action-title">Escanear QR Code</h3>
+              <p class="action-desc">Identifique instantaneamente a Ordem de Serviço ou consulte o saldo restante de uma lata.</p>
+            </div>
           </div>
         </div>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+
+        <!-- Rodapé Informativo da Cabine -->
+        <div class="dashboard-footer-status">
+          <div class="dash-status-item">
+            <span class="dash-status-label">Posto Operacional:</span>
+            <span class="dash-status-val">Cabine PU 01 • Ativa</span>
+          </div>
+          <div class="dash-status-item">
+            <span class="dash-status-label">Turno Atual:</span>
+            <span class="dash-status-val">Manhã • Laca & Verniz</span>
+          </div>
+          <div class="dash-status-item">
+            <span class="dash-status-label">Supervisão:</span>
+            <span class="dash-status-val">Fábio (Online)</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -268,157 +307,238 @@
          TELA 3: Vinculação de Ordem de Serviço (OS & Peça)
          ==================================================================== -->
     <section id="screen-os" class="screen-view">
-      <!-- Stepper -->
-      <div class="stepper-nav">
-        <div class="step-pill active">
-          <span class="step-num">1</span>
-          <span>1. Identificar OS & Peça</span>
+      <div class="screen-content-area">
+        <!-- Indicador de Etapas (StepIndicator) -->
+        <div class="stepper-nav">
+          <div class="step-pill active">
+            <span class="step-num">1</span>
+            <span>1. Identificar OS & Peça</span>
+          </div>
+          <div class="step-pill" onclick="navigateTo('screen-recipe')">
+            <span class="step-num">2</span>
+            <span>2. Receita & Calculadora</span>
+          </div>
+          <div class="step-pill">
+            <span class="step-num">3</span>
+            <span>3. Dosagem & Baixa</span>
+          </div>
         </div>
-        <div class="step-pill" onclick="navigateTo('screen-recipe')">
-          <span class="step-num">2</span>
-          <span>2. Receita & Calculadora</span>
+
+        <!-- Botão em Destaque no Topo: Ler QR Code da OS -->
+        <div class="btn-scan-os-featured" id="btnScanQrOs" onclick="scanQrForOs()">
+          <div class="btn-scan-os-left">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+            <span>Ler QR Code da OS (Identificação Rápida)</span>
+          </div>
+          <span style="font-size: 16px; color: var(--primary); font-weight: 700;">Preencher dados da ficha impressa →</span>
         </div>
-        <div class="step-pill">
-          <span class="step-num">3</span>
-          <span>3. Dosagem & Baixa</span>
+
+        <!-- Grid de Seleção e Vinculação da OS -->
+        <div class="os-selection-layout">
+          <!-- Coluna Esquerda: Dados da OS e Ambiente -->
+          <div class="os-card-group">
+            <!-- Bloco 1: Cliente e Projeto -->
+            <div class="os-box">
+              <div class="os-box-header">
+                <span class="os-box-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  1. Ordem de Serviço & Contratante
+                </span>
+                <span class="badge-validated">✓ Validado</span>
+              </div>
+              <div class="os-highlight-item">
+                <div class="os-highlight-info">
+                  <h4 id="osClientName">João Mendonça Residencial</h4>
+                  <p id="osProjectName">Residência Alphaville — Bloco Social • Código: OS-8841-2026</p>
+                </div>
+                <button class="btn-action-small" onclick="openChangeOsModal()">Trocar</button>
+              </div>
+            </div>
+
+            <!-- Bloco 2: Ambiente / Cômodo (ChoiceChips Táteis) -->
+            <div class="os-box">
+              <div class="os-box-header">
+                <span class="os-box-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                  2. Ambiente / Cômodo
+                </span>
+              </div>
+              <div class="environments-grid">
+                <div class="env-chip selected" onclick="selectEnv(this, 'Cozinha Gourmet', 'OS #8841')">
+                  <div class="env-chip-header">
+                    <span>Cozinha Gourmet</span>
+                    <span>✓</span>
+                  </div>
+                  <span class="env-chip-sub">OS #8841</span>
+                </div>
+                <div class="env-chip" onclick="selectEnv(this, 'Suíte Master', 'OS #8843')">
+                  <div class="env-chip-header">
+                    <span>Suíte Master</span>
+                  </div>
+                  <span class="env-chip-sub">OS #8843</span>
+                </div>
+                <div class="env-chip" onclick="selectEnv(this, 'Home Theater', 'OS #8844')">
+                  <div class="env-chip-header">
+                    <span>Home Theater</span>
+                  </div>
+                  <span class="env-chip-sub">OS #8844</span>
+                </div>
+                <div class="env-chip" onclick="selectEnv(this, 'Área Gourmet Ext.', 'OS #8845')">
+                  <div class="env-chip-header">
+                    <span>Área Gourmet Ext.</span>
+                  </div>
+                  <span class="env-chip-sub">OS #8845</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coluna Direita: Peça e Previsão de Consumo -->
+          <div class="os-card-group">
+            <!-- Bloco 3: Lote de Peças / Subconjunto -->
+            <div class="os-box">
+              <div class="os-box-header">
+                <span class="os-box-title">3. Lote de Peças</span>
+                <span class="badge-qty" id="pieceLotQty">8 Peças</span>
+              </div>
+
+              <div class="piece-detail-card">
+                <div class="piece-header">
+                  <div>
+                    <h4 id="pieceLotTitle">Portas Armários Superiores</h4>
+                    <span style="font-size: 15px; color: var(--warn); font-weight: 700;">Laca Branca Fosca 20 Gloss</span>
+                  </div>
+                </div>
+
+                <div class="piece-specs-grid">
+                  <div class="spec-item">
+                    <strong>Substrato Base</strong>
+                    <span>MDF Naval 18mm</span>
+                  </div>
+                  <div class="spec-item">
+                    <strong>Área Superficial</strong>
+                    <span style="font-weight: 700; color: var(--primary);">~ 4,20 m²</span>
+                  </div>
+                </div>
+
+                <div class="piece-change-bar">
+                  <span class="piece-change-hint">Lote vinculado à OS</span>
+                  <button class="btn-action-small" onclick="changePieceLot()">Trocar lote</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bloco 4: Previsão de Consumo & Rastreabilidade -->
+            <div class="consumption-box">
+              <div class="os-box-header">
+                <span class="os-box-title">4. Previsão de Consumo & Rastreabilidade</span>
+              </div>
+
+              <div class="consumption-values-row">
+                <div class="consumption-val-group">
+                  <span>Área Calculada</span>
+                  <strong>4,20 m²</strong>
+                </div>
+                <div class="consumption-val-group highlight">
+                  <span>Consumo Estimado</span>
+                  <strong>850 – 1.050 ml</strong>
+                </div>
+              </div>
+
+              <p class="consumption-desc">
+                🛡️ <strong>Rastreabilidade ativa:</strong> Todo consumo de catalisador e tinta pesado na balança da cabine será vinculado a esta Ordem de Serviço.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="os-selection-layout">
-        <!-- Coluna Esquerda: Dados da OS -->
-        <div class="os-card-group">
-          <!-- 1. Cliente -->
-          <div class="os-box">
-            <div class="os-box-header">
-              <span class="os-box-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                1. Cliente / Contratante
-              </span>
-              <span class="badge-validated">✓ Validado</span>
-            </div>
-            <div class="os-highlight-item">
-              <div class="os-highlight-info">
-                <h4>João Mendonça Residencial</h4>
-                <p>Contrato Premium de Marcenaria • Cód: CLI-9021</p>
-              </div>
-              <button class="btn-outline-sm" onclick="showToast('Outros clientes carregados.')">Trocar</button>
-            </div>
-          </div>
-
-          <!-- 2. Projeto -->
-          <div class="os-box">
-            <div class="os-box-header">
-              <span class="os-box-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                2. Projeto Ativo
-              </span>
-            </div>
-            <div class="os-highlight-item">
-              <div class="os-highlight-info">
-                <h4>Residência Alphaville — Bloco Social</h4>
-                <p>Prazo de entrega na Cabine PU: 48h</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. Ambiente / Cômodo -->
-          <div class="os-box">
-            <div class="os-box-header">
-              <span class="os-box-title">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-                3. Ambiente / Cômodo
-              </span>
-            </div>
-            <div class="environments-grid">
-              <div class="env-chip selected" onclick="selectEnv(this, 'Cozinha Gourmet', 'OS #8841')">
-                <div class="env-chip-header">
-                  <span>Cozinha Gourmet</span>
-                  <span>✓</span>
-                </div>
-                <span class="env-chip-sub">OS #8841</span>
-              </div>
-              <div class="env-chip" onclick="selectEnv(this, 'Suíte Master', 'OS #8843')">
-                <div class="env-chip-header">
-                  <span>Suíte Master</span>
-                </div>
-                <span class="env-chip-sub">OS #8843</span>
-              </div>
-              <div class="env-chip" onclick="selectEnv(this, 'Home Theater', 'OS #8844')">
-                <div class="env-chip-header">
-                  <span>Home Theater</span>
-                </div>
-                <span class="env-chip-sub">OS #8844</span>
-              </div>
-              <div class="env-chip" onclick="selectEnv(this, 'Área Gourmet Ext.', 'OS #8845')">
-                <div class="env-chip-header">
-                  <span>Área Gourmet Ext.</span>
-                </div>
-                <span class="env-chip-sub">OS #8845</span>
-              </div>
-            </div>
-          </div>
+      <!-- Barra Inferior Fixa do AppShell (Voltar à esquerda, CTA curto à direita) -->
+      <footer class="ds-bottom-bar">
+        <div class="ds-bottom-bar-left">
+          <button class="ds-btn ds-btn-secondary ds-btn-md" onclick="navigateTo('screen-dashboard')">
+            ← Voltar
+          </button>
+          <button class="ds-btn ds-btn-secondary ds-btn-md" onclick="openCancelPreparationModal()" style="border-color: var(--danger-border); color: var(--danger);">
+            ✕ Cancelar preparação
+          </button>
         </div>
+        <div class="ds-bottom-bar-right">
+          <button class="ds-btn ds-btn-primary ds-btn-md" onclick="navigateTo('screen-recipe')" style="min-width: 240px;">
+            Ver receita →
+          </button>
+        </div>
+      </footer>
+    </section>
 
-        <!-- Coluna Direita: Peça & Centro de Custo -->
-        <div class="os-card-group">
-          <!-- 4. Lote de Peças -->
-          <div class="os-box">
-            <div class="os-box-header">
-              <span class="os-box-title">4. Lote de Peças / Subconjunto</span>
-            </div>
-
-            <div class="piece-detail-card">
-              <div class="piece-header">
-                <div>
-                  <h4>Portas Armários Superiores</h4>
-                  <span style="font-size: 0.85rem; color: #b45309; font-weight: 700;">Laca Branca Fosca 20 Gloss</span>
-                </div>
-                <span class="badge-qty">8 Peças</span>
-              </div>
-
-              <div class="piece-specs-grid">
-                <div class="spec-item">
-                  <strong>Substrato Base</strong>
-                  <span>MDF Naval 18mm</span>
-                </div>
-                <div class="spec-item">
-                  <strong>Área Superficial</strong>
-                  <span style="font-weight: 700; color: var(--primary);">~ 4,20 m²</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Validação de Centro de Custo -->
-          <div class="os-box" style="background: #0f172a; color: white; border-color: #1e293b;">
-            <div class="os-box-header">
-              <span class="os-box-title" style="color: #94a3b8;">VALIDAÇÃO DE CENTRO DE CUSTO</span>
-              <span style="font-size: 0.8rem; color: #f59e0b; font-weight: 700;">#OS-8841-2026</span>
-            </div>
-
-            <div style="display: flex; gap: 16px; margin: 12px 0;">
-              <div>
-                <span style="font-size: 0.75rem; color: #94a3b8; display: block;">Área Calculada</span>
-                <span style="font-size: 1.5rem; font-weight: 800;">4,20 m²</span>
-              </div>
-              <div style="border-left: 1px solid #334155; padding-left: 16px;">
-                <span style="font-size: 0.75rem; color: #94a3b8; display: block;">Consumo Sugerido</span>
-                <span style="font-size: 1.5rem; font-weight: 800; color: #38bdf8;">850 – 1.050 ml</span>
-              </div>
-            </div>
-
-            <p style="font-size: 0.75rem; color: #94a3b8; line-height: 1.4;">
-              🛡️ <strong>Rastreabilidade Ativa:</strong> Todo catalisador e resina pesados na balança da cabine serão debitados desta Ordem de Serviço.
-            </p>
-          </div>
-
-          <!-- Botão Avançar -->
-          <button class="btn-primary-action" style="background: #f59e0b; color: black;" onclick="navigateTo('screen-recipe')">
-            Continuar para Receita PU (O Gabarito) →
+    <!-- ====================================================================
+         MODAL 1: Cancelar Preparação (Confirmação Simples)
+         ==================================================================== -->
+    <div class="ds-modal-overlay" id="modalCancelPrep">
+      <div class="ds-modal-card">
+        <h3 class="ds-modal-title">Cancelar preparação?</h3>
+        <p class="ds-modal-desc">
+          Deseja cancelar esta preparação? Os dados selecionados serão descartados e você voltará ao início.
+        </p>
+        <div class="ds-modal-actions">
+          <button class="ds-btn ds-btn-secondary ds-btn-md" onclick="closeCancelPreparationModal()">
+            Continuar preparando
+          </button>
+          <button class="ds-btn ds-btn-danger ds-btn-md" onclick="confirmCancelPreparation()">
+            Sim, cancelar
           </button>
         </div>
       </div>
-    </section>
+    </div>
+
+    <!-- ====================================================================
+         MODAL 2: Lista de Latas "Use Primeiro"
+         ==================================================================== -->
+    <div class="ds-modal-overlay" id="modalUseFirst">
+      <div class="ds-modal-card" style="max-width: 680px;">
+        <h3 class="ds-modal-title" style="color: var(--warn); display: flex; align-items: center; gap: 10px;">
+          <span>⚠️</span> Itens de Uso Prioritário (Use Primeiro)
+        </h3>
+        <p class="ds-modal-desc">
+          As latas abaixo estão com prazo de validade próximo ou já foram abertas no almoxarifado. Priorize-as antes de violar novas latas.
+        </p>
+        <table class="use-first-table">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Lote</th>
+              <th>Localização</th>
+              <th>Situação / Validade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Verniz PU Sayersystem Gloss 20</strong></td>
+              <td>#SY-8821</td>
+              <td>Prateleira A-02</td>
+              <td><span style="color: var(--warn); font-weight: 700;">Lata aberta • Vence em 3 dias</span></td>
+            </tr>
+            <tr>
+              <td><strong>Catalisador PU Médio</strong></td>
+              <td>#SY-1104</td>
+              <td>Prateleira A-03</td>
+              <td><span style="color: var(--warn); font-weight: 700;">Lata aberta • Vence em 5 dias</span></td>
+            </tr>
+            <tr>
+              <td><strong>Diluidor Especial Sayersystem</strong></td>
+              <td>#SY-9042</td>
+              <td>Prateleira B-01</td>
+              <td><span style="color: var(--ok); font-weight: 600;">Lata aberta (saldo 800ml)</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="ds-modal-actions">
+          <button class="ds-btn ds-btn-primary ds-btn-md" onclick="closeUseFirstModal()">
+            Entendido, vou priorizar estas latas
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- ====================================================================
          TELA 4: Calculadora Dinâmica da Receita (O Gabarito Sayerlack)
@@ -843,16 +963,7 @@
     </div>
   </div>
 
-  <!-- Rodapé Operacional -->
-  <footer class="footer-bar">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      <span>Use seu próprio acesso. As operações ficam registradas no seu nome.</span>
-    </div>
-    <div style="font-weight: 700; color: #475569;">
-      TERMINAL PINTURA • 01
-    </div>
-  </footer>
+
 
   <script src="app.js"></script>
 </body>

@@ -1,0 +1,1192 @@
+/**
+ * ==========================================================================
+ * MADA MARCENARIA — DESIGN SYSTEM COMPONENT STYLES
+ * Importa tokens.css e define os estilos de todos os 13 componentes
+ * ==========================================================================
+ */
+
+@import url('tokens.css');
+
+/* ==========================================================================
+   1. BUTTON (BOTÃO INDUSTRIAL TABLET)
+   ========================================================================== */
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-16);
+  font-family: var(--font-family);
+  font-size: var(--fs-button);
+  font-weight: var(--fw-button);
+  line-height: var(--lh-button);
+  border-radius: var(--radius-button);
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: transform var(--transition-press), filter var(--transition-press), background-color var(--transition-normal);
+  outline: none;
+}
+
+/* Tamanhos Táteis */
+.ds-btn-md {
+  min-height: var(--touch-min); /* 64px */
+  padding: 0 var(--space-24);
+}
+
+.ds-btn-lg {
+  min-height: var(--touch-primary); /* 96px */
+  padding: 0 var(--space-32);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* Feedback Tátil Imediato (Pressed) */
+.ds-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  filter: brightness(1.2);
+}
+
+.ds-btn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Variantes */
+.ds-btn-primary {
+  background-color: var(--primary);
+  color: var(--text);
+  border-color: var(--primary);
+}
+.ds-btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+.ds-btn-secondary {
+  background-color: var(--btn-secondary-bg);
+  color: var(--text);
+  border-color: var(--border);
+}
+.ds-btn-secondary:hover:not(:disabled) {
+  background-color: var(--btn-secondary-hover);
+  border-color: var(--text-muted);
+}
+
+.ds-btn-success {
+  background-color: var(--ok);
+  color: #052e16;
+  border-color: var(--ok);
+  font-weight: 700;
+}
+.ds-btn-success:hover:not(:disabled) {
+  background-color: var(--ok-hover);
+}
+
+.ds-btn-danger {
+  background-color: var(--danger);
+  color: var(--text);
+  border-color: var(--danger);
+}
+.ds-btn-danger:hover:not(:disabled) {
+  background-color: var(--danger-hover);
+}
+
+/* Estados */
+.ds-btn:disabled {
+  background-color: var(--btn-disabled-bg);
+  border-color: var(--border);
+  color: var(--btn-disabled-text);
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none !important;
+  filter: none !important;
+}
+
+.ds-btn.is-loading {
+  cursor: wait;
+}
+
+.ds-btn-spinner {
+  width: 28px;
+  height: 28px;
+  border: 4px solid rgba(255, 255, 255, 0.25);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: ds-spin 0.8s linear infinite;
+}
+
+@keyframes ds-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Barra de Segurar para Confirmar (Hold-to-confirm) */
+.ds-btn-hold-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  transition: width 0.05s linear;
+}
+
+.ds-btn-hold-hint {
+  font-size: var(--fs-small);
+  opacity: 0.85;
+  font-weight: 500;
+  margin-left: 6px;
+}
+
+/* ==========================================================================
+   2. CARD
+   ========================================================================== */
+.ds-card {
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-24);
+  position: relative;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.ds-card.is-clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.ds-card.is-clickable:hover {
+  background-color: var(--card-hover);
+  border-color: var(--primary-border);
+}
+
+.ds-card.is-clickable:active {
+  transform: scale(0.99);
+}
+
+/* Selecionável */
+.ds-card-selectable.is-selected {
+  border-color: var(--primary);
+  background-color: #1e2c3d;
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.ds-card-check {
+  position: absolute;
+  top: var(--space-16);
+  right: var(--space-16);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: var(--fs-small);
+  transition: all var(--transition-press);
+}
+
+.ds-card-check.is-active {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Variantes com Alerta */
+.ds-card-alert-warn {
+  border-color: var(--warn);
+  background-color: rgba(245, 158, 11, 0.08);
+}
+
+.ds-card-alert-danger {
+  border-color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+/* ==========================================================================
+   3. NUMBER STEPPER
+   ========================================================================== */
+.ds-stepper-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.ds-stepper-label {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.ds-stepper-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.ds-stepper-btn {
+  width: var(--touch-min); /* 64px */
+  height: var(--touch-min);
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-button);
+  color: var(--text);
+  font-size: 36px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform var(--transition-press), background-color var(--transition-normal);
+}
+
+.ds-stepper-btn:active:not(:disabled) {
+  transform: scale(0.95);
+  background-color: var(--card-hover);
+}
+
+.ds-stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ds-stepper-value-display {
+  flex: 1;
+  min-height: var(--touch-min);
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-button);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: var(--space-8) var(--space-16);
+  transition: border-color var(--transition-normal), background-color var(--transition-normal);
+}
+
+.ds-stepper-value-display:hover {
+  border-color: var(--primary);
+  background-color: var(--card-hover);
+}
+
+.ds-stepper-number {
+  font-size: var(--fs-number); /* 56px */
+  font-weight: var(--fw-number);
+  line-height: var(--lh-number);
+  color: var(--text);
+}
+
+.ds-stepper-unit {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.ds-stepper-tap-hint {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+/* Estado: Acima da Tolerância */
+.ds-stepper-container.is-over-tolerance .ds-stepper-value-display {
+  border-color: var(--danger);
+  background-color: var(--danger-soft);
+}
+
+.ds-stepper-container.is-over-tolerance .ds-stepper-number {
+  color: var(--danger);
+}
+
+.ds-stepper-warning-banner {
+  background-color: var(--danger-soft);
+  border: 1.5px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-8) var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--danger);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   4. NUMERIC KEYPAD (90PX TÁTIL)
+   ========================================================================== */
+.ds-numeric-keypad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  max-width: 380px;
+  width: 100%;
+}
+
+.ds-keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-16);
+}
+
+.ds-keypad-btn {
+  height: 90px; /* 90px táctil */
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-button);
+  color: var(--text);
+  font-size: 32px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform var(--transition-press), background-color var(--transition-normal);
+  user-select: none;
+}
+
+.ds-keypad-btn:active:not(:disabled) {
+  transform: scale(0.95);
+  background-color: var(--card-hover);
+  border-color: var(--primary);
+}
+
+.ds-keypad-action {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  background-color: #243040;
+  color: var(--text-muted);
+}
+
+.ds-keypad-action:active:not(:disabled) {
+  color: var(--text);
+}
+
+.ds-keypad-confirm-btn {
+  width: 100%;
+}
+
+/* ==========================================================================
+   5. PIN INPUT (4 BOLINHAS + ERRO SHAKE)
+   ========================================================================== */
+.ds-pin-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.ds-pin-label {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.ds-pin-slots-row {
+  display: flex;
+  gap: var(--space-16);
+  padding: var(--space-8) 0;
+}
+
+.ds-pin-slot {
+  width: var(--touch-min); /* 64px */
+  height: var(--touch-min);
+  border: 2.5px solid var(--border);
+  border-radius: var(--radius-button);
+  background-color: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-press);
+}
+
+.ds-pin-slot.is-filled {
+  border-color: var(--primary);
+  background-color: var(--primary-soft);
+}
+
+.ds-pin-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: all var(--transition-press);
+}
+
+.ds-pin-slot.is-filled .ds-pin-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Estado de Erro: Shake + Vermelho */
+.ds-pin-container.is-error .ds-pin-slot {
+  border-color: var(--danger);
+  background-color: var(--danger-soft);
+}
+
+.ds-pin-container.is-error .ds-pin-dot {
+  background-color: var(--danger);
+}
+
+.ds-pin-container.is-error .ds-pin-slots-row {
+  animation: ds-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes ds-shake {
+  10%, 90% { transform: translate3d(-3px, 0, 0); }
+  20%, 80% { transform: translate3d(6px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+  40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+.ds-pin-status-message {
+  min-height: 24px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.ds-pin-error-text {
+  color: var(--danger);
+}
+
+.ds-pin-info-text {
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   6. STATUS BANNER (FAIXA INTEIRA NO TOPO)
+   ========================================================================== */
+.ds-status-banner {
+  width: 100%;
+  min-height: 56px;
+  padding: var(--space-8) var(--space-24);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  font-size: var(--fs-body);
+}
+
+.ds-status-banner-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.ds-status-banner-icon {
+  font-size: 24px;
+}
+
+.ds-status-banner-title {
+  font-weight: 700;
+}
+
+.ds-status-banner-desc {
+  font-weight: 400;
+  opacity: 0.95;
+}
+
+.ds-status-banner-danger {
+  background-color: var(--danger);
+  color: white;
+}
+
+.ds-status-banner-warn {
+  background-color: var(--warn);
+  color: #1c1917;
+}
+
+.ds-status-banner-info {
+  background-color: var(--primary);
+  color: white;
+}
+
+/* ==========================================================================
+   7. BADGE / CHIP (TEXTO >= 16PX)
+   ========================================================================== */
+.ds-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: 6px var(--space-16);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-small); /* 16px */
+  font-weight: 600;
+  line-height: var(--lh-small);
+  white-space: nowrap;
+  border: 1.5px solid transparent;
+}
+
+.ds-badge-icon {
+  font-weight: 800;
+}
+
+.ds-badge-ok {
+  background-color: var(--ok-soft);
+  color: var(--ok);
+  border-color: var(--ok-border);
+}
+
+.ds-badge-warn {
+  background-color: var(--warn-soft);
+  color: var(--warn);
+  border-color: var(--warn-border);
+}
+
+.ds-badge-danger {
+  background-color: var(--danger-soft);
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+
+.ds-badge-info {
+  background-color: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary-border);
+}
+
+.ds-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+/* ==========================================================================
+   8. STEP INDICATOR
+   ========================================================================== */
+.ds-step-indicator {
+  width: 100%;
+}
+
+.ds-step-list {
+  display: flex;
+  list-style: none;
+  gap: var(--space-16);
+}
+
+.ds-step-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-16) var(--space-24);
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-card);
+  min-height: var(--touch-min);
+  transition: all var(--transition-normal);
+}
+
+.ds-step-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.ds-step-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-step-label {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.ds-step-sub {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+/* Estados */
+.ds-step-active {
+  border-color: var(--primary);
+  background-color: #1a2736;
+}
+.ds-step-active .ds-step-badge {
+  background-color: var(--primary);
+  color: white;
+}
+.ds-step-active .ds-step-label {
+  color: var(--text);
+}
+
+.ds-step-completed {
+  border-color: var(--ok);
+  background-color: rgba(34, 197, 94, 0.08);
+}
+.ds-step-completed .ds-step-badge {
+  background-color: var(--ok);
+  color: #052e16;
+}
+.ds-step-completed .ds-step-label {
+  color: var(--text);
+}
+
+.ds-step-item.is-clickable {
+  cursor: pointer;
+}
+.ds-step-item.is-clickable:hover {
+  filter: brightness(1.1);
+}
+
+/* ==========================================================================
+   9. MODAL (COM VARIANTE CRÍTICA E NÚMERO GRANDE)
+   ========================================================================== */
+.ds-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-24);
+  z-index: 1000;
+}
+
+.ds-modal-card {
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-card);
+  max-width: 680px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: var(--shadow-modal);
+}
+
+.ds-modal-header {
+  padding: var(--space-24);
+  background-color: #243040;
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  border-bottom: 1.5px solid var(--border);
+}
+
+.ds-modal-critical .ds-modal-header {
+  background-color: var(--danger);
+  color: white;
+  border-bottom: none;
+}
+
+.ds-modal-title {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-h2);
+  color: var(--text);
+}
+
+.ds-modal-critical .ds-modal-title {
+  color: white;
+}
+
+.ds-modal-sub {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.ds-modal-critical .ds-modal-sub {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ds-modal-close-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 24px;
+  cursor: pointer;
+  padding: var(--space-8);
+}
+
+.ds-modal-body {
+  padding: var(--space-32) var(--space-24);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-16);
+}
+
+.ds-modal-highlight-box {
+  background-color: var(--danger-soft);
+  border: 2px solid var(--danger);
+  border-radius: var(--radius-card);
+  padding: var(--space-16) var(--space-32);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ds-modal-highlight-number {
+  font-size: var(--fs-number); /* 56px */
+  font-weight: var(--fw-number);
+  color: var(--danger);
+}
+
+.ds-modal-highlight-label {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ds-modal-sentence {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-muted);
+  max-width: 520px;
+}
+
+.ds-modal-footer {
+  padding: var(--space-24);
+  background-color: #151c23;
+  border-top: 1.5px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-16);
+}
+
+/* ==========================================================================
+   10. CHOICE CHIPS (OPÇÕES GRANDES DE TOQUE ÚNICO)
+   ========================================================================== */
+.ds-choice-chips-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  width: 100%;
+}
+
+.ds-choice-label {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.ds-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-16);
+}
+
+.ds-choice-card {
+  min-height: var(--touch-min); /* 64px */
+  padding: var(--space-16) var(--space-24);
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-press);
+}
+
+.ds-choice-card:hover {
+  background-color: var(--card-hover);
+  border-color: var(--primary-border);
+}
+
+.ds-choice-card:active {
+  transform: scale(0.98);
+}
+
+.ds-choice-card.is-selected {
+  border-color: var(--primary);
+  background-color: #1e2c3d;
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.ds-choice-title {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text);
+  display: block;
+}
+
+.ds-choice-desc {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.ds-choice-radio-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ds-choice-card.is-selected .ds-choice-radio-indicator {
+  border-color: var(--primary);
+  background-color: var(--primary);
+  color: white;
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   11. CHECKLIST ROW (LINHA >= 72PX DE TOQUE TOTAL)
+   ========================================================================== */
+.ds-checklist-row {
+  min-height: 72px; /* >= 72px */
+  padding: var(--space-16) var(--space-24);
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-card);
+  display: flex;
+  align-items: center;
+  gap: var(--space-24);
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--transition-press);
+}
+
+.ds-checklist-row:hover {
+  background-color: var(--card-hover);
+  border-color: var(--primary-border);
+}
+
+.ds-checklist-row:active {
+  transform: scale(0.99);
+}
+
+.ds-checklist-row.is-checked {
+  border-color: var(--ok);
+  background-color: rgba(34, 197, 94, 0.08);
+}
+
+.ds-checklist-box {
+  width: 36px;
+  height: 36px;
+  border: 2.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-press);
+}
+
+.ds-checklist-row.is-checked .ds-checklist-box {
+  border-color: var(--ok);
+  background-color: var(--ok);
+  color: #052e16;
+}
+
+.ds-checklist-check-icon {
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.ds-checklist-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-checklist-label {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ds-checklist-desc {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.ds-checklist-required {
+  color: var(--danger);
+  margin-left: 4px;
+}
+
+/* ==========================================================================
+   12. APP SHELL (TABLET 1280X800 SEM ROLAGEM)
+   ========================================================================== */
+.ds-app-shell {
+  width: 100%;
+  max-width: 1280px;
+  height: 800px; /* Alvo tablet exato */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.ds-shell-header {
+  height: 80px;
+  padding: 0 var(--space-24);
+  background-color: var(--card);
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.ds-shell-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.ds-shell-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background-color: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ds-shell-logo svg {
+  width: 26px;
+  height: 26px;
+}
+
+.ds-shell-app-name {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-h2);
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.ds-shell-sub-name {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.ds-shell-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.ds-shell-chips-group {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.ds-shell-operator-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: 6px var(--space-16);
+  background-color: #243040;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.ds-shell-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ds-shell-avatar-fallback {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.ds-shell-operator-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-shell-operator-name {
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.ds-shell-operator-role {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Conteúdo Central */
+.ds-shell-main {
+  flex: 1;
+  padding: var(--space-24);
+  overflow: hidden; /* SEM ROLAGEM */
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-shell-content-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Barra Inferior Fixa */
+.ds-shell-bottom-bar {
+  height: 112px;
+  padding: 0 var(--space-24);
+  background-color: var(--card);
+  border-top: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   13. KPI CARD E DATA TABLE (PAINEL GERENCIAL PC)
+   ========================================================================= */
+.ds-kpi-card {
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-16) var(--space-24);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.ds-kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ds-kpi-label {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.ds-kpi-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+}
+
+.ds-kpi-value {
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.ds-kpi-unit {
+  font-size: var(--fs-body);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.ds-kpi-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--fs-small);
+}
+
+.ds-kpi-badge {
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.ds-kpi-ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.ds-kpi-warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.ds-kpi-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.ds-kpi-change-text,
+.ds-kpi-meta-text {
+  color: var(--text-muted);
+}
+
+/* Data Table */
+.ds-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
+  background-color: var(--card);
+}
+
+.ds-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--fs-small);
+}
+
+.ds-data-table th {
+  background-color: #243040;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: var(--space-16);
+  border-bottom: 2px solid var(--border);
+}
+
+.ds-data-table td {
+  padding: var(--space-16);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.ds-data-table tbody tr:hover {
+  background-color: var(--card-hover);
+}
+
+.ds-table-empty {
+  text-align: center !important;
+  color: var(--text-muted);
+  padding: var(--space-32) !important;
+}

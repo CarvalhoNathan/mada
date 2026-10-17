@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design System — Gerenciador de Químicos (Tablet 1280x800)</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="design-system.css">
+  <style>
+    /* Estilos do Catálogo de Showcase */
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-family);
+      padding: var(--space-32);
+      line-height: 1.5;
+    }
+
+    .showcase-header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: var(--space-24);
+      margin-bottom: var(--space-48);
+    }
+
+    .showcase-title {
+      font-size: var(--fs-h1);
+      font-weight: var(--fw-h1);
+      color: var(--text);
+    }
+
+    .showcase-sub {
+      font-size: var(--fs-body);
+      color: var(--text-muted);
+      margin-top: var(--space-8);
+    }
+
+    .showcase-section {
+      background-color: #151c24;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: var(--space-32);
+      margin-bottom: var(--space-48);
+    }
+
+    .section-title {
+      font-size: var(--fs-h2);
+      font-weight: var(--fw-h2);
+      color: var(--primary);
+      margin-bottom: var(--space-8);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-desc {
+      font-size: var(--fs-small);
+      color: var(--text-muted);
+      margin-bottom: var(--space-24);
+    }
+
+    .components-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-24);
+      align-items: center;
+    }
+
+    .component-box {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+      min-width: 200px;
+    }
+
+    .component-caption {
+      font-size: var(--fs-small);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Cores swatch */
+    .color-swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: var(--space-16);
+    }
+
+    .swatch-card {
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: var(--card);
+    }
+
+    .swatch-color {
+      height: 70px;
+      display: flex;
+      align-items: flex-end;
+      padding: var(--space-8);
+      font-family: var(--font-mono);
+      font-size: var(--fs-small);
+      font-weight: 700;
+    }
+
+    .swatch-info {
+      padding: var(--space-16);
+    }
+
+    .swatch-name {
+      font-weight: 700;
+      font-size: var(--fs-small);
+      color: var(--text);
+    }
+
+    .swatch-role {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cabeçalho do Showcase -->
+  <header class="showcase-header">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <span class="ds-badge ds-badge-info">Design System v1.0</span>
+      <span class="ds-badge ds-badge-ok">Tablet-First • 1280x800</span>
+    </div>
+    <h1 class="showcase-title" style="margin-top: 12px;">Mada Marcenaria — Gerenciador de Químicos</h1>
+    <p class="showcase-sub">
+      Catálogo de Componentes e Tokens para Chão de Fábrica (Pintura e Acabamento Industrial).
+      Desenvolvido para operadores em pé, com luvas de proteção sob luz industrial.
+    </p>
+  </header>
+
+  <!-- ====================================================================
+       1. TOKENS DE CORES & SEMÂNTICA
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">1. Tokens de Cores & Semântica Estrita</h2>
+    <p class="section-desc">Regra inegociável: cada cor tem UM significado único. Âmbar e Vermelho NUNCA são botões de ação padrão.</p>
+
+    <div class="color-swatch-grid">
+      <div class="swatch-card">
+        <div class="swatch-color" style="background: #0F1419; color: white;">#0F1419</div>
+        <div class="swatch-info">
+          <div class="swatch-name">--bg</div>
+          <div class="swatch-role">Fundo geral da aplicação</div>
+        </div>
+      </div>
+
+      <div class="swatch-card">
+        <div class="swatch-color" style="background: #1B232C; color: white;">#1B232C</div>
+        <div class="swatch-info">
+          <div class="swatch-name">--card</div>
+          <div class="swatch-role">Cartões e superfícies</div>
+        </div>
+      </div>
+
+      <div class="swatch-card">
+        <div class="swatch-color" style="background: #3B82F6; color: white;">#3B82F6</div>
+        <div class="swatch-info">
+          <div class="swatch-name">--primary (Azul)</div>
+          <div class="swatch-role">Ação principal e navegação</div>
+        </div>
+      </div>
+
+      <div class="swatch-card">
+        <div class="swatch-color" style="background: #22C55E; color: black;">#22C55E</div>
+        <div class="swatch-info">
+          <div class="swatch-name">--ok (Verde)</div>
+          <div class="swatch-role">Sucesso, etapa concluída</div>
+        </div>
+      </div>
+
+      <div class="swatch-card">
+        <div class="swatch-color" style="background: #F59E0B; color: black;">#F59E0B</div>
+        <div class="swatch-info">
+          <div class="swatch-name">--warn (Âmbar)</div>
+          <div class="swatch-role">Atenção, validade próxima</div>
+        </div>
+      </div>
+
+      <div class="swatch-card">
+        <div class="swatch-color" style="background: #EF4444; color: white;">#EF4444</div>
+        <div class="swatch-info">
+          <div class="swatch-name">--danger (Vermelho)</div>
+          <div class="swatch-role">Erro, excesso, destrutivo</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       2. TIPOGRAFIA
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">2. Escala Tipográfica (Mínimo 16px)</h2>
+    <p class="section-desc">Inter / Atkinson Hyperlegible. Nada abaixo de 16px (--fs-small).</p>
+
+    <div style="display: flex; flex-direction: column; gap: var(--space-16);">
+      <div>
+        <span class="component-caption">--fs-number: 56px (Quantidades em ml/g, peso 700)</span>
+        <div style="font-size: var(--fs-number); font-weight: var(--fw-number); color: var(--text);">1.250 ml • 850 g</div>
+      </div>
+      <div>
+        <span class="component-caption">--fs-h1: 32px (Títulos de tela)</span>
+        <div style="font-size: var(--fs-h1); font-weight: var(--fw-h1);">Quem vai usar o sistema?</div>
+      </div>
+      <div>
+        <span class="component-caption">--fs-h2: 24px (Subtítulos e títulos de módulo)</span>
+        <div style="font-size: var(--fs-h2); font-weight: var(--fw-h2);">Gabarito da Fórmula Sayerlack</div>
+      </div>
+      <div>
+        <span class="component-caption">--fs-button: 24px (Texto de botões táteis)</span>
+        <div style="font-size: var(--fs-button); font-weight: var(--fw-button);">CONFIRMAR E PESAR NA BALANÇA</div>
+      </div>
+      <div>
+        <span class="component-caption">--fs-body: 20px (Instruções e rótulos de campos)</span>
+        <div style="font-size: var(--fs-body);">Misturar mecanicamente por 2 minutos antes do solvente.</div>
+      </div>
+      <div>
+        <span class="component-caption">--fs-small: 16px (Mínimo absoluto para notas de rodapé e chips)</span>
+        <div style="font-size: var(--fs-small); color: var(--text-muted);">Use seu próprio crachá. As operações ficam registradas no seu nome.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       3. BUTTON
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">3. Button (Alvos de Toque: 64px e 96px)</h2>
+    <p class="section-desc">Variantes: primary, secondary (ghost), danger, success. Feedback visual: scale .97 + brightness.</p>
+
+    <div class="components-grid">
+      <!-- Primary MD -->
+      <div class="component-box">
+        <span class="component-caption">primary • md (64px)</span>
+        <button class="ds-btn ds-btn-primary ds-btn-md">Continuar →</button>
+      </div>
+
+      <!-- Primary LG -->
+      <div class="component-box">
+        <span class="component-caption">primary • lg (96px)</span>
+        <button class="ds-btn ds-btn-primary ds-btn-lg">NOVA PREPARAÇÃO</button>
+      </div>
+
+      <!-- Secondary MD -->
+      <div class="component-box">
+        <span class="component-caption">secondary (ghost) • md (64px)</span>
+        <button class="ds-btn ds-btn-secondary ds-btn-md">← Voltar</button>
+      </div>
+
+      <!-- Success MD -->
+      <div class="component-box">
+        <span class="component-caption">success • md (64px)</span>
+        <button class="ds-btn ds-btn-success ds-btn-md">✓ Etapa Homologada</button>
+      </div>
+
+      <!-- Disabled -->
+      <div class="component-box">
+        <span class="component-caption">disabled</span>
+        <button class="ds-btn ds-btn-primary ds-btn-md" disabled>Desabilitado</button>
+      </div>
+
+      <!-- Loading -->
+      <div class="component-box">
+        <span class="component-caption">loading</span>
+        <button class="ds-btn ds-btn-primary ds-btn-md is-loading">
+          <span class="ds-btn-spinner"></span>
+        </button>
+      </div>
+
+      <!-- Danger com Hold to Confirm -->
+      <div class="component-box">
+        <span class="component-caption">danger • hold-to-confirm (1.5s)</span>
+        <button class="ds-btn ds-btn-danger ds-btn-md" id="btnHoldDemo" onmousedown="startHoldDemo(this)" onmouseup="cancelHoldDemo(this)" onmouseleave="cancelHoldDemo(this)">
+          <span class="ds-btn-hold-bar" id="holdBarDemo" style="width: 0%;"></span>
+          <span>Descartar Batelada</span>
+          <span class="ds-btn-hold-hint" id="holdHintDemo">(Segure 1.5s)</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       4. CARD
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">4. Card (Padrão, Selecionável e Alertas)</h2>
+    <p class="section-desc">Superfícies de informação e seleção tátil com luvas.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-24);">
+      <!-- Padrão -->
+      <div class="ds-card">
+        <span class="component-caption">Card Padrão</span>
+        <h3 style="font-size: var(--fs-h2); font-weight: 700; margin-top: 8px;">Base Laca PU</h3>
+        <p style="font-size: var(--fs-small); color: var(--text-muted); margin-top: 4px;">Cód: LB-2001 • Lote #SY-9942</p>
+      </div>
+
+      <!-- Selecionável Ativo -->
+      <div class="ds-card ds-card-selectable is-selected" onclick="this.classList.toggle('is-selected')">
+        <span class="ds-card-check is-active">✓</span>
+        <span class="component-caption">Card Selecionável (Toque p/ alternar)</span>
+        <h3 style="font-size: var(--fs-h2); font-weight: 700; margin-top: 8px;">Ana Souza</h3>
+        <p style="font-size: var(--fs-small); color: var(--text-muted); margin-top: 4px;">Operadora Líder PU</p>
+      </div>
+
+      <!-- Alerta Warn -->
+      <div class="ds-card ds-card-alert-warn">
+        <span class="ds-badge ds-badge-warn">Prioridade FEFO</span>
+        <h3 style="font-size: var(--fs-h2); font-weight: 700; margin-top: 8px; color: var(--warn);">Lata Aberta há 2 dias</h3>
+        <p style="font-size: var(--fs-small); color: var(--text-muted); margin-top: 4px;">Utilizar antes de abrir recipientes lacrados.</p>
+      </div>
+
+      <!-- Alerta Danger -->
+      <div class="ds-card ds-card-alert-danger">
+        <span class="ds-badge ds-badge-danger">Trava Crítica</span>
+        <h3 style="font-size: var(--fs-h2); font-weight: 700; margin-top: 8px; color: var(--danger);">Balança Descalibrada</h3>
+        <p style="font-size: var(--fs-small); color: var(--text-muted); margin-top: 4px;">Operação bloqueada na Cabine 04.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       5. NUMBER STEPPER
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">5. NumberStepper (Botões 64px + Valor 56px)</h2>
+    <p class="section-desc">Toque no número para digitar. Estado de "Acima da Tolerância" com banner de alerta em vermelho.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: var(--space-32);">
+      <!-- Normal -->
+      <div class="ds-stepper-container">
+        <label class="ds-stepper-label">Volume de Dosagem (Dentro da tolerância)</label>
+        <div class="ds-stepper-controls">
+          <button class="ds-stepper-btn" onclick="stepperChange('demoNormVal', -50)">−</button>
+          <div class="ds-stepper-value-display">
+            <span class="ds-stepper-number" id="demoNormVal">500</span>
+            <span class="ds-stepper-unit">ml</span>
+            <span class="ds-stepper-tap-hint">Toque p/ digitar</span>
+          </div>
+          <button class="ds-stepper-btn" onclick="stepperChange('demoNormVal', 50)">+</button>
+        </div>
+      </div>
+
+      <!-- Acima da Tolerância -->
+      <div class="ds-stepper-container is-over-tolerance">
+        <label class="ds-stepper-label">Catalisador PU (Acima da Tolerância)</label>
+        <div class="ds-stepper-controls">
+          <button class="ds-stepper-btn">−</button>
+          <div class="ds-stepper-value-display">
+            <span class="ds-stepper-number">450</span>
+            <span class="ds-stepper-unit">ml</span>
+            <span class="ds-stepper-tap-hint">Toque p/ digitar</span>
+          </div>
+          <button class="ds-stepper-btn">+</button>
+        </div>
+        <div class="ds-stepper-warning-banner" role="alert">
+          <span>⚠</span>
+          <span><strong>+200 ml</strong> acima do padrão homologado (250 ml)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       6. NUMERIC KEYPAD & PIN INPUT
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">6. NumericKeypad (Teclas 90px) & PinInput (Shake de Erro)</h2>
+    <p class="section-desc">Teclado superdimensionado para digitação imediata com luvas. Teste clicando nas teclas abaixo.</p>
+
+    <div style="display: flex; gap: var(--space-48); flex-wrap: wrap; align-items: flex-start;">
+      <!-- PinInput e Teclado Integrados -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: var(--space-24);">
+        <div class="ds-pin-container" id="demoPinContainer">
+          <span class="ds-pin-label">PIN do Operador</span>
+          <div class="ds-pin-slots-row">
+            <div class="ds-pin-slot" id="pinSlot0"><span class="ds-pin-dot"></span></div>
+            <div class="ds-pin-slot" id="pinSlot1"><span class="ds-pin-dot"></span></div>
+            <div class="ds-pin-slot" id="pinSlot2"><span class="ds-pin-dot"></span></div>
+            <div class="ds-pin-slot" id="pinSlot3"><span class="ds-pin-dot"></span></div>
+          </div>
+          <div class="ds-pin-status-message" id="demoPinStatus">0 de 4 dígitos inseridos</div>
+        </div>
+
+        <button class="ds-btn ds-btn-secondary ds-btn-md" onclick="triggerPinShake()">
+          ⚡ Simular Erro de PIN (Shake)
+        </button>
+      </div>
+
+      <!-- Teclado Numérico 90px -->
+      <div class="ds-numeric-keypad">
+        <div class="ds-keypad-grid">
+          <button class="ds-keypad-btn" onclick="pressDemoPin('1')">1</button>
+          <button class="ds-keypad-btn" onclick="pressDemoPin('2')">2</button>
+          <button class="ds-keypad-btn" onclick="pressDemoPin('3')">3</button>
+          <button class="ds-keypad-btn" onclick="pressDemoPin('4')">4</button>
+          <button class="ds-keypad-btn" onclick="pressDemoPin('5')">5</button>
+          <button class="ds-keypad-btn" onclick="pressDemoPin('6')">6</button>
+          <button class="ds-keypad-btn" onclick="pressDemoPin('7')">7</button>
+          <button class="ds-keypad-btn" onclick="pressDemoPin('8')">8</button>
+          <button class="ds-keypad-btn" onclick="pressDemoPin('9')">9</button>
+          <button class="ds-keypad-btn ds-keypad-action" onclick="clearDemoPin()">Limpar</button>
+          <button class="ds-keypad-btn" onclick="pressDemoPin('0')">0</button>
+          <button class="ds-keypad-btn ds-keypad-action" onclick="backspaceDemoPin()">⌫</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       7. STATUS BANNER
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">7. StatusBanner (Faixa Inteira no Topo)</h2>
+    <p class="section-desc">Utilizado em estados críticos do galpão industrial.</p>
+
+    <div style="display: flex; flex-direction: column; gap: var(--space-16);">
+      <!-- Danger: Sem Wi-Fi -->
+      <div class="ds-status-banner ds-status-banner-danger">
+        <div class="ds-status-banner-content">
+          <span class="ds-status-banner-icon">⚡</span>
+          <div class="ds-status-banner-text">
+            <strong class="ds-status-banner-title">Sem Wi-Fi / Sem Conexão com Servidor</strong>
+            <span class="ds-status-banner-desc">Operações de salvamento desabilitadas para prevenir divergência.</span>
+          </div>
+        </div>
+        <button class="ds-btn ds-btn-secondary ds-btn-md" style="height: 44px; min-height: 44px; font-size: 16px;">Tentar Reconectar</button>
+      </div>
+
+      <!-- Warn: FEFO -->
+      <div class="ds-status-banner ds-status-banner-warn">
+        <div class="ds-status-banner-content">
+          <span class="ds-status-banner-icon">⚠</span>
+          <div class="ds-status-banner-text">
+            <strong class="ds-status-banner-title">Atenção: 3 latas de Verniz PU vencem esta semana</strong>
+            <span class="ds-status-banner-desc">Priorize o uso nas peças da esteira atual.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info: Local Node -->
+      <div class="ds-status-banner ds-status-banner-info">
+        <div class="ds-status-banner-content">
+          <span class="ds-status-banner-icon">ℹ</span>
+          <div class="ds-status-banner-text">
+            <strong class="ds-status-banner-title">Servidor Local Conectado</strong>
+            <span class="ds-status-banner-desc">Terminal da Cabine 01 sincronizado em tempo real.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       8. BADGE / CHIP
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">8. Badge / Chip (Texto >= 16px)</h2>
+    <p class="section-desc">Semântica por cor + ícone obrigatório para contraste e acessibilidade.</p>
+
+    <div class="components-grid">
+      <span class="ds-badge ds-badge-ok">✓ Homologado</span>
+      <span class="ds-badge ds-badge-warn">⚠ Validade Próxima</span>
+      <span class="ds-badge ds-badge-danger">✕ Sobredose Detectada</span>
+      <span class="ds-badge ds-badge-info">ℹ Terminal 01 Ativo</span>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       9. STEP INDICATOR
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">9. StepIndicator</h2>
+    <p class="section-desc">Estados: Concluída (verde + check), Ativa (azul), Pendente (cinza).</p>
+
+    <nav class="ds-step-indicator">
+      <ol class="ds-step-list">
+        <li class="ds-step-item ds-step-completed">
+          <div class="ds-step-badge">✓</div>
+          <div class="ds-step-text">
+            <span class="ds-step-label">1. Identificar OS & Peça</span>
+            <span class="ds-step-sub">OS #8841 (Cozinha Gourmet)</span>
+          </div>
+        </li>
+
+        <li class="ds-step-item ds-step-active">
+          <div class="ds-step-badge">2</div>
+          <div class="ds-step-text">
+            <span class="ds-step-label">2. Receita & Calculadora</span>
+            <span class="ds-step-sub">Etapa atual</span>
+          </div>
+        </li>
+
+        <li class="ds-step-item">
+          <div class="ds-step-badge">3</div>
+          <div class="ds-step-text">
+            <span class="ds-step-label">3. Dosagem & Baixa</span>
+            <span class="ds-step-sub">Aguardando balança</span>
+          </div>
+        </li>
+      </ol>
+    </nav>
+  </section>
+
+  <!-- ====================================================================
+       10. CHOICE CHIPS & CHECKLIST ROW
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">10. ChoiceChips & ChecklistRow (Toque Único)</h2>
+    <p class="section-desc">Regra de ouro: NENHUMA opção vem pré-selecionada. O operador precisa tocar com consciência.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: var(--space-32);">
+      <!-- Choice Chips -->
+      <div class="ds-choice-chips-container">
+        <label class="ds-choice-label">Motivo da Justificativa (Sem pré-seleção):</label>
+        <div class="ds-choice-grid">
+          <div class="ds-choice-card" onclick="toggleChoiceChip(this)">
+            <div class="ds-choice-left">
+              <span class="ds-choice-title">Caiu no chão</span>
+              <span class="ds-choice-desc">Derramamento acidental</span>
+            </div>
+            <div class="ds-choice-radio-indicator"></div>
+          </div>
+
+          <div class="ds-choice-card" onclick="toggleChoiceChip(this)">
+            <div class="ds-choice-left">
+              <span class="ds-choice-title">Compensação Térmica</span>
+              <span class="ds-choice-desc">&gt; 32°C no galpão</span>
+            </div>
+            <div class="ds-choice-radio-indicator"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checklist Rows -->
+      <div style="display: flex; flex-direction: column; gap: var(--space-16);">
+        <label class="ds-choice-label">Checklist de Integridade Química (>= 72px):</label>
+
+        <div class="ds-checklist-row" onclick="toggleChecklist(this)">
+          <div class="ds-checklist-box"></div>
+          <div class="ds-checklist-content">
+            <span class="ds-checklist-label">Sem contaminação com catalisador</span>
+            <span class="ds-checklist-desc">Frasco isolado e livre de agentes de cura.</span>
+          </div>
+          <div class="ds-checklist-status-badge">
+            <span class="ds-badge ds-badge-warn">Pendente</span>
+          </div>
+        </div>
+
+        <div class="ds-checklist-row is-checked" onclick="toggleChecklist(this)">
+          <div class="ds-checklist-box">
+            <span class="ds-checklist-check-icon">✓</span>
+          </div>
+          <div class="ds-checklist-content">
+            <span class="ds-checklist-label">Vedação hermética garantida</span>
+            <span class="ds-checklist-desc">Tampa original rosqueada até o travamento.</span>
+          </div>
+          <div class="ds-checklist-status-badge">
+            <span class="ds-badge ds-badge-ok">Validado</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       11. MODAL CRÍTICO
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">11. Modal de Intertravamento Crítico</h2>
+    <p class="section-desc">Cabeçalho em vermelho, valor numérico gigante (56px) e frase objetiva de chão de fábrica.</p>
+
+    <button class="ds-btn ds-btn-danger ds-btn-md" onclick="document.getElementById('demoModal').style.display='flex'">
+      🚨 Abrir Demonstração do Modal Crítico
+    </button>
+  </section>
+
+  <!-- ====================================================================
+       12. APP SHELL PREVIEW (1280X800)
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">12. AppShell (Preview Reduzido do Formato 1280x800)</h2>
+    <p class="section-desc">Cabeçalho fixo + Conteúdo sem rolagem + Barra inferior fixa com navegação.</p>
+
+    <div class="ds-app-shell" style="height: 520px; box-shadow: var(--shadow-subtle);">
+      <!-- Header -->
+      <header class="ds-shell-header">
+        <div class="ds-shell-brand">
+          <div class="ds-shell-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 2v7.31L4.14 20a2 2 0 0 0 1.72 3h12.28a2 2 0 0 0 1.72-3L14 9.31V2"/></svg>
+          </div>
+          <div class="ds-shell-titles">
+            <h1 class="ds-shell-app-name">Gerenciador de Químicos</h1>
+            <span class="ds-shell-sub-name">MADA MARCENARIA</span>
+          </div>
+        </div>
+
+        <div class="ds-shell-header-right">
+          <span class="ds-badge ds-badge-ok"><span class="ds-dot"></span> Wi-Fi OK</span>
+          <div class="ds-shell-operator-card">
+            <div class="ds-shell-avatar-fallback">A</div>
+            <div class="ds-shell-operator-meta">
+              <span class="ds-shell-operator-name">Ana Souza</span>
+              <span class="ds-shell-operator-role">Pintora Líder</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Body -->
+      <main class="ds-shell-main" style="background-color: var(--bg);">
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
+          <h2 style="font-size: var(--fs-h1); font-weight: 700;">Área Central de Conteúdo</h2>
+          <p style="font-size: var(--fs-body); color: var(--text-muted); margin-top: 8px;">
+            Dimensionada para caber rigorosamente sem rolagem em telas 1280x800.
+          </p>
+        </div>
+      </main>
+
+      <!-- Barra Inferior -->
+      <footer class="ds-shell-bottom-bar">
+        <button class="ds-btn ds-btn-secondary ds-btn-md">← Voltar</button>
+        <button class="ds-btn ds-btn-primary ds-btn-lg">Confirmar e Continuar →</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       13. KPI CARD & DATA TABLE (PAINEL GERENCIAL PC)
+       ==================================================================== -->
+  <section class="showcase-section">
+    <h2 class="section-title">13. KpiCard & DataTable (Versão Densa para PC)</h2>
+    <p class="section-desc">Utilizado no centro de controle desktop pelo gestor Fábio.</p>
+
+    <!-- KPIs -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-16); margin-bottom: var(--space-24);">
+      <div class="ds-kpi-card">
+        <div class="ds-kpi-top">
+          <span class="ds-kpi-label">Consumo Total PU</span>
+        </div>
+        <div class="ds-kpi-value-row">
+          <span class="ds-kpi-value">1.240</span>
+          <span class="ds-kpi-unit">Litros</span>
+        </div>
+        <div class="ds-kpi-footer">
+          <span class="ds-kpi-badge ds-kpi-ok">+3.2%</span>
+          <span class="ds-kpi-meta-text">Meta: 1.180 L</span>
+        </div>
+      </div>
+
+      <div class="ds-kpi-card">
+        <div class="ds-kpi-top">
+          <span class="ds-kpi-label">Reintegração de Sobras</span>
+        </div>
+        <div class="ds-kpi-value-row">
+          <span class="ds-kpi-value" style="color: var(--ok);">92.4%</span>
+        </div>
+        <div class="ds-kpi-footer">
+          <span class="ds-kpi-change-text">148 Litros recuperados</span>
+        </div>
+      </div>
+
+      <div class="ds-kpi-card">
+        <div class="ds-kpi-top">
+          <span class="ds-kpi-label">Travas Anti-Erro</span>
+        </div>
+        <div class="ds-kpi-value-row">
+          <span class="ds-kpi-value" style="color: var(--danger);">03</span>
+          <span class="ds-kpi-unit">Casos</span>
+        </div>
+        <div class="ds-kpi-footer">
+          <span class="ds-kpi-badge ds-kpi-danger">Bloqueios</span>
+          <span class="ds-kpi-change-text">2 sobredoses contidas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="ds-table-wrapper">
+      <table class="ds-data-table">
+        <thead>
+          <tr>
+            <th>ORDEM DE SERVIÇO</th>
+            <th>CLIENTE / PROJETO</th>
+            <th>PREVISTO</th>
+            <th>REALIZADO</th>
+            <th>DESVIO</th>
+            <th>STATUS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>#OS-8841</strong></td>
+            <td>João Mendonça • Cozinha Gourmet</td>
+            <td>1.000 ml</td>
+            <td>1.050 ml</td>
+            <td>+5.0%</td>
+            <td><span class="ds-badge ds-badge-ok">Concluída</span></td>
+          </tr>
+          <tr>
+            <td><strong>#OS-8843</strong></td>
+            <td>Alphaville • Suíte Master</td>
+            <td>2.400 ml</td>
+            <td>2.380 ml</td>
+            <td>-0.8%</td>
+            <td><span class="ds-badge ds-badge-info">Em Cabine</span></td>
+          </tr>
+          <tr>
+            <td><strong>#OS-8840</strong></td>
+            <td>Ed. Horizonte • Painéis Ripados</td>
+            <td>5.000 ml</td>
+            <td>5.680 ml</td>
+            <td style="color: var(--danger); font-weight: 700;">+13.6%</td>
+            <td><span class="ds-badge ds-badge-danger">Refugo Contido</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       MODAL DE DEMONSTRAÇÃO
+       ==================================================================== -->
+  <div id="demoModal" class="ds-modal-backdrop" style="display: none;">
+    <div class="ds-modal-card ds-modal-critical">
+      <header class="ds-modal-header">
+        <div class="ds-modal-header-icon">⚡</div>
+        <div class="ds-modal-header-titles">
+          <h2 class="ds-modal-title">TRAVA DE SEGURANÇA: ALERTA ANTI-ERRO!</h2>
+          <p class="ds-modal-sub">Intertravamento químico de segurança na balança</p>
+        </div>
+        <button class="ds-modal-close-btn" onclick="document.getElementById('demoModal').style.display='none'">✕</button>
+      </header>
+
+      <div class="ds-modal-body">
+        <div class="ds-modal-highlight-box">
+          <span class="ds-modal-highlight-number">+200 ml</span>
+          <span class="ds-modal-highlight-label">SOBREDOSE DE CATALISADOR PU DETECTADA</span>
+        </div>
+
+        <p class="ds-modal-sentence">
+          A quantidade pesada ultrapassa a tolerância da fórmula homologada e causará gelamento em 10 minutos com trincas na peça.
+        </p>
+      </div>
+
+      <footer class="ds-modal-footer">
+        <button class="ds-btn ds-btn-secondary ds-btn-md" onclick="document.getElementById('demoModal').style.display='none'">
+          Descartar e Repesar
+        </button>
+        <button class="ds-btn ds-btn-danger ds-btn-md" onclick="document.getElementById('demoModal').style.display='none'">
+          Confirmar Desperdício
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // Scripts de demonstração do Showcase
+    let currentPin = '';
+
+    function pressDemoPin(digit) {
+      if (currentPin.length < 4) {
+        currentPin += digit;
+        updateDemoPin();
+      }
+    }
+
+    function clearDemoPin() {
+      currentPin = '';
+      updateDemoPin();
+    }
+
+    function backspaceDemoPin() {
+      currentPin = currentPin.slice(0, -1);
+      updateDemoPin();
+    }
+
+    function updateDemoPin() {
+      for (let i = 0; i < 4; i++) {
+        const slot = document.getElementById(`pinSlot${i}`);
+        if (i < currentPin.length) {
+          slot.classList.add('is-filled');
+        } else {
+          slot.classList.remove('is-filled');
+        }
+      }
+      const status = document.getElementById('demoPinStatus');
+      status.textContent = currentPin.length === 4 
+        ? '✓ 4 de 4 dígitos inseridos' 
+        : `${currentPin.length} de 4 dígitos inseridos`;
+      document.getElementById('demoPinContainer').classList.remove('is-error');
+    }
+
+    function triggerPinShake() {
+      const container = document.getElementById('demoPinContainer');
+      container.classList.add('is-error');
+      document.getElementById('demoPinStatus').innerHTML = '<span style="color: var(--danger)">⚠ PIN incorreto. Tente novamente.</span>';
+      setTimeout(() => {
+        container.classList.remove('is-error');
+      }, 500);
+    }
+
+    function stepperChange(id, delta) {
+      const el = document.getElementById(id);
+      let val = parseInt(el.textContent, 10) + delta;
+      if (val < 0) val = 0;
+      el.textContent = val;
+    }
+
+    let holdTimer = null;
+    function startHoldDemo(btn) {
+      const bar = document.getElementById('holdBarDemo');
+      const hint = document.getElementById('holdHintDemo');
+      let progress = 0;
+      holdTimer = setInterval(() => {
+        progress += 4;
+        bar.style.width = progress + '%';
+        hint.textContent = `(${Math.min(100, Math.round(progress))}%)`;
+        if (progress >= 100) {
+          clearInterval(holdTimer);
+          hint.textContent = '✓ CONFIRMADO!';
+          setTimeout(() => {
+            bar.style.width = '0%';
+            hint.textContent = '(Segure 1.5s)';
+          }, 1500);
+        }
+      }, 60);
+    }
+
+    function cancelHoldDemo(btn) {
+      if (holdTimer) clearInterval(holdTimer);
+      document.getElementById('holdBarDemo').style.width = '0%';
+      document.getElementById('holdHintDemo').textContent = '(Segure 1.5s)';
+    }
+
+    function toggleChoiceChip(card) {
+      const parent = card.parentElement;
+      parent.querySelectorAll('.ds-choice-card').forEach(c => {
+        c.classList.remove('is-selected');
+        c.querySelector('.ds-choice-radio-indicator').textContent = '';
+      });
+      card.classList.add('is-selected');
+      card.querySelector('.ds-choice-radio-indicator').textContent = '✓';
+    }
+
+    function toggleChecklist(row) {
+      row.classList.toggle('is-checked');
+      const box = row.querySelector('.ds-checklist-box');
+      const badge = row.querySelector('.ds-checklist-status-badge');
+      if (row.classList.contains('is-checked')) {
+        box.innerHTML = '<span class="ds-checklist-check-icon">✓</span>';
+        badge.innerHTML = '<span class="ds-badge ds-badge-ok">Validado</span>';
+      } else {
+        box.innerHTML = '';
+        badge.innerHTML = '<span class="ds-badge ds-badge-warn">Pendente</span>';
+      }
+    }
+  </script>
+</body>
+</html>
