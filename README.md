@@ -6,6 +6,7 @@
 ---
 
 ## 📌 Sumário
+- [⚡ Sprint Relâmpago — MVP Funcional (17/10 a 19/10)](#-sprint-relâmpago--mvp-funcional-1710-a-1910)
 - [1. Contexto & Apresentação da Empresa](#1-contexto--apresentação-da-empresa)
 - [2. O Problema & Diagnóstico](#2-o-problema--diagnóstico)
 - [3. A Solução Proposta](#3-a-solução-proposta)
@@ -23,6 +24,42 @@
 
 ---
 
+## ⚡ Sprint Relâmpago — MVP Funcional (17/10 a 19/10)
+
+> 🎯 **Meta Imediata:** Apresentar uma **versão funcional e interativa** para Fábio (proprietário da Mada Marcenaria) na **segunda-feira (19/10/2026)**.  
+> O objetivo desta sprint de 48 horas em ritmo acelerado é demonstrar o fluxo de ponta a ponta rodando em tablet: tirar as receitas da "cabeça dos operadores", automatizar os cálculos químicos e comprovar o controle de sobras com barreira anti-erro.
+
+### 📋 Checklist de Telas do MVP (Ordem de Execução Rush):
+
+- [x] **1. Login Rápido & Seleção de Operador**
+  - [x] Cards táteis dos operadores (Pintor A, Pintor B, Encarregado)
+  - [x] Teclado numérico PIN de 4 dígitos simples e direto
+  - [x] Indicador visual de status de turno e conexão Wi-Fi
+- [x] **2. Dashboard Principal do Chão de Fábrica**
+  - [x] 3 botões gigantes de toque com luvas: `NOVA PREPARAÇÃO`, `DEVOLVER SOBRAS`, `ESCANEAR QR CODE`
+  - [x] Widget de alerta de tintas abertas prioritárias (regra FEFO por validade)
+- [x] **3. Identificação da Ordem de Serviço (OS)**
+  - [x] Rastreabilidade em 3 níveis: Cliente > Projeto > Ambiente (ex: *Residência Alphaville > Armários Master > Laca PU*)
+  - [x] Simulação de escaneamento de QR Code da ficha impressa
+- [x] **4. Ficha Técnica & Calculadora Dinâmica de Mistura (O Gabarito)**
+  - [x] Seleção da receita/acabamento homologado ([Sayerlack Sayersystem](https://www.sayerlack.com.br/cartela_sayersystem.pdf))
+  - [x] Input do volume total de acabamento desejado (ex: 500 ml, 1.000 ml, 2.000 ml)
+  - [x] Recálculo dinâmico e instantâneo das 4 frações químicas:
+    - **Base PU** (ml)
+    - **Catálise (Endurecedor)** (ml)
+    - **Diluidor** (ml)
+    - **Retardador** (ml)
+  - [x] Exibição da marca correta a retirar da prateleira
+- [x] **5. Check-out de Consumo com Barreira Anti-Erro ("Sistema Anti-Burro")**
+  - [x] Controles de pesagem com botões táteis ampliados (`+` e `-`)
+  - [x] **🚨 Modal Anti-Erro (Prevenção Ativa):** Bloqueio com alerta em vermelho caso a quantidade retirada exceda a receita, exigindo confirmação de desperdício
+- [x] **6. Devolução de Sobras & Etiquetagem de Saldo**
+  - [x] Registro do volume restante que volta ao almoxarifado (ex: lata de 1L com 400 ml de sobra)
+  - [x] Emissão simulada da nova etiqueta com QR Code para identificação do frasco aberto
+- [x] **7. Painel do Gestor (Visão do Fábio)**
+  - [x] Telemetria ao vivo das Cabines 01 a 04, taxa de reintegração de sobras (92,4%) e custo previsto vs. realizado
+
+---
 
 ## 1. Contexto & Apresentação da Empresa
 
