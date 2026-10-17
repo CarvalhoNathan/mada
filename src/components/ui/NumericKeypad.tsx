@@ -1,7 +1,8 @@
 import React from 'react';
 
 export interface NumericKeypadProps {
-  onDigit: (digit: string) => void;
+  onDigit?: (digit: string) => void;
+  onKeyPress?: (digit: string) => void;
   onBackspace: () => void;
   onClear: () => void;
   onConfirm?: () => void;
@@ -16,12 +17,14 @@ export interface NumericKeypadProps {
  */
 export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onDigit,
+  onKeyPress,
   onBackspace,
   onClear,
   onConfirm,
   confirmLabel = 'Confirmar',
   disabled = false,
 }) => {
+  const handleDigit = onDigit || onKeyPress || (() => {});
   const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
   return (
@@ -32,7 +35,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
             key={num}
             type="button"
             className="ds-keypad-btn ds-keypad-digit"
-            onClick={() => onDigit(num)}
+            onClick={() => handleDigit(num)}
             disabled={disabled}
           >
             {num}
@@ -52,7 +55,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
         <button
           type="button"
           className="ds-keypad-btn ds-keypad-digit"
-          onClick={() => onDigit('0')}
+          onClick={() => handleDigit('0')}
           disabled={disabled}
         >
           0

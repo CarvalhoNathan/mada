@@ -45,7 +45,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       <header className="ds-shell-header">
         <div className="ds-shell-brand">
           <div className="ds-shell-logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10 2v7.31L4.14 20a2 2 0 0 0 1.72 3h12.28a2 2 0 0 0 1.72-3L14 9.31V2"/>
               <path d="M8.5 2h7"/>
               <path d="M7 16h10"/>
