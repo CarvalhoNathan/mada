@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
 import { Operator } from '../types';
-import { NumericKeypad } from '../components/ui/NumericKeypad';
-import { PinInput } from '../components/ui/PinInput';
-import { Button } from '../components/ui/Button';
+import { PIN_ERRO_SIMULADO } from '../data';
 
 interface ScreenAuthProps {
   operators: Operator[];
   selectedOperator: Operator;
   onSelectOperator: (op: Operator) => void;
   onSuccessAuth: () => void;
-  isOffline: boolean;
   showToast: (msg: string, type?: 'info' | 'success' | 'warn' | 'danger') => void;
+  isOffline?: boolean;
+}
+
+const PIN_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'];
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(' ').filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
 }
 
 export const ScreenAuth: React.FC<ScreenAuthProps> = ({
@@ -18,21 +26,24 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   selectedOperator,
   onSelectOperator,
   onSuccessAuth,
-  isOffline,
   showToast,
+  isOffline = false,
 }) => {
-  const [pinEntered, setPinEntered] = useState('');
-  const [hasError, setHasError] = useState(false);
+  const [pinEntered, setPinEntered] = useState<string>('');
+  const [hasError, setHasError] = useState<boolean>(false);
 
-  const handleKeyPress = (char: string) => {
-    if (isOffline) {
-      showToast('Sistema offline. Entrada bloqueada.', 'danger');
+  const handleKeyPress = (key: string) => {
+    if (key === 'C') {
+      handleClear();
       return;
     }
-    if (hasError) setHasError(false);
-
+    if (key === '⌫') {
+      handleBackspace();
+      return;
+    }
     if (pinEntered.length < 4) {
-      setPinEntered(prev => prev + char);
+      if (hasError) setHasError(false);
+      setPinEntered(prev => prev + key);
     }
   };
 
@@ -48,14 +59,14 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
 
   const handleSubmit = () => {
     if (isOffline) {
-      showToast('Ação indisponível: Servidor local offline.', 'danger');
+      showToast('Ação indisponível: Sistema offline.', 'danger');
       return;
     }
     if (pinEntered.length < 4) {
       showToast('Por favor, digite os 4 dígitos do seu PIN.', 'warn');
       return;
     }
-    if (pinEntered === '0000') {
+    if (pinEntered === PIN_ERRO_SIMULADO) {
       setHasError(true);
       setTimeout(() => {
         setPinEntered('');
@@ -75,7 +86,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           <div className="section-header-compact">
             <div className="section-tag">01 / IDENTIFICAÇÃO</div>
             <h2 className="section-title">Quem vai usar o sistema?</h2>
-            <p className="section-desc">Toque na sua foto e digite seu PIN de 4 dígitos para entrar.</p>
+            <p className="section-desc">Toque no seu perfil e digite seu PIN de 4 dígitos para entrar.</p>
           </div>
 
           <div className="operators-grid">
@@ -93,7 +104,22 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                   }}
                 >
                   <span className="operator-check-badge">✓</span>
-                  <img src={op.avatar} alt={opName} className="operator-photo" />
+                  <div
+                    className="operator-photo"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '26px',
+                      fontWeight: 800,
+                      color: 'var(--primary)',
+                      backgroundColor: 'var(--card-hover)',
+                      userSelect: 'none',
+                    }}
+                    aria-label={`Iniciais de ${opName}`}
+                  >
+                    {getInitials(opName)}
+                  </div>
                   <div className="operator-card-body">
                     <span className="operator-name">{opName}</span>
                     <span className="operator-status-label">
@@ -134,34 +160,48 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                 </svg>
               </div>
             </div>
-            <p className="pin-sub">Digite seu código de 4 dígitos no teclado tátil.</p>
 
-            <PinInput
-              length={4}
-              value={pinEntered}
-              hasError={hasError}
-              errorMessage="PIN inválido. Tente novamente."
-            />
+            {/* Display de 4 Dígitos */}
+            <div className={`pin-display-dots ${hasError ? 'error-shake' : ''}`}>
+              {[0, 1, 2, 3].map((idx) => {
+                const filled = pinEntered.length > idx;
+                return (
+                  <div key={idx} className={`pin-dot ${filled ? 'filled' : ''}`}>
+                    {filled ? '•' : ''}
+                  </div>
+                );
+              })}
+            </div>
+
+            {hasError && (
+              <div className="pin-error-text">
+                PIN incorreto. Tente novamente ou use 1234.
+              </div>
+            )}
           </div>
 
-          <NumericKeypad
-            onDigit={handleKeyPress}
-            onKeyPress={handleKeyPress}
-            onClear={handleClear}
-            onBackspace={handleBackspace}
-            disabled={isOffline}
-          />
+          {/* Teclado Numérico (Botões grandes táteis) */}
+          <div className="keypad-grid">
+            {PIN_KEYS.map((k) => (
+              <button
+                key={k}
+                type="button"
+                className={`keypad-btn ${k === 'C' ? 'btn-clear' : ''} ${k === '⌫' ? 'btn-back' : ''}`}
+                onClick={() => handleKeyPress(k)}
+              >
+                {k}
+              </button>
+            ))}
+          </div>
 
-          <Button
-            variant="primary"
-            size="md"
+          <button
+            type="button"
+            className="btn-enter"
             onClick={handleSubmit}
-            disabled={isOffline || pinEntered.length < 4}
-            className="w-full"
-            style={{ width: '100%', fontSize: '20px' }}
+            disabled={pinEntered.length < 4 || isOffline}
           >
-            Entrar no sistema →
-          </Button>
+            Entrar no Sistema →
+          </button>
         </div>
       </div>
     </div>

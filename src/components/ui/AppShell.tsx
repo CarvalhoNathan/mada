@@ -64,7 +64,7 @@ export const AppShell: React.FC<AppShellProps> = ({
               <span className="ds-dot" /> {isWifiConnected ? 'Wi-Fi OK' : 'Sem Wi-Fi'}
             </span>
             <span className={`ds-badge ${isServerLocal ? 'ds-badge-ok' : 'ds-badge-danger'}`}>
-              <span className="ds-dot" /> {isServerLocal ? 'Servidor Local OK' : 'Offline'}
+              <span className="ds-dot" /> {isServerLocal ? 'Sistema OK' : 'Offline'}
             </span>
           </div>
 

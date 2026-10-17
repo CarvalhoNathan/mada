@@ -2,8 +2,14 @@ import React from 'react';
 import { RecipeState } from '../types';
 import { StepIndicator } from '../components/ui/StepIndicator';
 import { Button } from '../components/ui/Button';
-
 import { calcularFracoesMistura } from '../domain/mixture';
+import { ordenarLotesFEFO } from '../domain/fefo';
+import {
+  MOCK_RECEITAS,
+  MOCK_MARCAS,
+  MOCK_LOTES,
+  MOCK_ORDENS_SERVICO,
+} from '../data';
 
 interface ScreenRecipeProps {
   recipe: RecipeState;
@@ -28,31 +34,21 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
 }) => {
   const vol = recipe.totalVolume;
 
-  // Cálculo das frações químicas via função pura de domínio
-  const itensParaCalculo = [
-    { papel: 'base', produtoNome: '1º Base Laca Branca PU', codigoProduto: 'LB-2001', proporcao: recipe.proportions.base, densidade: recipe.densities.base },
-    { papel: 'catalisador', produtoNome: '2º Catalisador PU Médio', codigoProduto: 'CT-304', proporcao: recipe.proportions.catalisador, densidade: recipe.densities.catalisador },
-    { papel: 'diluidor', produtoNome: '3º Diluidor Poliuretano 8000', codigoProduto: 'DL-800', proporcao: recipe.proportions.diluidor, densidade: recipe.densities.diluidor },
-    { papel: 'retardador', produtoNome: '4º Aditivo Retardador', codigoProduto: 'RT-100', proporcao: recipe.proportions.retardador, densidade: recipe.densities.retardador },
-  ];
+  // Receita, marca e OS obtidos dos mocks
+  const receita = MOCK_RECEITAS[0];
+  const marca = MOCK_MARCAS.find((m) => m.id === receita.marcaId) || { nome: receita.marcaNome };
+  const osAtiva = MOCK_ORDENS_SERVICO[0];
+
+  // Cálculo das frações químicas via função pura de domínio a partir dos itens da receita mockada
+  const itensParaCalculo = receita.itens.map((item) => ({
+    papel: item.papel,
+    produtoNome: item.produtoNome,
+    codigoProduto: item.codigoProduto,
+    proporcao: item.proporcao,
+    densidade: item.densidade,
+  }));
 
   const fracoes = calcularFracoesMistura(itensParaCalculo, vol);
-  const fBase = fracoes[0];
-  const fCat = fracoes[1];
-  const fDil = fracoes[2];
-  const fRet = fracoes[3];
-
-  const volBase = fBase.volumeMl;
-  const weightBase = fBase.pesoGramas;
-
-  const volCat = fCat.volumeMl;
-  const weightCat = fCat.pesoGramas;
-
-  const volDil = fDil.volumeMl;
-  const weightDil = fDil.pesoGramas;
-
-  const volRet = fRet.volumeMl;
-  const weightRet = fRet.pesoGramas;
 
   return (
     <>
@@ -60,7 +56,7 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
         {/* Indicador de Etapas */}
         <StepIndicator
           steps={[
-            { id: 1, label: '1. OS #8841 (Cozinha Gourmet)', status: 'completed' },
+            { id: 1, label: `1. ${osAtiva.numero} (${osAtiva.ambienteNome})`, status: 'completed' },
             { id: 2, label: '2. Receita & Calculadora', status: 'active' },
             { id: 3, label: '3. Dosagem & Baixa', status: 'pending' },
           ]}
@@ -69,11 +65,11 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
           }}
         />
 
-        {/* Barra de Título da Receita */}
+        {/* Barra de Título da Receita carregada dos mocks */}
         <div className="recipe-header-bar">
           <div className="recipe-header-info">
-            <h2>LACA BRANCA FOSCA PU 20 GLOSS</h2>
-            <p>Fórmula homologada: FORM-PU-BL20 • Acabamento de Alto Padrão</p>
+            <h2>{receita.nome}</h2>
+            <p>{receita.descricao}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button
@@ -93,7 +89,7 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
               <span>⚠️</span> Simular excesso (+200 ml)
             </button>
             <div className="badge-brand-homologated">
-              <span>✓</span> MARCA HOMOLOGADA: SAYERLACK INDUSTRIAL
+              <span>✓</span> MARCA HOMOLOGADA: {marca.nome.toUpperCase()}
             </div>
           </div>
         </div>
@@ -127,7 +123,10 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
           <div className="volume-presets-row">
             {PRESET_VOLUMES.map((preset) => {
               const isActive = preset === vol;
-              const formattedLabel = preset >= 1000 ? `${(preset / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 3 })} ml` : `${preset} ml`;
+              const formattedLabel =
+                preset >= 1000
+                  ? `${(preset / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 3 })} ml`
+                  : `${preset} ml`;
               return (
                 <button
                   key={preset}
@@ -141,74 +140,72 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
           </div>
         </div>
 
-        {/* As 4 Frações Químicas Calculadas (Grid horizontal sem rolagem) */}
+        {/* Frações Químicas Calculadas a partir dos itens mockados */}
         <div className="chemicals-grid">
-          {/* 1. Base PU */}
-          <div className="chem-card card-base">
-            <div className="chem-card-header">
-              <div className="chem-info">
-                <h4>1º Base Laca Branca PU</h4>
-                <span>Cód: LB-2001 • Lote #SY-9942</span>
-              </div>
-              <span className="chem-percent-badge">50%</span>
-            </div>
-            <div className="chem-values-row">
-              <span className="chem-volume-large">{volBase} ml</span>
-              <span className="chem-weight-sub">Peso: {weightBase} g</span>
-            </div>
-          </div>
+          {receita.itens.map((item, idx) => {
+            const fracao = fracoes[idx];
+            const lotesDoProduto = ordenarLotesFEFO(
+              MOCK_LOTES.filter((l) => l.produtoId === item.produtoId)
+            );
+            const loteAtivo = lotesDoProduto[0];
+            const isUrgente =
+              loteAtivo &&
+              ((loteAtivo.diasAberto ?? 0) > 0 || loteAtivo.statusUrgencia === 'alta');
+            const percentStr = `${Math.round(item.proporcao * 100)}%`;
 
-          {/* 2. Catalisador PU */}
-          <div className="chem-card card-cat">
-            <div className="chem-card-header">
-              <div className="chem-info">
-                <h4>2º Catalisador PU Médio</h4>
-                <span>Endurecedor • Lote #SY-8821</span>
-              </div>
-              <span className="chem-percent-badge" style={{ background: 'var(--warn-soft)', color: 'var(--warn)', borderColor: 'var(--warn)' }}>
-                25%
-              </span>
-            </div>
-            <div className="badge-use-first-inside">
-              <span>⚠️</span> USE PRIMEIRO: Lata aberta #SY-8821 (Almoxarifado A-02)
-            </div>
-            <div className="chem-values-row">
-              <span className="chem-volume-large" style={{ color: 'var(--warn)' }}>
-                {volCat} ml
-              </span>
-              <span className="chem-weight-sub">Peso: {weightCat} g</span>
-            </div>
-          </div>
+            const cardClass =
+              item.papel === 'base'
+                ? 'chem-card card-base'
+                : item.papel === 'catalisador'
+                ? 'chem-card card-cat'
+                : item.papel === 'diluidor'
+                ? 'chem-card card-dil'
+                : 'chem-card card-ret';
 
-          {/* 3. Diluidor Retardado */}
-          <div className="chem-card card-dil">
-            <div className="chem-card-header">
-              <div className="chem-info">
-                <h4>3º Diluidor Poliuretano 8000</h4>
-                <span>Cód: DL-800 • Viscosidade</span>
-              </div>
-              <span className="chem-percent-badge">20%</span>
-            </div>
-            <div className="chem-values-row">
-              <span className="chem-volume-large">{volDil} ml</span>
-              <span className="chem-weight-sub">Peso: {weightDil} g</span>
-            </div>
-          </div>
+            return (
+              <div key={item.id} className={cardClass}>
+                <div className="chem-card-header">
+                  <div className="chem-info">
+                    <h4>{item.produtoNome}</h4>
+                    <span>
+                      Cód: {item.codigoProduto} {loteAtivo ? `• Lote ${loteAtivo.codigo}` : ''}
+                    </span>
+                  </div>
+                  <span
+                    className="chem-percent-badge"
+                    style={
+                      item.papel === 'catalisador'
+                        ? {
+                            background: 'var(--warn-soft)',
+                            color: 'var(--warn)',
+                            borderColor: 'var(--warn)',
+                          }
+                        : undefined
+                    }
+                  >
+                    {percentStr}
+                  </span>
+                </div>
 
-          {/* 4. Aditivo Retardador */}
-          <div className="chem-card card-ret">
-            <div className="chem-card-header">
-              <div className="chem-info">
-                <h4>4º Aditivo Retardador</h4>
-                <span>Antibranqueamento térmico</span>
+                {isUrgente && loteAtivo && (
+                  <div className="badge-use-first-inside">
+                    <span>⚠️</span> USE PRIMEIRO: Lata aberta {loteAtivo.codigo} (
+                    {loteAtivo.prateleira || 'Almoxarifado'})
+                  </div>
+                )}
+
+                <div className="chem-values-row">
+                  <span
+                    className="chem-volume-large"
+                    style={item.papel === 'catalisador' ? { color: 'var(--warn)' } : undefined}
+                  >
+                    {fracao.volumeMl} ml
+                  </span>
+                  <span className="chem-weight-sub">Peso: {fracao.pesoGramas} g</span>
+                </div>
               </div>
-              <span className="chem-percent-badge">5%</span>
-            </div>
-            <div className="chem-values-row">
-              <span className="chem-volume-large">{volRet} ml</span>
-              <span className="chem-weight-sub">Peso: {weightRet} g</span>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
 

@@ -10,6 +10,14 @@ import {
   Receita,
 } from '../../types';
 
+export const PIN_ERRO_SIMULADO = '0000';
+
+export const MOCK_CHECKLIST_SOBRAS = [
+  { id: 'chk1', label: 'Sem contaminação com catalisador ou água' },
+  { id: 'chk2', label: 'Vedação hermética (tampa original lacrada)' },
+  { id: 'chk3', label: 'Pureza química (livre de solvente ou pó de lixa)' },
+];
+
 export const MOCK_OPERADORES: Operador[] = [
   {
     id: 1,
@@ -17,7 +25,7 @@ export const MOCK_OPERADORES: Operador[] = [
     papel: 'Pintor Líder • Cabine 01',
     name: 'Carlos Silva',
     role: 'Pintor Líder • Cabine 01',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&crop=faces',
+    avatar: '',
     pin: '1234',
   },
   {
@@ -26,7 +34,7 @@ export const MOCK_OPERADORES: Operador[] = [
     papel: 'Aplicadora PU • Cabine 02',
     name: 'Ana Souza',
     role: 'Aplicadora PU • Cabine 02',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&crop=faces',
+    avatar: '',
     pin: '1234',
   },
   {
@@ -35,7 +43,7 @@ export const MOCK_OPERADORES: Operador[] = [
     papel: 'Auxiliar de Cabine',
     name: 'Marcos Lima',
     role: 'Auxiliar de Cabine',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces',
+    avatar: '',
     pin: '1234',
   },
 ];

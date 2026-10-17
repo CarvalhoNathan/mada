@@ -179,7 +179,7 @@ export const App: React.FC = () => {
           <StatusBanner
             variant="danger"
             title="SISTEMA OFFLINE"
-            description="Sem comunicação com o servidor local. Salvamento de dados e pesagens bloqueados para evitar divergência de estoque."
+            description="Sem comunicação com o sistema. Salvamento de dados e pesagens bloqueados para evitar divergência de estoque."
           />
         </div>
       )}
@@ -265,6 +265,9 @@ export const App: React.FC = () => {
         onRepesarDoZero={handleRepesarDoZero}
         onRecalcularReceita={handleRecalcularReceita}
         onConfirmDesperdicio={handleConfirmDesperdicio}
+        componentName="Catalisador"
+        targetVolume={Math.round(recipe.totalVolume * recipe.proportions.catalisador)}
+        excessVolume={200}
       />
 
       {/* Modal de Latas que vencem primeiro ("Use Primeiro") */}

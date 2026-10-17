@@ -8,6 +8,9 @@ interface ModalCriticalExcessProps {
   onRepesarDoZero: () => void;
   onRecalcularReceita: () => void;
   onConfirmDesperdicio: (reason: string) => void;
+  componentName?: string;
+  targetVolume?: number;
+  excessVolume?: number;
 }
 
 const REASONS = [
@@ -23,12 +26,17 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
   onRepesarDoZero,
   onRecalcularReceita,
   onConfirmDesperdicio,
+  componentName = 'Catalisador',
+  targetVolume = 250,
+  excessVolume = 200,
 }) => {
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [supervisorPin, setSupervisorPin] = useState('');
   const [pinStatus, setPinStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
 
   if (!isOpen) return null;
+
+  const actualVolume = targetVolume + excessVolume;
 
   const handleSelectReason = (reasonId: string) => {
     setSelectedReason(reasonId);
@@ -61,9 +69,9 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
           </div>
           <div className="ds-modal-header-titles">
             <h2 className="ds-modal-title" style={{ color: 'var(--danger)' }}>
-              Excesso de Catalisador Detectado
+              Excesso de {componentName} Detectado
             </h2>
-            <p className="ds-modal-sub">Intertravamento de Segurança • Balança Toledo 01</p>
+            <p className="ds-modal-sub">Intertravamento de Segurança</p>
           </div>
           <button
             type="button"
@@ -80,16 +88,16 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
           {/* Valor numérico em 56px */}
           <div className="ds-modal-highlight-box" style={{ background: 'var(--card-hover)', borderColor: 'var(--danger-border)' }}>
             <span className="ds-modal-highlight-number" style={{ color: 'var(--danger)', fontSize: '56px', fontWeight: 800 }}>
-              +200 ml
+              +{excessVolume} ml
             </span>
             <span className="ds-modal-highlight-label" style={{ color: 'var(--text-muted)' }}>
-              Excesso Acima do Limite Tolerado (250 ml → 450 ml)
+              Excesso Acima do Limite Tolerado ({targetVolume} ml → {actualVolume} ml)
             </span>
           </div>
 
-          {/* Única frase explicativa clara de chão de fábrica */}
+          {/* Frase explicativa clara de chão de fábrica */}
           <p className="ds-modal-sentence" style={{ fontSize: '17px', color: 'var(--text)', margin: '14px 0' }}>
-            O catalisador ultrapassou o limite seguro. Escolha uma ação operacional para prosseguir:
+            O {componentName.toLowerCase()} ultrapassou o limite seguro. Escolha uma ação operacional para prosseguir:
           </p>
 
           {/* Seletor de Motivo Obrigatório */}

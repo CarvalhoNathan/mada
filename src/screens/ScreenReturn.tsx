@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { Operator } from '../types';
 import { Button } from '../components/ui/Button';
 import { calcularSaldoDevolucao } from '../domain/leftover';
+import {
+  MOCK_LOTES,
+  MOCK_PRODUTOS,
+  MOCK_ORDENS_SERVICO,
+  MOCK_CHECKLIST_SOBRAS,
+} from '../data';
 
 interface ScreenReturnProps {
   operator: Operator;
@@ -17,28 +23,35 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
   const [returnVolume, setReturnVolume] = useState(400);
   const maxVolume = 1000;
 
-  const [checklist, setChecklist] = useState({
-    chk1: false,
-    chk2: false,
-    chk3: false,
-  });
+  // Produto, lote e Ordem de Serviço lidos a partir dos mocks
+  const loteOriginal = MOCK_LOTES[0];
+  const produto = MOCK_PRODUTOS.find((p) => p.id === loteOriginal.produtoId) || MOCK_PRODUTOS[4];
+  const ordemServico = MOCK_ORDENS_SERVICO[0];
+  const loteGerado = `${loteOriginal.codigo}-SOBRA-01`;
+  const codigoEtiqueta = `#SOBRA-${loteOriginal.codigo.replace('#', '')}`;
+  const dataFormatada = new Date().toLocaleDateString('pt-BR');
 
-  const saldo = calcularSaldoDevolucao(returnVolume, maxVolume, 0.95);
+  // Checklist de integridade química carregado dinamicamente do mock
+  const [checklist, setChecklist] = useState<Record<string, boolean>>(
+    MOCK_CHECKLIST_SOBRAS.reduce((acc, item) => ({ ...acc, [item.id]: false }), {})
+  );
+
+  const saldo = calcularSaldoDevolucao(returnVolume, maxVolume, produto.densidade || 0.95);
   const percent = saldo.porcentagemPreenchimento;
 
-  const toggleChecklistItem = (key: 'chk1' | 'chk2' | 'chk3') => {
-    setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
+  const toggleChecklistItem = (id: string) => {
+    setChecklist((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const allChecked = checklist.chk1 && checklist.chk2 && checklist.chk3;
+  const allChecked = MOCK_CHECKLIST_SOBRAS.every((item) => checklist[item.id]);
 
   const adjustVolume = (delta: number) => {
-    setReturnVolume(prev => Math.max(50, Math.min(maxVolume, prev + delta)));
+    setReturnVolume((prev) => Math.max(50, Math.min(maxVolume, prev + delta)));
   };
 
   const handleConfirmReturn = () => {
     if (!allChecked) {
-      showToast('Atenção: Marque todos os 3 itens do checklist de integridade.', 'warn');
+      showToast('Atenção: Marque todos os itens do checklist de integridade.', 'warn');
       return;
     }
 
@@ -67,9 +80,9 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
           <div className="bottle-visual-box">
             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text)' }}>
-                Verniz PU Alto Sólidos 4:1
+                {produto.nome}
               </span>
-              <span className="badge-brand-homologated">#SY-8821</span>
+              <span className="badge-brand-homologated">{loteOriginal.codigo}</span>
             </div>
 
             {/* Frasco com Líquido Dinâmico e Escala Externa */}
@@ -115,29 +128,16 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
             {/* Checklist de Integridade Química */}
             <div className="checklist-container">
               <span className="checklist-title">Checklist de Integridade Química:</span>
-              <div
-                className={`checklist-row-card ${checklist.chk1 ? 'checked' : ''}`}
-                onClick={() => toggleChecklistItem('chk1')}
-              >
-                <div className="checklist-checkbox-box">✓</div>
-                <span className="checklist-label">Sem contaminação com catalisador ou água</span>
-              </div>
-
-              <div
-                className={`checklist-row-card ${checklist.chk2 ? 'checked' : ''}`}
-                onClick={() => toggleChecklistItem('chk2')}
-              >
-                <div className="checklist-checkbox-box">✓</div>
-                <span className="checklist-label">Vedação hermética (tampa original lacrada)</span>
-              </div>
-
-              <div
-                className={`checklist-row-card ${checklist.chk3 ? 'checked' : ''}`}
-                onClick={() => toggleChecklistItem('chk3')}
-              >
-                <div className="checklist-checkbox-box">✓</div>
-                <span className="checklist-label">Pureza química (livre de solvente ou pó de lixa)</span>
-              </div>
+              {MOCK_CHECKLIST_SOBRAS.map((item) => (
+                <div
+                  key={item.id}
+                  className={`checklist-row-card ${checklist[item.id] ? 'checked' : ''}`}
+                  onClick={() => toggleChecklistItem(item.id)}
+                >
+                  <div className="checklist-checkbox-box">✓</div>
+                  <span className="checklist-label">{item.label}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -155,12 +155,12 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
 
               <div className="sticker-body">
                 <div className="sticker-details">
-                  <p><strong>PRODUTO:</strong> VERNIZ PU 4:1</p>
+                  <p><strong>PRODUTO:</strong> {produto.nome.toUpperCase()}</p>
                   <p><strong>SALDO:</strong> <span>{returnVolume} ml</span> (± {saldo.pesoEstimadoGramas}g)</p>
-                  <p><strong>LOTE GERADO:</strong> #PU-8821-SOBRA-01</p>
-                  <p><strong>ORIGEM:</strong> OS #8841 (Cozinha)</p>
+                  <p><strong>LOTE GERADO:</strong> {loteGerado}</p>
+                  <p><strong>ORIGEM:</strong> {ordemServico.numero} ({ordemServico.ambienteNome})</p>
                   <p><strong>OPERADOR:</strong> <span>{operator.nome || operator.name}</span></p>
-                  <p><strong>DATA:</strong> 17/10/2026</p>
+                  <p><strong>DATA:</strong> {dataFormatada}</p>
                 </div>
 
                 <div className="sticker-qr-box">
@@ -168,7 +168,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                     <path d="M0 0h30v30H0zm5 5h20v20H5zm35-5h30v30H40zm5 5h20v20H45zM0 40h30v30H0zm5 5h20v20H5zm45 5h10v10H50zm15 0h15v15H65zm0 25h10v10H65zm-25 0h10v10H40zm15 15h10v10H55z" />
                   </svg>
                   <span style={{ fontSize: '11px', fontWeight: 700, color: '#1e293b', marginTop: '4px' }}>
-                    #SOBRA-8821
+                    {codigoEtiqueta}
                   </span>
                 </div>
               </div>

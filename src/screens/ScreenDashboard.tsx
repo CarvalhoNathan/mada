@@ -1,5 +1,7 @@
 import React from 'react';
 import { Operator } from '../types';
+import { MOCK_LOTES } from '../data';
+import { ordenarLotesFEFO } from '../domain/fefo';
 
 interface ScreenDashboardProps {
   operator: Operator;
@@ -17,6 +19,14 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
   const fullName = operator.nome || operator.name || 'Operador';
   const firstName = fullName.split(' ')[0];
 
+  // Cálculo dinâmico do alerta FEFO sem números fixos
+  const lotesOrdenados = ordenarLotesFEFO(MOCK_LOTES);
+  const lotesPrioritarios = lotesOrdenados.filter(
+    (l) => (l.diasAberto ?? 0) > 0 || l.statusUrgencia === 'alta'
+  );
+  const loteMaisUrgente = lotesOrdenados[0];
+  const totalPrioritarios = lotesPrioritarios.length;
+
   return (
     <div className="screen-content-area">
       <div className="dashboard-top-row">
@@ -27,7 +37,7 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
         </div>
       </div>
 
-      {/* Alerta de Validade: "Use Primeiro" */}
+      {/* Alerta de Validade calculado dinamicamente via FEFO */}
       <div className="use-first-banner" onClick={onOpenUseFirstModal} title="Toque para ver a lista de latas que vencem primeiro">
         <div className="use-first-left">
           <div className="use-first-icon">
@@ -38,7 +48,9 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
             </svg>
           </div>
           <div className="use-first-info">
-            <h3>Use primeiro: 3 latas de Verniz PU vencem esta semana (Prateleira A-02)</h3>
+            <h3>
+              Use primeiro: {totalPrioritarios} lotes prioritários ({loteMaisUrgente ? `${loteMaisUrgente.produtoNome} • ${loteMaisUrgente.prateleira || 'Almoxarifado'}` : 'Estoque'})
+            </h3>
             <p>Priorize latas já abertas no almoxarifado antes de violar novas latas lacradas.</p>
           </div>
         </div>
@@ -110,22 +122,6 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
             <h3 className="action-title">Escanear QR Code</h3>
             <p className="action-desc">Identifique instantaneamente a Ordem de Serviço ou consulte o saldo restante de uma lata.</p>
           </div>
-        </div>
-      </div>
-
-      {/* Rodapé Informativo da Cabine */}
-      <div className="dashboard-footer-status">
-        <div className="dash-status-item">
-          <span className="dash-status-label">Posto Operacional:</span>
-          <span className="dash-status-val">Cabine PU 01 • Ativa</span>
-        </div>
-        <div className="dash-status-item">
-          <span className="dash-status-label">Turno Atual:</span>
-          <span className="dash-status-val">Manhã • Laca & Verniz</span>
-        </div>
-        <div className="dash-status-item">
-          <span className="dash-status-label">Supervisão:</span>
-          <span className="dash-status-val">Fábio (Online)</span>
         </div>
       </div>
     </div>
