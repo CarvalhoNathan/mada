@@ -1,6 +1,6 @@
 @import './styles/tokens.css';
-@import '../design-system.css';
-@import '../styles.css';
+@import './styles/design-system.css';
+@import './styles/styles.css';
 
 /* Reset e Configurações Globais do App React */
 html, body {
