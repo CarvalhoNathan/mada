@@ -1,261 +1,165 @@
-# 🪵 Mada Marcenaria — Sistema de Gestão de Químicos & Receitas
+<div align="center">
 
-> **Projeto de Curricularização Acadêmica**  
-> Solução web *tablet-first* para controle de estoque, pesagem, consumo e devolução de insumos químicos (tintas, vernizes, catalisadores e solventes) no setor de pintura e acabamento de marcenaria de alto padrão.
+# 🪵 Gerenciador de Químicos
 
----
+**Receitas exatas, estoque sob controle e menos desperdício no setor de pintura.**
 
-## 📌 Sumário
-- [⚡ Sprint Relâmpago — MVP Funcional (17/10 a 19/10)](#-sprint-relâmpago--mvp-funcional-1710-a-1910)
-- [1. Contexto & Apresentação da Empresa](#1-contexto--apresentação-da-empresa)
-- [2. O Problema & Diagnóstico](#2-o-problema--diagnóstico)
-- [3. A Solução Proposta](#3-a-solução-proposta)
-- [4. Objetivos do Projeto (SMART)](#4-objetivos-do-projeto-smart)
-- [5. Partes Interessadas & Equipe](#5-partes-interessadas--equipe)
-- [6. Requisitos do Sistema](#6-requisitos-do-sistema)
-  - [Requisitos Funcionais (RF)](#requisitos-funcionais-rf)
-  - [Requisitos Não Funcionais (RNF)](#requisitos-não-funcionais-rnf)
-- [7. Cronograma & Backlog de Entregas](#7-cronograma--backlog-de-entregas)
-- [8. Análise de Viabilidade, Custos & Riscos](#8-análise-de-viabilidade-custos--riscos)
-- [9. UX, Design & Arquitetura de Telas](#9-ux-design--arquitetura-de-telas)
-- [10. Tecnologias Utilizadas](#10-tecnologias-utilizadas)
-- [📄 Project Model Canvas (PMC) Completo (CANVAS.md)](file:///c:/Users/Usuario/Desktop/mada/CANVAS.md)
-- [📝 Registro de Decisões, Reuniões e Feedbacks (DECISOES_E_REUNIOES.md)](file:///c:/Users/Usuario/Desktop/mada/DECISOES_E_REUNIOES.md)
+Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas, trava erros de dosagem, rastreia o consumo por cliente e ambiente e dá nova vida às sobras.
+
+[![Status](https://img.shields.io/badge/status-MVP%20em%20desenvolvimento-F59E0B)](#-status-e-roadmap)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![UX](https://img.shields.io/badge/UX-tablet--first-3B82F6)](#-telas)
+
+<!-- [A PREENCHER] Troque pela imagem de capa (colagem das telas ou GIF do fluxo) -->
+
+![Visão geral do sistema](docs/screens/hero.png)
+
+</div>
 
 ---
 
-## ⚡ Sprint Relâmpago — MVP Funcional (17/10 a 19/10)
+## 💡 O problema
 
-> 🎯 **Meta Imediata:** Apresentar uma **versão funcional e interativa** para Fábio (proprietário da Mada Marcenaria) na **segunda-feira (19/10/2026)**.  
-> O objetivo desta sprint de 48 horas em ritmo acelerado é demonstrar o fluxo de ponta a ponta rodando em tablet: tirar as receitas da "cabeça dos operadores", automatizar os cálculos químicos e comprovar o controle de sobras com barreira anti-erro.
+Em uma marcenaria de alto padrão, o setor de pintura usa produtos caros (bases, catalisadores, diluidores, retardadores e vernizes PU) e as receitas de mistura vivem na cabeça dos pintores.
 
-### 📋 Checklist de Telas do MVP (Ordem de Execução Rush):
+> _"Composição e mistura, eles sabem de cabeça, e isso é um problema. Preferiria ter um tablet com as receitas, sabe? E eles darem baixa no que forem usando, e associar para qual cliente e ambiente, devolve a lata pro estoque com os valores..."_  
+> — Gestor da Mada Marcenaria
 
-- [x] **1. Login Rápido & Seleção de Operador**
-  - [x] Cards táteis dos operadores (Pintor A, Pintor B, Encarregado)
-  - [x] Teclado numérico PIN de 4 dígitos simples e direto
-  - [x] Indicador visual de status de turno e conexão Wi-Fi
-- [x] **2. Dashboard Principal do Chão de Fábrica**
-  - [x] 3 botões gigantes de toque com luvas: `NOVA PREPARAÇÃO`, `DEVOLVER SOBRAS`, `ESCANEAR QR CODE`
-  - [x] Widget de alerta de tintas abertas prioritárias (regra FEFO por validade)
-- [x] **3. Identificação da Ordem de Serviço (OS)**
-  - [x] Rastreabilidade em 3 níveis: Cliente > Projeto > Ambiente (ex: *Residência Alphaville > Armários Master > Laca PU*)
-  - [x] Simulação de escaneamento de QR Code da ficha impressa
-- [x] **4. Ficha Técnica & Calculadora Dinâmica de Mistura (O Gabarito)**
-  - [x] Seleção da receita/acabamento homologado ([Sayerlack Sayersystem](https://www.sayerlack.com.br/cartela_sayersystem.pdf))
-  - [x] Input do volume total de acabamento desejado (ex: 500 ml, 1.000 ml, 2.000 ml)
-  - [x] Recálculo dinâmico e instantâneo das 4 frações químicas:
-    - **Base PU** (ml)
-    - **Catálise (Endurecedor)** (ml)
-    - **Diluidor** (ml)
-    - **Retardador** (ml)
-  - [x] Exibição da marca correta a retirar da prateleira
-- [x] **5. Check-out de Consumo com Barreira Anti-Erro ("Sistema Anti-Burro")**
-  - [x] Controles de pesagem com botões táteis ampliados (`+` e `-`)
-  - [x] **🚨 Modal Anti-Erro (Prevenção Ativa):** Bloqueio com alerta em vermelho caso a quantidade retirada exceda a receita, exigindo confirmação de desperdício
-- [x] **6. Devolução de Sobras & Etiquetagem de Saldo**
-  - [x] Registro do volume restante que volta ao almoxarifado (ex: lata de 1L com 400 ml de sobra)
-  - [x] Emissão simulada da nova etiqueta com QR Code para identificação do frasco aberto
-- [x] **7. Painel do Gestor (Visão do Fábio)**
-  - [x] Telemetria ao vivo das Cabines 01 a 04, taxa de reintegração de sobras (92,4%) e custo previsto vs. realizado
+O resultado são proporções erradas, latas abertas que voltam ao estoque sem registro, produtos vencendo na prateleira e custo impreciso por obra.
 
----
+## ✨ A solução
 
-## 1. Contexto & Apresentação da Empresa
+|     | Funcionalidade                     | O que resolve                                                                        |
+| :-: | :--------------------------------- | :----------------------------------------------------------------------------------- |
+| 📱  | **Interface tablet-first**         | Botões grandes e alto contraste, pensados para uso em pé, com luvas e mãos sujas.    |
+| 🧪  | **Receitas dinâmicas**             | Informe o volume total e o sistema calcula base, catalisador, diluidor e retardador. |
+| 🛑  | **Trava anti-erro**                | Alerta quando a quantidade retirada passa da receita, com justificativa obrigatória. |
+| 📅  | **Prioridade por validade (FEFO)** | Mostra qual lata usar primeiro, para reduzir perdas por vencimento.                  |
+| 🏷️  | **QR Code**                        | Identifica latas e ordens de serviço e gera nova etiqueta para as sobras.            |
+| 📊  | **Painel do gestor**               | Compara consumo previsto e real e acompanha o custo por cliente e ambiente.          |
 
-A **Mada Marcenaria**, localizada em São Bernardo do Campo – SP, é uma marcenaria tradicional e familiar que atravessa três gerações (desde o avô até os atuais gestores Fábio, sua mãe e sua ex-esposa). Atua no nicho de móveis sob medida e marcenaria de **alto padrão**, atendendo renomados escritórios de arquitetura, construtoras, imobiliárias e clientes de perfil exigente.
-
-- **Estrutura:** Amplo galpão industrial equipado com maquinários modernos.
-- **Quadro de Pessoal:** Aproximadamente 120 colaboradores divididos entre RH, Engenharia de Produção, Gestão, TI, Operadores de Máquinas, Marceneiros e Pintores.
-- **Etapa Crítica:** O setor de **Pintura e Acabamento** representa um dos processos mais custosos e determinantes para a qualidade final da peça entregue.
-
----
-
-## 2. O Problema & Diagnóstico
-
-Durante a imersão e o diálogo direto com Fábio (gestor da Mada Marcenaria), identificou-se que a empresa **não possui um gerenciador próprio para insumos químicos e receitas**.
-
-> *"Composição e mistura, eles sabem de cabeça, e isso é um problema. Preferiria ter um tablet com as receitas, sabe? E eles darem baixa no que forem usando, E ASSOCIAR PARA QUAL CLIENTE E AMBIENTE, devolve a lata pro estoque com os valores..."*  
-> — **Fábio, gestor da Mada Marcenaria**
-
-### Principais Dores Diagnosticadas:
-1. **Dependência da Memória ("Sabem de Cabeça"):** As receitas e proporções não estão centralizadas em um sistema digital. Se um operador com experiência falta ou se a marca de tinta muda, ocorrem erros críticos de proporção.
-2. **Perda de Produtos Abertos:** Latas de químicos de alto valor (bases, vernizes PU, catalisadores, diluidores e retardadores) são abertas para atender a uma ordem de serviço, não são consumidas por completo e retornam ao almoxarifado sem registro de saldo ou identificação.
-3. **Vencimento no Estoque:** Como não há controle de prioridade (FIFO/FEFO por validade), operadores acabam abrindo novas latas lacradas enquanto recipientes abertos ou com validade próxima vencem na prateleira.
-4. **Custeio e Rastreabilidade Imprecisos:** Dificuldade em apontar o gasto real de químicos por projeto, cliente e ambiente.
-5. **Variação entre Marcas e Fórmulas:** Mudanças de fabricantes alteram as proporções das receitas, gerando desperdício e retrabalho.
-
----
-
-
-## 3. A Solução Proposta
-
-Desenvolvimento de uma **aplicação web em TypeScript**, otimizada para operação em **tablets no chão de fábrica**, integrada à rotina operacional do setor de pintura e acabamento da Mada Marcenaria.
-
-```
-       [ Ordem de Serviço (Cliente / Projeto / Ambiente) ]
-                              │
-                              ▼
-        [ Consulta de Receita & Gabarito da Marca ]
-                              │
-                              ▼
-      [ Calculadora Dinâmica de Mistura (Bases/Catalisadores) ]
-                              │
-                              ▼
-          [ Baixa com Validação Anti-Erro & QR Code ]
-                              │
-                ┌─────────────┴─────────────┐
-                ▼                           ▼
-      [ Consumo Efetivo ]          [ Devolução de Sobras ]
-    (Registro no Projeto)       (Re-etiquetagem com QR Code)
-```
-
-### Principais Pilares:
-- **Tablet-First & Chão de Fábrica:** Botões dimensionados para toque com luvas, contraste elevado sob iluminação fabril e fluxos de poucos toques.
-- **Prevenção Ativa de Erros (UX Defensiva):** Bloqueios visuais e alertas caso o volume retirado destoe da receita padrão ("sistema anti-erro").
-- **Cálculo da Formulação Quádrupla:** O motor recalcula automaticamente os 4 componentes essenciais:
-  - **Base** (tinta ou verniz);
-  - **Catálise (PU):** Reagente de cura para alto brilho e resistência;
-  - **Diluidor:** Ajuste de viscosidade para aplicação;
-  - **Retardador:** Estabilizador de secagem contra umidade/névoa.
-- **Padrão Técnico de Cores:** Compatibilidade com o catálogo [Sayerlack — Sayersystem](https://www.sayerlack.com.br/cartela_sayersystem.pdf).
-- **Rastreabilidade por QR Code:** Identificação rápida de insumos e rotulagem de sobras com registro de volume remanescente.
-- **Descarte Ambientalmente Consciente:** O resíduo consumido é direcionado para tambores de coleta de empresas especializadas de destinação ambiental.
-- **Meta Operacional:** **Redução de 20% no desperdício de materiais químicos** até novembro de 2026.
-
----
-
-
-## 4. Objetivos do Projeto (SMART)
-
-### 🎯 Objetivo Central (SMART)
-> **"Desenvolver e implantar, até novembro de 2026, um protótipo de sistema web otimizado para tablets, integrado ao sistema existente da empresa, capaz de registrar e controlar a retirada, o consumo e a devolução de materiais utilizados na produção, permitindo comparar o consumo realizado com os parâmetros definidos e contribuindo para uma redução de 20% no desperdício de materiais."**
-
-### Objetivos Específicos
-- Centralizar o catálogo de receitas e acabamentos homologados pela marcenaria.
-- Permitir consulta ágil e recalculada de misturas em tablets operacionais.
-- Registrar a baixa de produtos com rastreabilidade por Cliente, Projeto, Ambiente e Etapa.
-- Gerenciar embalagens parciais (ex: latas de 1L ou galões) e devolução formal de sobras ao estoque.
-- Priorizar a ordem de uso de materiais pela data de validade (mitigando perdas por vencimento).
-- Permitir leitura e identificação de insumos via QR Code.
-- Mapear a relação entre Marcas, Produtos e Fórmulas, suportando trocas de fornecedores sem perda de consistência.
-- Desenvolver a solução sem dependência de instalação em servidores locais físicos da empresa.
-
----
-
-## 5. Partes Interessadas & Equipe
-
-### Stakeholders Externos
-| Stakeholder | Papel & Interesse Principal |
-| :--- | :--- |
-| **Mada Marcenaria (Diretoria / Fábio)** | Patrocinadora; validação de regras de negócio, redução de custos e de desperdício. |
-| **Operadores (Pintores e Marceneiros)** | Usuários finais no tablet; agilidade na consulta de receitas e baixa sem burocracia. |
-| **Almoxarifado & Compras** | Controle de estoque físico, recebimento de sobras, gestão de validades e compras assertivas. |
-| **Gerência de Produção & Engenharia** | Acompanhamento do previsto vs. realizado e custos reais por projeto. |
-| **Instituição de Ensino & Professores** | Orientação metodológica, avaliação acadêmica e monitoria do projeto de curricularização. |
-
-### Estrutura da Equipe de Desenvolvimento
-1. **Gerente de Projeto (PM):** Gestão do cronograma, comunicação com a empresa e entregáveis acadêmicos.
-2. **Banco de Dados:** Modelagem conceitual, lógica e física relacional (DER).
-3. **Integração:** Arquitetura de rede, testes de conexão fabril e integração de dados.
-4. **Back-end:** Desenvolvimento da API em TypeScript e motor de cálculo de misturas/regras de sobras.
-5. **Front-end / UX:** Prototipagem Figma, usabilidade *tablet-first* e telas web responsivas.
-
-
----
-
-## 6. Requisitos do Sistema
-
-### Requisitos Funcionais (RF)
-- [x] **RF01 - Catálogo de Receitas:** Centralizar e permitir a consulta de fichas técnicas de acabamento (tintas, resinas, vernizes, seladores).
-- [x] **RF02 - Proporções Exatas:** Apresentar produtos e volumes calculados dinamicamente com base na quantidade final desejada.
-- [x] **RF03 - Rastreabilidade de Consumo:** Registrar retirada e baixa vinculando a Cliente, Projeto, Ambiente e Fase produtiva.
-- [x] **RF04 - Gestão de Embalagens Parciais (Sobras):** Registrar o volume parcial consumido e o retorno do saldo remanescente ao almoxarifado.
-- [x] **RF05 - Previsto vs. Real:** Comparar o consumo real apontado com os parâmetros definidos na receita teórica.
-- [x] **RF06 - Priorização por Validade:** Indicar a ordem prioritária de retirada de produtos com base no lote e validade (FEFO).
-- [x] **RF07 - Identificação via QR Code:** Leitura de etiquetas de produtos e ordens de serviço via câmera do tablet.
-- [x] **RF08 - Gestão Multimarca:** Associar insumos e receitas às marcas correspondentes, ajustando fórmulas conforme o fabricante em uso.
-
-### Requisitos Não Funcionais (RNF)
-- **RNF01 - Usabilidade Tablet-First:** Interface com botões grandes, áreas de toque expandidas, alto contraste e fluxo à prova de erro (uso com luvas/sujeira de oficina).
-- **RNF02 - Compatibilidade Web:** Aplicação web responsiva desenvolvida em TypeScript, executável em navegadores modernos em tablets (Android/iPadOS) e desktop.
-- **RNF03 - Resiliência & Desempenho:** Aplicação leve, com tempos de resposta mínimos para operar mesmo sob oscilações do sinal Wi-Fi no galpão.
-- **RNF04 - Segurança & Backups:** Rotinas diárias de backup de dados operacionais e de estoque em nuvem.
-- **RNF05 - Manutenibilidade:** Código modular e banco de dados relacional bem estruturado para inclusão ágil de novas receitas, insumos e fornecedores.
-
----
-
-## 7. Cronograma & Backlog de Entregas
-
-### Fases do Projeto (Ciclo Acadêmico)
+## 🔄 Como funciona
 
 ```mermaid
-gantt
-    title Cronograma de Desenvolvimento - Mada Marcenaria
-    dateFormat  YYYY-MM-DD
-    section Fase 1
-    Planejamento & Requisitos (31/08 a 29/09) :done, 2026-08-31, 2026-09-29
-    section Fase 2
-    Execução & Desenvolvimento (29/09 a 27/10) :active, 2026-09-29, 2026-10-27
-    section Fase 3
-    Monitoramento & Testes em Tablet (27/10 a 17/11) : 2026-10-27, 2026-11-17
-    section Fase 4
-    Avaliação & Entrega Final (17/11 a 24/11) : 2026-11-17, 2026-11-24
+flowchart LR
+    A["📋 Ordem de Serviço<br/>Cliente → Projeto → Ambiente"] --> B["🧪 Receita + calculadora"]
+    B --> C["⚖️ Dosagem com trava anti-erro"]
+    C --> D["✅ Consumo registrado na OS"]
+    C --> E["♻️ Sobra devolvida com nova etiqueta QR"]
 ```
 
-### Backlog de Entregas
-- **Entrega 1:** Documentação detalhada das regras de negócio, validação de requisitos de sobras e processos com a Mada Marcenaria.
-- **Entrega 2:** Protótipos de alta fidelidade no Figma e modelagem estrutural do banco de dados relacional (*Clientes, Ambientes, Receitas, Materiais, Lotes e Movimentações*).
-- **Entrega 3:** Desenvolvimento da aplicação web (Front-end + API em TypeScript) com a lógica de cálculo de misturas e regras de consumo.
-- **Entrega 4:** Integração completa, testes de conectividade em ambiente fabril e validação de usabilidade com tablets.
-- **Entrega 5:** Homologação com a empresa, refinamento de feedbacks, entrega do MVP funcional, manual de instrução de uso e **Treinamento/Capacitação presencial dos operadores no uso dos tablets**.
+## 🖼️ Telas
 
----
+> **[A PREENCHER]** Adicione os prints em `docs/screens/`.
 
-## 8. Análise de Viabilidade, Custos & Riscos
+|             Login rápido              |                  Dashboard                  |                 Vincular OS                  |
+| :-----------------------------------: | :-----------------------------------------: | :------------------------------------------: |
+|  ![Login](docs/screens/01-login.png)  | ![Dashboard](docs/screens/02-dashboard.png) |    ![Vincular OS](docs/screens/03-os.png)    |
+| PIN de 4 dígitos com foto do operador |     Ações grandes e alerta de validade      | Cliente, projeto e ambiente em poucos toques |
 
-### Estimativa Financeira & Orçamento do Piloto
+|                 Receita                 |           Alerta anti-erro            |             Devolução de sobras             |           Painel do gestor            |
+| :-------------------------------------: | :-----------------------------------: | :-----------------------------------------: | :-----------------------------------: |
+| ![Receita](docs/screens/04-receita.png) | ![Alerta](docs/screens/05-alerta.png) | ![Devolução](docs/screens/06-devolucao.png) | ![Painel](docs/screens/07-painel.png) |
+|         Calculadora de mistura          |      Trava ao exceder a receita       |          Nova etiqueta com QR Code          |       Consumo previsto vs. real       |
 
-| Rubrica | Cenário Comercial (Mercado) | Cenário Acadêmico (Piloto Mada) |
-| :--- | :--- | :--- |
-| **Mão de Obra de Desenvolvimento** | R$ 25.000,00 *(5 devs / 3 meses)* | **R$ 0,00** *(subsidiado pela disciplina)* |
-| **Infraestrutura / Servidor / Rede** | R$ 100,00/mês *(Cloud + Backup)* | **R$ 0,00** *(absorvido pela estrutura local da fábrica)* |
-| **Domínio / Registro** | ~R$ 40,00 anuais | **R$ 0,00** *(acesso via rede local / IP interno)* |
-| **Despesas Operacionais (Visitas/Testes de rede)** | Inclusas em contrato | **R$ 150,00** *(deslocamento presencial para testes na fábrica)* |
-| **TOTAL DO INVESTIMENTO** | **R$ 25.140,00+** | **R$ 150,00** |
+## 🎯 Impacto esperado
 
-> 📌 Para a visualização detalhada em matriz do planejamento inicial, consulte o [CANVAS.md](file:///c:/Users/Usuario/Desktop/mada/CANVAS.md).
+- **−20% de desperdício** de químicos (meta até novembro de 2026).
+- Receitas padronizadas, sem depender da memória de cada operador.
+- **Custo real** por cliente, projeto e ambiente.
+- Menos latas vencidas e mais sobras reaproveitadas.
 
+## 🏗️ Arquitetura
 
-### Matriz de Riscos & Planos de Ação
+```mermaid
+flowchart TB
+    subgraph Interfaces
+        T["📱 Tablet dos operadores<br/>React + TypeScript"]
+        P["🖥️ Painel do gestor (PC)"]
+    end
+    R["Camada de repositórios"]
+    M["Dados simulados<br/>(MVP atual)"]
+    S[("Supabase / PostgreSQL<br/>sistema da empresa")]
+    T --> R
+    P --> R
+    R -->|hoje| M
+    R -->|integração planejada| S
+```
 
-| Risco | Categoria | Impacto | Mitigação |
-| :--- | :--- | :--- | :--- |
-| Uso com luvas, poeira e tinta no tablet | Operacional | Alto | UI com áreas de clique amplas, botões sem dependência de gestos complexos e confirmações claras. |
-| Troca de marca sem aviso prévio | Negócio | Médio | Sistema com suporte nativo a formulações alternativas indexadas por marca. |
-| Instabilidade de Wi-Fi no galpão | Técnico | Médio | Aplicação leve com cache de dados essenciais e feedback claro de status de rede. |
-| Resistência operacional / erro humano | Operacional | Médio | UX defensiva com modais de confirmação ao ultrapassar volumes previstos e interface visual intuitiva. |
+Uma camada de repositórios isola a origem dos dados: o MVP roda com dados simulados e, quando o acesso ao sistema da empresa for liberado, a troca para o Supabase é feita por configuração. As tabelas da empresa são lidas em modo somente leitura, e as entidades novas (receitas, preparações, movimentações) ficam em um schema separado.
 
----
+## 🧰 Tecnologias
 
-## 9. UX, Design & Arquitetura de Telas
+| Camada        | Tecnologia                                                        |
+| :------------ | :---------------------------------------------------------------- |
+| Interface     | React, TypeScript, HTML5, CSS com design tokens                   |
+| Dados         | PostgreSQL via Supabase                                           |
+| Identificação | Leitura de QR Code via WebRTC                                     |
+| Design        | Design system próprio, tema escuro e alto contraste, tablet-first |
 
-O guia de design completo e as especificações de interface para chão de fábrica estão formalizados no documento:
-👉 **Consulte as diretrizes completas em [DESIGN.md](file:///c:/Users/Usuario/Desktop/mada/DESIGN.md)**
+## 🚧 Status e roadmap
 
-### Resumo dos Fluxos Principais (Tablet):
-1. **Login Rápido:** Seleção por operador + PIN numérico de 4 dígitos.
-2. **Dashboard Operacional:** 3 ações primárias de impacto (`NOVA PREPARAÇÃO`, `DEVOLVER SOBRAS`, `ESCANEAR QR CODE`).
-3. **Identificação da OS:** Associação direta a Cliente, Projeto e Ambiente.
-4. **Ficha da Receita:** Calculadora automática da mistura a partir do volume total de acabamento.
-5. **Check-out com Barreira Anti-Erro:** Modal de alerta caso o consumo digitado exceda o limite técnico da receita.
-6. **Devolução & Re-etiquetagem:** Leitura do QR Code da embalagem aberta e registro do saldo que retorna ao estoque.
+> O projeto está em desenvolvimento. A versão atual é um **MVP demonstrável com dados simulados**; a integração com o sistema da empresa depende da liberação de acesso aos dados reais.
 
----
+**Já prototipado**
 
-## 10. Tecnologias Utilizadas
+- [x] Login rápido com PIN
+- [x] Dashboard operacional com alerta de validade
+- [x] Vinculação de cliente, projeto e ambiente
+- [x] Receita com calculadora dinâmica
+- [x] Dosagem com trava anti-erro
+- [x] Devolução de sobras com etiqueta QR
+- [x] Painel do gestor
 
-- **Linguagem Principal:** [TypeScript](https://www.typescriptlang.org/)
-- **Paradigma de Interface:** Web Responsive / Tablet-First (HTML5, Vanilla CSS com variáveis de design tokens)
-- **Estrutura de Dados:** Relacional (compatível com PostgreSQL / SQLite / MySQL)
-- **Identificação:** QR Code Scanner via WebRTC API
+**Próximos passos**
+
+- [ ] Integração com o Supabase da empresa
+- [ ] Recebimento de lotes e validades
+- [ ] Cadastro/importação de ordens de serviço
+- [ ] Perfis de acesso e trilha de auditoria
+- [ ] Relatórios exportáveis (CSV/PDF)
+- [ ] Operação offline com sincronização
+- [ ] Tempo de vida útil da mistura
+
+## 📚 Documentação
+
+| Documento                                          | Conteúdo                                                              |
+| :------------------------------------------------- | :-------------------------------------------------------------------- |
+| [Documentação do projeto](docs/PROJETO.md)         | Contexto, requisitos, objetivos, cronograma, riscos e modelo de dados |
+| [Guia de design](docs/DESIGN.md)                   | Princípios de UX e design system para chão de fábrica                 |
+| [Project Model Canvas](docs/CANVAS.md)             | Planejamento do projeto em matriz                                     |
+| [Decisões e reuniões](docs/DECISOES_E_REUNIOES.md) | Registro de decisões e feedbacks                                      |
+
+## ▶️ Como executar
+
+> **[A PREENCHER]** Exemplo de estrutura; ajuste aos scripts reais do projeto.
+
+```bash
+git clone <URL-DO-REPOSITORIO>
+cd mada
+npm install
+cp .env.example .env     # preencher as variáveis
+npm run dev
+```
+
+Por padrão a aplicação usa dados simulados (`DATA_SOURCE=mock`). Para usar o Supabase, configure `SUPABASE_URL` e `SUPABASE_ANON_KEY` no `.env`. Nunca versione chaves reais e nunca use a chave `service_role` no front-end.
+
+## 👥 Equipe
+
+> **[A PREENCHER]** Nome, função e link de cada integrante.
+
+| Integrante | Função             | Contato             |
+| :--------- | :----------------- | :------------------ |
+| [Nome]     | Gerente de Projeto | [GitHub / LinkedIn] |
+| [Nome]     | Banco de Dados     | [GitHub / LinkedIn] |
+| [Nome]     | Integração         | [GitHub / LinkedIn] |
+| [Nome]     | Back-end           | [GitHub / LinkedIn] |
+| [Nome]     | Front-end / UX     | [GitHub / LinkedIn] |
+
+Projeto de curricularização desenvolvido em parceria com a **Mada Marcenaria** (São Bernardo do Campo, SP). **[A PREENCHER: instituição e disciplina]**
+
+## 📄 Licença e uso
+
+> **[A DEFINIR]** Escolha a licença junto com a empresa e a instituição antes de tornar o repositório público.
