@@ -129,6 +129,7 @@ Uma camada de repositórios isola a origem dos dados: o MVP roda com dados simul
 | :------------------------------------------------- | :-------------------------------------------------------------------- |
 | [Documentação do projeto](docs/PROJETO.md)         | Contexto, requisitos, objetivos, cronograma, riscos e modelo de dados |
 | [Guia de design](docs/DESIGN.md)                   | Princípios de UX e design system para chão de fábrica                 |
+| [Design System (Tokens & Componentes)](docs/DESIGN_SYSTEM.md) | Regras estritas de cores, tokens e adendos de componentes |
 | [Project Model Canvas](docs/CANVAS.md)             | Planejamento do projeto em matriz                                     |
 | [Decisões e reuniões](docs/DECISOES_E_REUNIOES.md) | Registro de decisões e feedbacks                                      |
 
