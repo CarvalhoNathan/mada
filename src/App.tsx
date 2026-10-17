@@ -14,31 +14,17 @@ import { ModalCriticalExcess } from './screens/ModalCriticalExcess';
 import { ModalUseFirst } from './screens/ModalUseFirst';
 import { ModalCancelPrep } from './screens/ModalCancelPrep';
 
-const OPERATORS: Operator[] = [
-  {
-    name: 'Carlos Silva',
-    role: 'Pintor Líder • Cabine 01',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&crop=faces',
-  },
-  {
-    name: 'Ana Souza',
-    role: 'Aplicadora PU • Cabine 02',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&crop=faces',
-  },
-  {
-    name: 'Marcos Lima',
-    role: 'Auxiliar de Cabine',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces',
-  },
-];
+import {
+  operadorRepository,
+  osRepository,
+  movimentacaoRepository,
+  MOCK_OPERADORES,
+  MOCK_ORDENS_SERVICO,
+} from './data';
+import { useConnectionStatus } from './hooks/useConnectionStatus';
+import { recalcularVolumePorComponente } from './domain/mixture';
 
-const INITIAL_PIECE_LOT: PieceLot = {
-  title: 'Armários Superiores - Portas 18mm',
-  qty: '12 frentes (42 m²)',
-  substrate: 'MDF Cru 18mm Berneck',
-  area: '42 m²',
-  estVolume: '1.050 ml',
-};
+const INITIAL_PIECE_LOT: PieceLot = MOCK_ORDENS_SERVICO[0].pecaLote;
 
 const INITIAL_RECIPE: RecipeState = {
   totalVolume: 1000,
@@ -59,12 +45,23 @@ const INITIAL_RECIPE: RecipeState = {
 export const App: React.FC = () => {
   // Estado de navegação e usuário
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('auth');
-  const [selectedOperator, setSelectedOperator] = useState<Operator>(OPERATORS[0]);
+  const [operators, setOperators] = useState<Operator[]>(MOCK_OPERADORES);
+  const [selectedOperator, setSelectedOperator] = useState<Operator>(MOCK_OPERADORES[0]);
+
+  // Carregar operadores do repositório
+  useEffect(() => {
+    operadorRepository.listar().then((list) => {
+      if (list.length > 0) {
+        setOperators(list);
+        setSelectedOperator(list[0]);
+      }
+    });
+  }, []);
 
   // Dados da OS e Lote
-  const [clientName, setClientName] = useState('Residência Fontana • Bloco A');
-  const [projectName, setProjectName] = useState('Apartamento 402 • Projeto Executivo Arq. Daniela');
-  const [selectedEnvironment, setSelectedEnvironment] = useState('Cozinha Gourmet');
+  const [clientName, setClientName] = useState(MOCK_ORDENS_SERVICO[0].clienteNome);
+  const [projectName, setProjectName] = useState(MOCK_ORDENS_SERVICO[0].projetoNome);
+  const [selectedEnvironment, setSelectedEnvironment] = useState(MOCK_ORDENS_SERVICO[0].ambienteNome);
   const [pieceLot, setPieceLot] = useState<PieceLot>(INITIAL_PIECE_LOT);
 
   // Receita de Mistura
@@ -75,9 +72,8 @@ export const App: React.FC = () => {
   const [isUseFirstModalOpen, setIsUseFirstModalOpen] = useState(false);
   const [isCancelPrepModalOpen, setIsCancelPrepModalOpen] = useState(false);
 
-  // Status de Rede Real (Wi-Fi e Servidor Local)
-  const [isWifiConnected, setIsWifiConnected] = useState(navigator.onLine);
-  const [isServerLocal, setIsServerLocal] = useState(true);
+  // Monitoramento de Rede Real via Hook
+  const { isOnline, isServerLocal, isOffline } = useConnectionStatus();
 
   // Toast
   const [toast, setToast] = useState<{
@@ -90,46 +86,6 @@ export const App: React.FC = () => {
     const mappedType: 'info' | 'ok' | 'warn' | 'danger' = type === 'success' ? 'ok' : type;
     setToast({ message, type: mappedType, key: Date.now() });
   }, []);
-
-  // Monitoramento de Rede Real
-  useEffect(() => {
-    const handleOnline = () => {
-      setIsWifiConnected(true);
-      showToast('Conexão Wi-Fi restabelecida.', 'success');
-    };
-
-    const handleOffline = () => {
-      setIsWifiConnected(false);
-      showToast('Conexão com a rede perdida!', 'danger');
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    // Heartbeat leve para testar conectividade com o servidor local
-    const checkServerHealth = async () => {
-      if (!navigator.onLine) {
-        setIsServerLocal(false);
-        return;
-      }
-      try {
-        const res = await fetch(`/?ping=${Date.now()}`, { method: 'HEAD', cache: 'no-store' });
-        setIsServerLocal(res.ok || res.type === 'opaque');
-      } catch {
-        setIsServerLocal(false);
-      }
-    };
-
-    const interval = setInterval(checkServerHealth, 15000);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-      clearInterval(interval);
-    };
-  }, [showToast]);
-
-  const isOffline = !isWifiConnected || !isServerLocal;
 
   // Ações de Receita
   const handleSetTotalVolume = (vol: number) => {
@@ -152,11 +108,13 @@ export const App: React.FC = () => {
     }, 800);
   };
 
-  // Recalcular receita por excesso (+200ml catalisador -> 1800ml total)
+  // Recalcular receita por excesso (+200ml catalisador -> 450ml / 0.25 = 1.800ml total)
   const handleRecalcularReceita = () => {
-    handleSetTotalVolume(1800);
+    const volCatalisadorComExcesso = (recipe.totalVolume * recipe.proportions.catalisador) + 200;
+    const novoVolume = recalcularVolumePorComponente(volCatalisadorComExcesso, recipe.proportions.catalisador);
+    handleSetTotalVolume(novoVolume || 1800);
     setIsCriticalModalOpen(false);
-    showToast('✓ Receita recalculada para 1.800 ml: proporções químicas re-balanceadas!', 'success');
+    showToast(`✓ Receita recalculada para ${(novoVolume || 1800).toLocaleString('pt-BR')} ml: proporções químicas re-balanceadas!`, 'success');
   };
 
   const handleRepesarDoZero = () => {
@@ -165,12 +123,25 @@ export const App: React.FC = () => {
   };
 
   const handleConfirmDesperdicio = (reason: string) => {
+    movimentacaoRepository.registrar({
+      loteId: 2,
+      tipo: 'DESCARTE',
+      quantidade: 200,
+      justificativa: reason,
+      registradaEm: new Date().toISOString(),
+    });
     setIsCriticalModalOpen(false);
     showToast(`🗑 Desperdício confirmado (${reason}) e registrado na OS (+200ml de catalisador).`, 'warn');
     setCurrentScreen('dashboard');
   };
 
   const handleConfirmWeighing = () => {
+    movimentacaoRepository.registrar({
+      loteId: 1,
+      tipo: 'RETIRADA',
+      quantidade: recipe.totalVolume,
+      registradaEm: new Date().toISOString(),
+    });
     showToast('✓ Mistura concluída e baixa realizada no estoque com sucesso!', 'success');
     setCurrentScreen('dashboard');
   };
@@ -187,13 +158,13 @@ export const App: React.FC = () => {
       operator={
         currentScreen !== 'auth'
           ? {
-              name: selectedOperator.name,
+              name: selectedOperator.nome,
               avatarUrl: selectedOperator.avatar,
-              role: selectedOperator.role,
+              role: selectedOperator.papel,
             }
           : undefined
       }
-      isWifiConnected={isWifiConnected}
+      isWifiConnected={isOnline}
       isServerLocal={isServerLocal}
       onOperatorClick={() => {
         if (currentScreen !== 'auth') {
@@ -216,11 +187,11 @@ export const App: React.FC = () => {
       {/* Roteamento de Telas */}
       {currentScreen === 'auth' && (
         <ScreenAuth
-          operators={OPERATORS}
+          operators={operators}
           selectedOperator={selectedOperator}
           onSelectOperator={setSelectedOperator}
           onSuccessAuth={() => {
-            showToast(`Bem-vindo(a), ${selectedOperator.name}!`, 'success');
+            showToast(`Bem-vindo(a), ${selectedOperator.nome}!`, 'success');
             setCurrentScreen('dashboard');
           }}
           isOffline={isOffline}
@@ -247,26 +218,19 @@ export const App: React.FC = () => {
           pieceLot={pieceLot}
           onChangePieceLot={() => {
             setPieceLot(prev =>
-              prev.title.includes('Superiores')
-                ? {
-                    title: 'Bancada Ilha Gourmet - Painéis Ripados',
-                    qty: '6 painéis (28 m²)',
-                    substrate: 'MDF Cru 25mm Berneck',
-                    area: '28 m²',
-                    estVolume: '700 ml',
-                  }
-                : INITIAL_PIECE_LOT
+              prev.titulo.includes('Superiores')
+                ? MOCK_ORDENS_SERVICO[1].pecaLote
+                : MOCK_ORDENS_SERVICO[0].pecaLote
             );
             showToast('Lote de peças alternado.', 'info');
           }}
           onChangeOS={() => {
-            setClientName(prev =>
-              prev.includes('Fontana') ? 'Edifício Horizon • Cobertura 1201' : 'Residência Fontana • Bloco A'
-            );
-            setProjectName(prev =>
-              prev.includes('Fontana') ? 'Living Integrado • Arq. Roberto Silveira' : 'Apartamento 402 • Projeto Executivo Arq. Daniela'
-            );
-            showToast('Ordem de Serviço alternada.', 'info');
+            osRepository.listar().then((ordens) => {
+              const alternada = ordens.find(o => o.clienteNome !== clientName) || ordens[0];
+              setClientName(alternada.clienteNome);
+              setProjectName(alternada.projetoNome);
+              showToast('Ordem de Serviço alternada.', 'info');
+            });
           }}
           onScanOS={handleSimulateQR}
           onNavigate={(screen) => setCurrentScreen(screen)}

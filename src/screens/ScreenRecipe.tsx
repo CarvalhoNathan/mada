@@ -3,6 +3,8 @@ import { RecipeState } from '../types';
 import { StepIndicator } from '../components/ui/StepIndicator';
 import { Button } from '../components/ui/Button';
 
+import { calcularFracoesMistura } from '../domain/mixture';
+
 interface ScreenRecipeProps {
   recipe: RecipeState;
   onSetTotalVolume: (vol: number) => void;
@@ -26,18 +28,31 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
 }) => {
   const vol = recipe.totalVolume;
 
-  // Cálculos de volume e peso das 4 frações
-  const volBase = Math.round(vol * recipe.proportions.base);
-  const weightBase = Math.round(volBase * recipe.densities.base);
+  // Cálculo das frações químicas via função pura de domínio
+  const itensParaCalculo = [
+    { papel: 'base', produtoNome: '1º Base Laca Branca PU', codigoProduto: 'LB-2001', proporcao: recipe.proportions.base, densidade: recipe.densities.base },
+    { papel: 'catalisador', produtoNome: '2º Catalisador PU Médio', codigoProduto: 'CT-304', proporcao: recipe.proportions.catalisador, densidade: recipe.densities.catalisador },
+    { papel: 'diluidor', produtoNome: '3º Diluidor Poliuretano 8000', codigoProduto: 'DL-800', proporcao: recipe.proportions.diluidor, densidade: recipe.densities.diluidor },
+    { papel: 'retardador', produtoNome: '4º Aditivo Retardador', codigoProduto: 'RT-100', proporcao: recipe.proportions.retardador, densidade: recipe.densities.retardador },
+  ];
 
-  const volCat = Math.round(vol * recipe.proportions.catalisador);
-  const weightCat = Math.round(volCat * recipe.densities.catalisador);
+  const fracoes = calcularFracoesMistura(itensParaCalculo, vol);
+  const fBase = fracoes[0];
+  const fCat = fracoes[1];
+  const fDil = fracoes[2];
+  const fRet = fracoes[3];
 
-  const volDil = Math.round(vol * recipe.proportions.diluidor);
-  const weightDil = Math.round(volDil * recipe.densities.diluidor);
+  const volBase = fBase.volumeMl;
+  const weightBase = fBase.pesoGramas;
 
-  const volRet = Math.round(vol * recipe.proportions.retardador);
-  const weightRet = Math.round(volRet * recipe.densities.retardador);
+  const volCat = fCat.volumeMl;
+  const weightCat = fCat.pesoGramas;
+
+  const volDil = fDil.volumeMl;
+  const weightDil = fDil.pesoGramas;
+
+  const volRet = fRet.volumeMl;
+  const weightRet = fRet.pesoGramas;
 
   return (
     <>

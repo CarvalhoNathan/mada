@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Operator } from '../types';
 import { Button } from '../components/ui/Button';
+import { calcularSaldoDevolucao } from '../domain/leftover';
 
 interface ScreenReturnProps {
   operator: Operator;
@@ -22,7 +23,8 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
     chk3: false,
   });
 
-  const percent = Math.round((returnVolume / maxVolume) * 100);
+  const saldo = calcularSaldoDevolucao(returnVolume, maxVolume, 0.95);
+  const percent = saldo.porcentagemPreenchimento;
 
   const toggleChecklistItem = (key: 'chk1' | 'chk2' | 'chk3') => {
     setChecklist(prev => ({ ...prev, [key]: !prev[key] }));
@@ -154,10 +156,10 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
               <div className="sticker-body">
                 <div className="sticker-details">
                   <p><strong>PRODUTO:</strong> VERNIZ PU 4:1</p>
-                  <p><strong>SALDO:</strong> <span>{returnVolume} ml</span> (± {Math.round(returnVolume * 0.95)}g)</p>
+                  <p><strong>SALDO:</strong> <span>{returnVolume} ml</span> (± {saldo.pesoEstimadoGramas}g)</p>
                   <p><strong>LOTE GERADO:</strong> #PU-8821-SOBRA-01</p>
                   <p><strong>ORIGEM:</strong> OS #8841 (Cozinha)</p>
-                  <p><strong>OPERADOR:</strong> <span>{operator.name}</span></p>
+                  <p><strong>OPERADOR:</strong> <span>{operator.nome || operator.name}</span></p>
                   <p><strong>DATA:</strong> 17/10/2026</p>
                 </div>
 

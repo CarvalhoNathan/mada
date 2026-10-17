@@ -1,54 +1,27 @@
 import React from 'react';
 import { Button } from '../components/ui/Button';
+import { Lote } from '../types';
+import { MOCK_LOTES } from '../data/mock/mockData';
+import { ordenarLotesFEFO } from '../domain/fefo';
 
 interface ModalUseFirstProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectBatch?: (batchCode: string) => void;
+  lotes?: Lote[];
 }
-
-interface ExpiringCan {
-  code: string;
-  product: string;
-  shelf: string;
-  openedDays: string;
-  balance: string;
-  urgency: 'high' | 'medium';
-}
-
-const EXPIRING_CANS: ExpiringCan[] = [
-  {
-    code: '#SY-8821',
-    product: 'Verniz PU Alto Sólidos 4:1 (Sayersystem)',
-    shelf: 'Prateleira A-02',
-    openedDays: 'Aberto há 3 dias',
-    balance: '400 ml restantes',
-    urgency: 'high',
-  },
-  {
-    code: '#SY-7410',
-    product: 'Catalisador PU Médio Homologado',
-    shelf: 'Prateleira A-02',
-    openedDays: 'Aberto há 2 dias',
-    balance: '250 ml restantes',
-    urgency: 'high',
-  },
-  {
-    code: '#SY-6032',
-    product: 'Laca Branca Fosca 20 Gloss',
-    shelf: 'Prateleira B-01',
-    openedDays: 'Aberto há 5 dias',
-    balance: '650 ml restantes',
-    urgency: 'medium',
-  },
-];
 
 export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
   isOpen,
   onClose,
   onSelectBatch,
+  lotes,
 }) => {
   if (!isOpen) return null;
+
+  const lotesPrioritarios = ordenarLotesFEFO(lotes || MOCK_LOTES).filter(
+    (l) => l.quantidadeAtual > 0 && l.diasAberto > 0
+  );
 
   return (
     <div className="ds-modal-backdrop" role="dialog" aria-modal="true">
@@ -77,9 +50,9 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
 
         <div className="ds-modal-body" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {EXPIRING_CANS.map((can) => (
+            {lotesPrioritarios.map((lote) => (
               <div
-                key={can.code}
+                key={lote.codigo}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -93,7 +66,7 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                     <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text)' }}>
-                      {can.product}
+                      {lote.produtoNome}
                     </span>
                     <span
                       style={{
@@ -106,13 +79,13 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
                         border: '1px solid var(--warn)',
                       }}
                     >
-                      {can.code}
+                      {lote.codigo}
                     </span>
                   </div>
                   <div style={{ fontSize: '14px', color: 'var(--text-muted)', display: 'flex', gap: '14px' }}>
-                    <span>📍 {can.shelf}</span>
-                    <span>⏳ {can.openedDays}</span>
-                    <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Saldo: {can.balance}</span>
+                    <span>📍 {lote.prateleira}</span>
+                    <span>⏳ Aberto há {lote.diasAberto} dias</span>
+                    <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Saldo: {lote.quantidadeAtual} ml restantes</span>
                   </div>
                 </div>
 
@@ -120,7 +93,7 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
                   variant="secondary"
                   size="md"
                   onClick={() => {
-                    if (onSelectBatch) onSelectBatch(can.code);
+                    if (onSelectBatch) onSelectBatch(lote.codigo);
                     onClose();
                   }}
                   style={{ minWidth: '120px' }}

@@ -14,7 +14,8 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
   onOpenUseFirstModal,
   onSimulateQR,
 }) => {
-  const firstName = operator.name.split(' ')[0];
+  const fullName = operator.nome || operator.name || 'Operador';
+  const firstName = fullName.split(' ')[0];
 
   return (
     <div className="screen-content-area">

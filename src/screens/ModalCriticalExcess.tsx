@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '../components/ui/Button';
+import { operadorRepository } from '../data';
 
 interface ModalCriticalExcessProps {
   isOpen: boolean;
@@ -37,12 +38,11 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
     }
   };
 
-  const handlePinChange = (val: string) => {
+  const handlePinChange = async (val: string) => {
     setSupervisorPin(val);
-    if (val === '9999' || val === '1234') {
-      setPinStatus('valid');
-    } else if (val.length === 4) {
-      setPinStatus('invalid');
+    if (val.length === 4) {
+      const isValid = await operadorRepository.validarSupervisorPin(val);
+      setPinStatus(isValid ? 'valid' : 'invalid');
     } else {
       setPinStatus('idle');
     }

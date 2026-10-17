@@ -1,5 +1,6 @@
 import React from 'react';
-import { PieceLot } from '../types';
+import { Ambiente, PieceLot } from '../types';
+import { MOCK_AMBIENTES } from '../data/mock/mockData';
 import { StepIndicator } from '../components/ui/StepIndicator';
 import { Button } from '../components/ui/Button';
 
@@ -15,14 +16,8 @@ interface ScreenOSProps {
   onScanOS: () => void;
   onNavigate: (screen: 'dashboard' | 'recipe') => void;
   onOpenCancelPrep: () => void;
+  ambientes?: Ambiente[];
 }
-
-const ENVIRONMENTS = [
-  { name: 'Cozinha Gourmet', code: 'OS #8841' },
-  { name: 'Suíte Master', code: 'OS #8843' },
-  { name: 'Home Theater', code: 'OS #8844' },
-  { name: 'Área Gourmet Ext.', code: 'OS #8845' },
-];
 
 export const ScreenOS: React.FC<ScreenOSProps> = ({
   clientName,
@@ -35,7 +30,9 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
   onScanOS,
   onNavigate,
   onOpenCancelPrep,
+  ambientes,
 }) => {
+  const listaAmbientes = (ambientes || MOCK_AMBIENTES).map(a => ({ name: a.nome, code: a.codigoOS }));
   return (
     <>
       <div className="screen-content-area">
@@ -106,7 +103,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                 </span>
               </div>
               <div className="environments-grid">
-                {ENVIRONMENTS.map((env) => {
+                {listaAmbientes.map((env) => {
                   const isSelected = env.name === selectedEnvironment;
                   return (
                     <div

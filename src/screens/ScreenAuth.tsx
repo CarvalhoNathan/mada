@@ -80,10 +80,12 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
 
           <div className="operators-grid">
             {operators.map((op) => {
-              const isSelected = op.name === selectedOperator.name;
+              const opName = op.nome || op.name || '';
+              const selectedName = selectedOperator.nome || selectedOperator.name || '';
+              const isSelected = op.id ? op.id === selectedOperator.id : opName === selectedName;
               return (
                 <div
-                  key={op.name}
+                  key={op.id || opName}
                   className={`operator-card ${isSelected ? 'selected' : ''}`}
                   onClick={() => {
                     onSelectOperator(op);
@@ -91,9 +93,9 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                   }}
                 >
                   <span className="operator-check-badge">✓</span>
-                  <img src={op.avatar} alt={op.name} className="operator-photo" />
+                  <img src={op.avatar} alt={opName} className="operator-photo" />
                   <div className="operator-card-body">
-                    <span className="operator-name">{op.name}</span>
+                    <span className="operator-name">{opName}</span>
                     <span className="operator-status-label">
                       {isSelected ? 'Selecionado(a)' : 'Toque para selecionar'}
                     </span>
@@ -124,7 +126,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
         <div className="pin-pad-card">
           <div>
             <div className="pin-header">
-              <h3 className="pin-title">PIN de {selectedOperator.name}</h3>
+              <h3 className="pin-title">PIN de {selectedOperator.nome || selectedOperator.name}</h3>
               <div className="pin-lock-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
