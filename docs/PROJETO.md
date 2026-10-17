@@ -458,32 +458,44 @@ erDiagram
 ## 11. Tecnologias Utilizadas
 
 - **Linguagem Principal:** [TypeScript](https://www.typescriptlang.org/)
-- **Interface:** React + TypeScript, Web Responsive / Tablet-First (HTML5 e CSS com variáveis de design tokens)
-- **Banco de Dados e Backend como Serviço:** PostgreSQL via [Supabase](https://supabase.com/) (integração com o sistema existente da empresa)
-- **Camada de Dados:** Repositórios com implementações simulada e Supabase
-- **Identificação:** QR Code Scanner via WebRTC API
+- **Interface:** React 19 + TypeScript, Web Responsive / Tablet-First (HTML5 e CSS com variáveis de design tokens)
+- **Ferramenta de Build:** [Vite](https://vite.dev/) (porta 3000)
+- **Camada de Dados (MVP):** Repositórios em memória com dados simulados (`src/data/`, seletor `VITE_DATA_SOURCE=mock`)
+- **Regras de Negócio:** Módulos de domínio em TypeScript com funções puras (`src/domain/`)
+- **Banco de Dados e Backend como Serviço:** PostgreSQL via [Supabase](https://supabase.com/) (integração planejada)
+- **Identificação:** QR Code simulado no MVP (leitura real via WebRTC / câmera planejada)
+- **Qualidade & Testes:** Vitest (16 testes unitários no domínio), ESLint 9 (Flat Config), Prettier
 
 ---
 
 ## 12. Como Executar
 
-> **[A PREENCHER]** Exemplo de estrutura; ajuste aos scripts e variáveis reais do projeto.
+### Pré-requisitos
+- **Node.js:** `>=24.18.0` (indicado em `.nvmrc`)
+- **npm:** Gerenciador de pacotes padrão
 
 ```bash
 git clone <URL-DO-REPOSITORIO>
 cd mada
 npm install
-cp .env.example .env     # preencher as variáveis
 npm run dev
 ```
 
-Exemplo de variáveis de ambiente:
+> **Nota:** Por padrão, a aplicação roda imediatamente com dados simulados (`VITE_DATA_SOURCE=mock`) e **não exige configuração de `.env` para execução local**.
 
+Caso deseje configurar variáveis de ambiente (integração futura):
+
+```bash
+cp .env.example .env
 ```
-# Fonte de dados: "mock" (dados fictícios) ou "supabase"
-DATA_SOURCE=mock
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
+
+Exemplo de variáveis de ambiente (com prefixo obrigatório `VITE_`):
+
+```ini
+# Fonte de dados: "mock" (padrão) ou "supabase"
+VITE_DATA_SOURCE=mock
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
 ```
 
 > Nunca versionar chaves reais, e nunca usar a chave `service_role` no front-end.

@@ -9,7 +9,7 @@ Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas, t
 [![Status](https://img.shields.io/badge/status-MVP%20em%20desenvolvimento-F59E0B)](#-status-e-roadmap)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
-[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![UX](https://img.shields.io/badge/UX-tablet--first-3B82F6)](#-telas)
 
 <!-- [A PREENCHER] Troque pela imagem de capa (colagem das telas ou GIF do fluxo) -->
@@ -79,85 +79,186 @@ flowchart TB
         T["📱 Tablet dos operadores<br/>React + TypeScript"]
         P["🖥️ Painel do gestor (PC)"]
     end
-    R["Camada de repositórios"]
-    M["Dados simulados<br/>(MVP atual)"]
-    S[("Supabase / PostgreSQL<br/>sistema da empresa")]
+    R["Camada de repositórios<br/>(src/data/)"]
+    M["Dados simulados<br/>(MVP atual: VITE_DATA_SOURCE=mock)"]
+    S[("Supabase / PostgreSQL<br/>(integração planejada)")]
+    D["Regras de negócio puras<br/>(src/domain/)"]
     T --> R
     P --> R
-    R -->|hoje| M
+    T -.-> D
+    R -->|implementado| M
     R -->|integração planejada| S
 ```
 
-Uma camada de repositórios isola a origem dos dados: o MVP roda com dados simulados e, quando o acesso ao sistema da empresa for liberado, a troca para o Supabase é feita por configuração. As tabelas da empresa são lidas em modo somente leitura, e as entidades novas (receitas, preparações, movimentações) ficam em um schema separado.
+A camada de repositórios (`src/data/`) está **implementada** e isola a origem dos dados: o MVP roda com repositórios simulados em memória (`VITE_DATA_SOURCE=mock`) e, quando o acesso ao banco da empresa for disponibilizado, a troca para o Supabase é feita por configuração de ambiente. As regras de cálculo (frações de mistura, tolerância de pesagem, consumo de sobras e ordenação FEFO) estão isoladas como funções puras em `src/domain/`, desacopladas da camada visual.
+
+### 📁 Estrutura do projeto
+
+```text
+mada/
+├── .agents/                      # Regras de agentes e diretrizes (ex.: convenções de commit)
+├── assets/                       # Imagens de referência e ideias de UX
+├── docs/                         # Documentação técnica e estratégica do projeto
+│   ├── screens/                  # Capturas de tela da aplicação (.gitkeep)
+│   ├── CANVAS.md                 # Project Model Canvas
+│   ├── DECISOES_E_REUNIOES.md    # Registro de decisões e atas de reuniões
+│   ├── DESIGN.md                 # Princípios de UX para chão de fábrica
+│   ├── DESIGN_SYSTEM.md          # Especificação de tokens e componentes
+│   └── PROJETO.md                # Documento de visão, requisitos e arquitetura
+├── src/
+│   ├── components/               # Componentes de interface modulares e reutilizáveis
+│   ├── data/                     # Camada de repositórios e seletor VITE_DATA_SOURCE
+│   │   ├── mock/                 # Conjunto único de dados simulados (mockData.ts)
+│   │   ├── index.ts              # Exportação dos repositórios ativos
+│   │   ├── mockRepositories.ts   # Implementação em memória dos repositórios
+│   │   └── repositories.ts       # Interfaces TypeScript dos repositórios
+│   ├── domain/                   # Regras de negócio puras (cobertas por testes unitários)
+│   │   ├── fefo.ts               # Ordenação por validade (First Expire, First Out)
+│   │   ├── leftover.ts           # Cálculo de saldo e aproveitamento de sobras
+│   │   ├── mixture.ts            # Cálculo proporcional dos componentes da mistura
+│   │   └── tolerance.ts          # Tolerâncias e alerta de excesso crítico (+5% / +200ml)
+│   ├── hooks/                    # Hooks utilitários customizados (useConnectionStatus)
+│   ├── screens/                  # Telas ativas da aplicação (Telas 1 a 6)
+│   ├── styles/                   # Tokens e estilos globais
+│   │   ├── global.css            # Estilos base e importação de variáveis
+│   │   └── tokens.css            # Definição canônica dos design tokens
+│   ├── App.tsx                   # Roteamento baseado em estado e alternância de telas
+│   ├── main.tsx                  # Ponto de montagem React
+│   └── types.ts                  # Definições centrais de tipos do sistema
+├── tests/
+│   └── domain/                   # Suítes de testes unitários com Vitest
+├── .editorconfig                 # Padronização de indentação e formatação
+├── .env.example                  # Modelo de variáveis de ambiente (prefixo VITE_)
+├── .gitignore                    # Regras de exclusão do Git
+├── .nvmrc                        # Versão do Node.js suportada (24.18.0)
+├── .prettierrc                   # Regras de formatação do Prettier
+├── design-system.html            # Catálogo estático isolado dos design tokens
+├── eslint.config.js              # Configuração do ESLint 9 (Flat Config)
+├── index.html                    # Ponto de entrada HTML do Vite
+├── package.json                  # Dependências, scripts e metadados
+├── tsconfig.json                 # Configuração do TypeScript
+└── vite.config.ts                # Configuração do bundler Vite (porta 3000)
+```
 
 ## 🧰 Tecnologias
 
-| Camada        | Tecnologia                                                        |
-| :------------ | :---------------------------------------------------------------- |
-| Interface     | React, TypeScript, HTML5, CSS com design tokens                   |
-| Dados         | PostgreSQL via Supabase                                           |
-| Identificação | Leitura de QR Code via WebRTC                                     |
-| Design        | Design system próprio, tema escuro e alto contraste, tablet-first |
+| Camada | Tecnologia | Situação |
+| :--- | :--- | :--- |
+| **Interface** | React 19, TypeScript 5.8, HTML5, CSS com design tokens | Implementado |
+| **Ferramenta de Build** | Vite 6 (servidor local na porta 3000) | Implementado |
+| **Camada de Dados (MVP)** | Repositórios em memória com dados simulados (`src/data/`) | Implementado |
+| **Regras de Negócio** | Módulos puros em TypeScript isolados (`src/domain/`) | Implementado |
+| **Qualidade & Testes** | Vitest, ESLint 9 (Flat Config), Prettier | Implementado |
+| **Design** | Design system próprio, tema escuro e alto contraste, _tablet-first_ | Implementado |
+| **Banco de Dados** | PostgreSQL via Supabase | Planejado |
+| **Identificação** | Leitura de QR Code via câmera/WebRTC | Planejado (simulado no MVP) |
+
+## 🧪 Testes e qualidade
+
+O projeto conta com ferramentas de verificação estática, formatação e testes automatizados:
+
+- **Testes unitários (`npm run test`):** Executados via Vitest, com **16 testes unitários** passando em 4 suítes, cobrindo 100% dos cálculos e regras de negócio da camada `src/domain/` (`mixture.test.ts`, `tolerance.test.ts`, `fefo.test.ts` e `leftover.test.ts`).
+- **Análise estática (`npm run lint`):** Validado com ESLint 9 (Flat Config), com 0 erros e 0 avisos.
+- **Checagem de tipos (`npm run typecheck`):** Verificação estrita de tipagem TypeScript via `tsc --noEmit`, com 0 erros.
+- **Empacotamento (`npm run build`):** Build de produção validado via Vite.
+
+```bash
+npm run test        # Executa as suítes de testes unitários com Vitest
+npm run lint        # Executa o linter ESLint
+npm run typecheck   # Valida a tipagem TypeScript sem gerar arquivos
+npm run build       # Compila a aplicação para produção (pasta dist/)
+```
 
 ## 🚧 Status e roadmap
 
-> O projeto está em desenvolvimento. A versão atual é um **MVP demonstrável com dados simulados**; a integração com o sistema da empresa depende da liberação de acesso aos dados reais.
+> O projeto está em desenvolvimento. A versão atual é um **MVP demonstrável com dados simulados**; a integração com o banco de dados da empresa depende da liberação de acesso aos dados reais.
 
-**Já prototipado**
+**Já prototipado / implementado**
 
-- [x] Login rápido com PIN
-- [x] Dashboard operacional com alerta de validade
-- [x] Vinculação de cliente, projeto e ambiente
-- [x] Receita com calculadora dinâmica
-- [x] Dosagem com trava anti-erro
-- [x] Devolução de sobras com etiqueta QR
-- [x] Painel do gestor
+- [x] Login rápido com PIN de 4 dígitos (Tela 1)
+- [x] Dashboard operacional com alerta de validade FEFO (Tela 2)
+- [x] Vinculação de cliente, projeto e ambiente por Ordem de Serviço (Tela 3)
+- [x] Receita com calculadora dinâmica de proporções (Tela 4)
+- [x] Dosagem com trava anti-erro e liberação por supervisor (Tela 5)
+- [x] Devolução de sobras com cálculo de saldo e emissão de etiqueta QR (Tela 6)
+- [x] Leitura de QR Code simulada via software
+- [x] Camada de repositórios com alternância de fonte de dados (`VITE_DATA_SOURCE=mock`)
+- [x] Cobertura de testes unitários para a camada de domínio matemático (`src/domain/`)
 
 **Próximos passos**
 
+- [ ] Painel do gestor (Tela 7: previsto vs. real e custos por ambiente)
+- [ ] Leitura real de QR Code via câmera do tablet (WebRTC)
 - [ ] Integração com o Supabase da empresa
-- [ ] Recebimento de lotes e validades
+- [ ] Recebimento de lotes e validades no estoque
 - [ ] Cadastro/importação de ordens de serviço
 - [ ] Perfis de acesso e trilha de auditoria
 - [ ] Relatórios exportáveis (CSV/PDF)
 - [ ] Operação offline com sincronização
-- [ ] Tempo de vida útil da mistura
+- [ ] Tempo de vida útil da mistura (_pot life_)
 
 ## 📚 Documentação
 
-| Documento                                          | Conteúdo                                                              |
-| :------------------------------------------------- | :-------------------------------------------------------------------- |
-| [Documentação do projeto](docs/PROJETO.md)         | Contexto, requisitos, objetivos, cronograma, riscos e modelo de dados |
-| [Guia de design](docs/DESIGN.md)                   | Princípios de UX e design system para chão de fábrica                 |
+| Documento | Conteúdo |
+| :--- | :--- |
+| [Documentação do projeto](docs/PROJETO.md) | Contexto, requisitos, objetivos, cronograma, riscos e modelo de dados |
+| [Guia de design](docs/DESIGN.md) | Princípios de UX e design system para chão de fábrica |
 | [Design System (Tokens & Componentes)](docs/DESIGN_SYSTEM.md) | Regras estritas de cores, tokens e adendos de componentes |
-| [Project Model Canvas](docs/CANVAS.md)             | Planejamento do projeto em matriz                                     |
-| [Decisões e reuniões](docs/DECISOES_E_REUNIOES.md) | Registro de decisões e feedbacks                                      |
+| [Project Model Canvas](docs/CANVAS.md) | Planejamento do projeto em matriz |
+| [Decisões e reuniões](docs/DECISOES_E_REUNIOES.md) | Registro de decisões e feedbacks |
 
 ## ▶️ Como executar
 
-> **[A PREENCHER]** Exemplo de estrutura; ajuste aos scripts reais do projeto.
+### Pré-requisitos
+
+- **Node.js:** Versão `>=24.18.0` (definida em `.nvmrc` e validada no `package.json`).
+- **npm:** Gerenciador de pacotes padrão do Node.
+
+### Passo a passo
 
 ```bash
 git clone <URL-DO-REPOSITORIO>
 cd mada
 npm install
-cp .env.example .env     # preencher as variáveis
 npm run dev
 ```
 
-Por padrão a aplicação usa dados simulados (`DATA_SOURCE=mock`). Para usar o Supabase, configure `SUPABASE_URL` e `SUPABASE_ANON_KEY` no `.env`. Nunca versione chaves reais e nunca use a chave `service_role` no front-end.
+A aplicação será iniciada em modo de desenvolvimento em `http://localhost:3000`.
+
+> **Nota:** Por padrão, o MVP roda imediatamente com dados simulados (`VITE_DATA_SOURCE=mock`) e **não exige a criação de arquivo `.env` para execução local**.
+
+### Variáveis de ambiente (opcional / integração futura)
+
+Caso deseje configurar um ambiente personalizado ou conectar ao Supabase (planejado), crie o arquivo `.env` a partir do modelo:
+
+```bash
+cp .env.example .env
+```
+
+Variáveis suportadas (todas com o prefixo obrigatório `VITE_` exigido pelo Vite):
+
+```ini
+# Fonte de dados: "mock" (padrão) ou "supabase"
+VITE_DATA_SOURCE=mock
+
+# Integração com Supabase (planejada)
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+```
+
+> ⚠️ Nunca versione chaves reais e nunca utilize a chave `service_role` no front-end.
 
 ## 👥 Equipe
 
 > **[A PREENCHER]** Nome, função e link de cada integrante.
 
-| Integrante | Função             | Contato             |
-| :--------- | :----------------- | :------------------ |
-| [Nome]     | Gerente de Projeto | [GitHub / LinkedIn] |
-| [Nome]     | Banco de Dados     | [GitHub / LinkedIn] |
-| [Nome]     | Integração         | [GitHub / LinkedIn] |
-| [Nome]     | Back-end           | [GitHub / LinkedIn] |
-| [Nome]     | Front-end / UX     | [GitHub / LinkedIn] |
+| Integrante | Função | Contato |
+| :--- | :--- | :--- |
+| [Nome] | Gerente de Projeto | [GitHub / LinkedIn] |
+| [Nome] | Banco de Dados | [GitHub / LinkedIn] |
+| [Nome] | Integração | [GitHub / LinkedIn] |
+| [Nome] | Back-end | [GitHub / LinkedIn] |
+| [Nome] | Front-end / UX | [GitHub / LinkedIn] |
 
 Projeto de curricularização desenvolvido em parceria com a **Mada Marcenaria** (São Bernardo do Campo, SP). **[A PREENCHER: instituição e disciplina]**
 
