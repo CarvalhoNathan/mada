@@ -171,26 +171,6 @@ body {
   color: var(--danger);
 }
 
-.header-network-toggle {
-  background: var(--card-hover);
-  border: 1.5px solid var(--border);
-  color: var(--text-muted);
-  padding: 8px 12px;
-  border-radius: var(--radius-card);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all var(--transition-fast);
-}
-
-.header-network-toggle:hover {
-  border-color: var(--text-muted);
-  color: var(--text);
-}
-
 .header-operator-badge {
   display: flex;
   align-items: center;
@@ -229,27 +209,6 @@ body {
 .header-operator-role {
   font-size: 14px;
   color: var(--text-muted);
-}
-
-.header-supervisor-btn {
-  background: var(--card-hover);
-  border: 1.5px solid var(--border);
-  color: var(--text);
-  padding: 8px 16px;
-  border-radius: var(--radius-card);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  min-height: 44px;
-  transition: all var(--transition-fast);
-}
-
-.header-supervisor-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
 }
 
 /* ==========================================================================

@@ -65,44 +65,90 @@ function navigateTo(screenId) {
   }
 }
 
-function toggleSupervisorView() {
-  if (appState.currentScreen === 'screen-manager') {
-    navigateTo('screen-dashboard');
-  } else {
-    navigateTo('screen-manager');
-    showToast('Acesso do Supervisor Fábio concedido.', 'info');
-  }
-}
-
-// Simulação de Queda de Rede / Servidor (StatusBanner)
-function toggleNetworkConnection() {
-  appState.isOffline = !appState.isOffline;
+// ==========================================================================
+// Monitoramento Real de Conexão de Rede & Servidor Local (StatusBanner)
+// ==========================================================================
+function setOfflineState(isOffline, reason = '') {
+  const previousState = appState.isOffline;
+  appState.isOffline = isOffline;
   const banner = document.getElementById('statusBannerOffline');
   const wifiBadge = document.getElementById('statusWifi');
   const serverBadge = document.getElementById('statusServer');
   const wifiLabel = document.getElementById('wifiLabel');
   const serverLabel = document.getElementById('serverLabel');
-  const btnSubmit = document.getElementById('btnPinSubmit');
-  const toggleLabel = document.getElementById('toggleNetworkLabel');
+  const btnPinSubmit = document.getElementById('btnPinSubmit');
+  const btnConfirmReturn = document.getElementById('btnConfirmReturn');
+  const btnConfirmWaste = document.getElementById('btnConfirmWaste');
 
-  if (appState.isOffline) {
-    banner.classList.add('visible');
-    wifiBadge.classList.add('is-offline');
-    serverBadge.classList.add('is-offline');
-    wifiLabel.textContent = 'Sem Wi-Fi';
-    serverLabel.textContent = 'Servidor Offline';
-    btnSubmit.disabled = true;
-    toggleLabel.textContent = 'Restaurar Conexão';
-    showToast('Atenção: Queda de conexão com o servidor local.', 'danger', 3500);
+  if (isOffline) {
+    if (banner) banner.classList.add('visible');
+    if (wifiBadge) {
+      wifiBadge.classList.add('is-offline');
+      if (wifiLabel) wifiLabel.textContent = navigator.onLine ? 'Wi-Fi Instável' : 'Sem Wi-Fi';
+    }
+    if (serverBadge) {
+      serverBadge.classList.add('is-offline');
+      if (serverLabel) serverLabel.textContent = 'Servidor Inacessível';
+    }
+    if (btnPinSubmit) btnPinSubmit.disabled = true;
+    if (btnConfirmReturn) btnConfirmReturn.disabled = true;
+    if (btnConfirmWaste) btnConfirmWaste.disabled = true;
+    if (!previousState) {
+      showToast(reason || 'Sem conexão com a rede ou servidor local. Modo somente leitura ativado.', 'danger', 4000);
+    }
   } else {
-    banner.classList.remove('visible');
-    wifiBadge.classList.remove('is-offline');
-    serverBadge.classList.remove('is-offline');
-    wifiLabel.textContent = 'Wi-Fi Conectado';
-    serverLabel.textContent = 'Servidor Ativo';
-    btnSubmit.disabled = false;
-    toggleLabel.textContent = 'Simular Offline';
-    showToast('Conexão restabelecida com sucesso.', 'success', 3000);
+    if (banner) banner.classList.remove('visible');
+    if (wifiBadge) {
+      wifiBadge.classList.remove('is-offline');
+      if (wifiLabel) wifiLabel.textContent = 'Wi-Fi Conectado';
+    }
+    if (serverBadge) {
+      serverBadge.classList.remove('is-offline');
+      if (serverLabel) serverLabel.textContent = 'Servidor Ativo';
+    }
+    if (btnPinSubmit && appState.pinEntered.length === 4) btnPinSubmit.disabled = false;
+    if (previousState) {
+      showToast('Conexão com servidor restabelecida com sucesso.', 'success', 3000);
+    }
+  }
+}
+
+function initNetworkMonitoring() {
+  window.addEventListener('online', () => {
+    checkServerHealth();
+  });
+
+  window.addEventListener('offline', () => {
+    setOfflineState(true, 'Sem conexão com a rede Wi-Fi. Ações de salvar desabilitadas.');
+  });
+
+  // Checagem de conectividade inicial
+  if (!navigator.onLine) {
+    setOfflineState(true, 'Dispositivo desconectado da rede Wi-Fi.');
+  } else {
+    checkServerHealth();
+  }
+
+  // Monitoramento periódico leve do servidor local a cada 15s
+  setInterval(checkServerHealth, 15000);
+}
+
+async function checkServerHealth() {
+  if (!navigator.onLine) {
+    setOfflineState(true, 'Sem conexão com a rede Wi-Fi.');
+    return;
+  }
+  try {
+    const res = await fetch(`tokens.css?t=${Date.now()}`, { method: 'HEAD', cache: 'no-store' });
+    if (res.ok) {
+      if (appState.isOffline) {
+        setOfflineState(false);
+      }
+    } else {
+      setOfflineState(true, `Servidor local inacessível (Erro ${res.status}). Modo somente leitura.`);
+    }
+  } catch (err) {
+    setOfflineState(true, 'Falha de comunicação com o servidor local. Modo somente leitura.');
   }
 }
 
@@ -629,6 +675,7 @@ function showToast(message, type = 'info', duration = 3000) {
 document.addEventListener('DOMContentLoaded', () => {
   setupOperatorCards();
   recalculateRecipe();
+  initNetworkMonitoring();
 
   // Configurar HoldToConfirm para ações destrutivas (1,5s com barra animada)
   setupHoldToConfirm('btnConfirmWaste', 'holdBarWaste', 1500, () => {
