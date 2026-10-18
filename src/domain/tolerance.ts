@@ -38,3 +38,31 @@ export function verificarToleranciaExcesso(
     limiteMaximoPermitido: Math.round(limiteMaximoPermitido),
   };
 }
+
+/**
+ * Verifica de forma booleana se o valor medido excede a tolerância padrão homologada (5%).
+ * Função pura.
+ */
+export function excedeTolerancia(
+  volumeReal: number,
+  volumeMeta: number,
+  toleranciaPercentual: number = 0.05
+): boolean {
+  if (volumeMeta <= 0) return volumeReal > 0;
+  const limiteMaximo = volumeMeta * (1 + toleranciaPercentual);
+  return volumeReal > limiteMaximo;
+}
+
+/**
+ * Calcula o custo financeiro do excesso em reais com base no preço por litro do produto.
+ * Exemplo: 200 ml de produto a R$ 120,00/litro = R$ 24,00.
+ * Função pura.
+ */
+export function calcularCustoExcesso(
+  excessoMl: number,
+  precoPorLitro: number
+): number {
+  if (excessoMl <= 0 || precoPorLitro <= 0) return 0;
+  const custo = (excessoMl / 1000) * precoPorLitro;
+  return Math.round(custo * 100) / 100;
+}

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { verificarToleranciaExcesso } from '../tolerance';
+import {
+  verificarToleranciaExcesso,
+  excedeTolerancia,
+  calcularCustoExcesso,
+} from '../tolerance';
 
 describe('Domain: tolerance (Verificação de Tolerância e Excesso)', () => {
   it('não deve acusar excesso quando o volume estiver abaixo da tolerância (ex: +3% com limite de 5%)', () => {
@@ -38,5 +42,28 @@ describe('Domain: tolerance (Verificação de Tolerância e Excesso)', () => {
     const resAmbosZero = verificarToleranciaExcesso(0, 0);
     expect(resAmbosZero.excedeu).toBe(false);
     expect(resAmbosZero.diferencaMl).toBe(0);
+  });
+
+  it('excedeTolerancia: retorna false quando dentro da meta ou tolerância de 5%', () => {
+    expect(excedeTolerancia(250, 250, 0.05)).toBe(false);
+    expect(excedeTolerancia(260, 250, 0.05)).toBe(false); // 250 * 1.05 = 262.5
+    expect(excedeTolerancia(262, 250, 0.05)).toBe(false);
+  });
+
+  it('excedeTolerancia: retorna true quando ultrapassa os 5% homologados', () => {
+    expect(excedeTolerancia(263, 250, 0.05)).toBe(true); // 263 > 262.5
+    expect(excedeTolerancia(450, 250, 0.05)).toBe(true);
+  });
+
+  it('calcularCustoExcesso: calcula corretamente o custo do desperdício em reais', () => {
+    // 200 ml de produto a R$ 120,00/litro = R$ 24,00
+    expect(calcularCustoExcesso(200, 120)).toBe(24.00);
+
+    // 150 ml de produto a R$ 85,00/litro = R$ 12,75
+    expect(calcularCustoExcesso(150, 85)).toBe(12.75);
+
+    // Sem excesso ou preço zero
+    expect(calcularCustoExcesso(0, 120)).toBe(0);
+    expect(calcularCustoExcesso(200, 0)).toBe(0);
   });
 });

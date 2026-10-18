@@ -15,9 +15,8 @@ interface ScreenRecipeProps {
   recipe: RecipeState;
   onSetTotalVolume: (vol: number) => void;
   onAdjustVolume: (delta: number) => void;
-  onOpenCriticalModal: () => void;
   onConfirmWeighing: () => void;
-  onNavigate: (screen: 'os' | 'dashboard') => void;
+  onNavigate: (screen: 'os' | 'dashboard' | 'dosing') => void;
   onOpenCancelPrep: () => void;
 }
 
@@ -27,7 +26,6 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
   recipe,
   onSetTotalVolume,
   onAdjustVolume,
-  onOpenCriticalModal,
   onConfirmWeighing,
   onNavigate,
   onOpenCancelPrep,
@@ -72,22 +70,6 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
             <p>{receita.descricao}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button
-              className="btn-action-small"
-              onClick={onOpenCriticalModal}
-              style={{
-                borderColor: 'var(--danger-border)',
-                color: 'var(--danger)',
-                fontWeight: 700,
-                height: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-              title="Simular excesso de catalisador na balança (+200 ml)"
-            >
-              <span>⚠️</span> Simular excesso (+200 ml)
-            </button>
             <div className="badge-brand-homologated">
               <span>✓</span> MARCA HOMOLOGADA: {marca.nome.toUpperCase()}
             </div>

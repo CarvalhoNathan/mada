@@ -6,11 +6,13 @@ interface ModalCriticalExcessProps {
   isOpen: boolean;
   onClose: () => void;
   onRepesarDoZero: () => void;
-  onRecalcularReceita: () => void;
+  onRecalcularReceita?: () => void;
   onConfirmDesperdicio: (reason: string) => void;
   componentName?: string;
   targetVolume?: number;
   excessVolume?: number;
+  actualVolume?: number;
+  excessCost?: number;
 }
 
 const REASONS = [
@@ -28,7 +30,9 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
   onConfirmDesperdicio,
   componentName = 'Catalisador',
   targetVolume = 250,
-  excessVolume = 200,
+  excessVolume,
+  actualVolume: propActualVolume,
+  excessCost,
 }) => {
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
   const [supervisorPin, setSupervisorPin] = useState('');
@@ -36,7 +40,8 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
 
   if (!isOpen) return null;
 
-  const actualVolume = targetVolume + excessVolume;
+  const actualVolume = propActualVolume ?? (targetVolume + (excessVolume ?? 200));
+  const diffVolume = excessVolume ?? Math.max(0, actualVolume - targetVolume);
 
   const handleSelectReason = (reasonId: string) => {
     setSelectedReason(reasonId);
@@ -88,11 +93,16 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
           {/* Valor numérico em 56px */}
           <div className="ds-modal-highlight-box" style={{ background: 'var(--card-hover)', borderColor: 'var(--danger-border)' }}>
             <span className="ds-modal-highlight-number" style={{ color: 'var(--danger)', fontSize: '56px', fontWeight: 800 }}>
-              +{excessVolume} ml
+              +{diffVolume} ml
             </span>
             <span className="ds-modal-highlight-label" style={{ color: 'var(--text-muted)' }}>
               Excesso Acima do Limite Tolerado ({targetVolume} ml → {actualVolume} ml)
             </span>
+            {excessCost !== undefined && excessCost > 0 && (
+              <span style={{ marginTop: '8px', fontSize: '15px', color: 'var(--danger)', fontWeight: 700 }}>
+                Custo estimado do excesso: R$ {excessCost.toFixed(2).replace('.', ',')}
+              </span>
+            )}
           </div>
 
           {/* Frase explicativa clara de chão de fábrica */}
@@ -206,14 +216,16 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
             >
               ↺ Repesar do zero
             </Button>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={onRecalcularReceita}
-              style={{ flex: 1.3, height: '56px', fontSize: '16px' }}
-            >
-              ⚖️ Recalcular receita (1.800 ml)
-            </Button>
+            {onRecalcularReceita && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={onRecalcularReceita}
+                style={{ flex: 1.3, height: '56px', fontSize: '16px' }}
+              >
+                ⚖️ Recalcular proporções
+              </Button>
+            )}
           </div>
 
           <Button

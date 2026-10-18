@@ -119,6 +119,8 @@ export type TipoMovimentacao = 'RETIRADA' | 'DEVOLUCAO' | 'DESCARTE';
 export interface Movimentacao {
   id?: number;
   preparacaoId?: number;
+  ordemServicoId?: number;
+  operadorId?: number;
   loteId: number;
   tipo: TipoMovimentacao;
   quantidade: number;
@@ -130,7 +132,7 @@ export interface Movimentacao {
 // Tipos de Interface de Usuário e Compatibilidade
 // ============================================================================
 
-export type ScreenId = 'auth' | 'dashboard' | 'os' | 'recipe' | 'return';
+export type ScreenId = 'auth' | 'dashboard' | 'os' | 'recipe' | 'dosing' | 'return';
 
 // Aliases para compatibilidade com os componentes existentes
 export type Operator = Operador;

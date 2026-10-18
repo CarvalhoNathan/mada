@@ -214,18 +214,18 @@ A Mada Marcenaria já possui um sistema próprio, hospedado no **Supabase**, com
 
 ## 6. Requisitos do Sistema
 
-Legenda: `[x]` = prototipado na interface com dados simulados; `[ ]` = planejado (backlog pós-MVP).
+Legenda: `[x]` = implementado no MVP (com dados simulados); `[~]` = parcial ou simulado; `[ ]` = planejado.
 
 ### Requisitos Funcionais (RF)
 
-- [x] **RF01 - Catálogo de Receitas:** Centralizar e permitir a consulta de fichas técnicas de acabamento (tintas, resinas, vernizes, seladores).
-- [x] **RF02 - Proporções Exatas:** Apresentar produtos e volumes calculados dinamicamente com base na quantidade final desejada, com receitas de número variável de componentes.
-- [x] **RF03 - Rastreabilidade de Consumo:** Registrar retirada e baixa vinculando a Cliente, Projeto, Ambiente e Fase produtiva.
-- [x] **RF04 - Gestão de Embalagens Parciais (Sobras):** Registrar o volume parcial consumido e o retorno do saldo remanescente ao almoxarifado.
-- [x] **RF05 - Previsto vs. Real:** Comparar o consumo real apontado com os parâmetros definidos na receita teórica.
-- [x] **RF06 - Priorização por Validade:** Indicar a ordem prioritária de retirada de produtos com base no lote e validade (FEFO).
-- [x] **RF07 - Identificação via QR Code:** Leitura de etiquetas de produtos e ordens de serviço via câmera do tablet.
-- [x] **RF08 - Gestão Multimarca:** Associar insumos e receitas às marcas correspondentes, ajustando fórmulas conforme o fabricante em uso.
+- [x] **RF01 - Catálogo de Receitas:** Centralizar e permitir a consulta de fichas técnicas de acabamento (tintas, resinas, vernizes, seladores) (`src/screens/ScreenRecipe.tsx`, `src/data/mock/mockData.ts`).
+- [x] **RF02 - Proporções Exatas:** Apresentar produtos e volumes calculados dinamicamente com base na quantidade final desejada, com receitas de número variável de componentes (`src/domain/mixture.ts`, `src/screens/ScreenRecipe.tsx`).
+- [x] **RF03 - Rastreabilidade de Consumo:** Registrar retirada e baixa por componente vinculando à Ordem de Serviço (Cliente, Projeto e Ambiente) e ao Operador logado (`src/App.tsx`, `src/screens/ScreenDosing.tsx`, `src/data/mock/mockData.ts`).
+- [x] **RF04 - Gestão de Embalagens Parciais (Sobras):** Registrar o retorno do saldo remanescente ao almoxarifado com checklist de integridade e geração de etiqueta de sobra (`src/screens/ScreenReturn.tsx`, `src/domain/leftover.ts`).
+- [~] **RF05 - Previsto vs. Real:** Parcial: comparação entre meta teórica da receita e consumo real apontado na pesagem individual com trava de tolerância (`src/screens/ScreenDosing.tsx`); painel gerencial consolidado de histórico previsto vs. realizado é planejado.
+- [x] **RF06 - Priorização por Validade:** Indicar a ordem prioritária de retirada de produtos com base no lote e validade (FEFO) (`src/domain/fefo.ts`, `src/screens/ScreenDashboard.tsx`, `src/screens/ModalUseFirst.tsx`).
+- [~] **RF07 - Identificação via QR Code:** Simulado via software no protótipo (leitura por câmera planejada); simula leitura de OS e latas e gera etiquetas com QR Code (`src/App.tsx`, `src/screens/ScreenReturn.tsx`).
+- [~] **RF08 - Gestão Multimarca:** Parcial: insumos e receitas associados às marcas correspondentes no modelo de dados (`src/data/mock/mockData.ts`) e exibidos na interface; ajuste automático e troca dinâmica de fórmulas por fabricante em interface é planejada.
 
 **Backlog pós-MVP:**
 
@@ -330,16 +330,17 @@ O guia de design completo e as especificações de interface para chão de fábr
 
 ### Resumo dos Fluxos Principais (Tablet):
 
-1. **Login Rápido:** Seleção por operador + PIN numérico de 4 dígitos.
-2. **Dashboard Operacional:** 3 ações primárias de impacto (`NOVA PREPARAÇÃO`, `DEVOLVER SOBRAS`, `ESCANEAR QR CODE`).
-3. **Identificação da OS:** Associação direta a Cliente, Projeto e Ambiente.
-4. **Ficha da Receita:** Calculadora automática da mistura a partir do volume total de acabamento.
-5. **Check-out com Barreira Anti-Erro:** Modal de alerta caso o consumo digitado exceda o limite técnico da receita, com justificativa obrigatória.
-6. **Devolução & Re-etiquetagem:** Leitura do QR Code da embalagem aberta e registro do saldo que retorna ao estoque.
+1. **Login:** Seleção por operador + PIN numérico de 4 dígitos (`src/screens/ScreenAuth.tsx`).
+2. **Dashboard:** 3 ações primárias de impacto (`NOVA PREPARAÇÃO`, `DEVOLVER SOBRAS`, `ESCANEAR QR CODE`) e alerta FEFO (`src/screens/ScreenDashboard.tsx`).
+3. **Vincular OS:** Associação direta a Cliente, Projeto e Ambiente (`src/screens/ScreenOS.tsx`).
+4. **Receita:** Calculadora automática da mistura a partir do volume total de acabamento (`src/screens/ScreenRecipe.tsx`).
+5. **Dosagem:** Pesagem real em grade 2x2 com NumberStepper de 10 ml, teclado numérico tátil e verificação de tolerância de 5% (`src/screens/ScreenDosing.tsx`).
+6. **Alerta de excesso:** Modal de intertravamento de segurança com valores reais e custo estimado do excesso, opções de repesar ou confirmar desperdício (`src/screens/ModalCriticalExcess.tsx`).
+7. **Devolução:** Devolução de sobras com checklist de integridade química e emissão de nova etiqueta com QR Code (`src/screens/ScreenReturn.tsx`).
 
 ### Painel de Gerência (PC):
 
-7. **Visão do Gestor (Planejado):** Indicadores de consumo, desperdício e custo previsto vs. realizado, além de cadastros de receitas, marcas e produtos (planejado; existem apenas os componentes KpiCard e DataTable).
+8. **Visão do Gestor (Planejado):** Indicadores de consumo, desperdício e custo previsto vs. realizado, além de cadastros de receitas, marcas e produtos (planejado; existem apenas os componentes KpiCard e DataTable).
 
 ### 📸 Telas do Sistema
 
@@ -349,9 +350,9 @@ O guia de design completo e as especificações de interface para chão de fábr
 | :----------------------------: | :------------------------------------: | :----------------------: |
 | ![Login](screens/01-login.png) | ![Dashboard](screens/02-dashboard.png) | ![OS](screens/03-os.png) |
 
-|              Receita               |    Alerta de Excesso (Modal)     |               Devolução                |
-| :--------------------------------: | :------------------------------: | :------------------------------------: |
-| ![Receita](screens/04-receita.png) | ![Alerta](screens/05-alerta.png) | ![Devolução](screens/06-devolucao.png) |
+|              Receita               |                 Dosagem                 |          Alerta de excesso           |               Devolução                |
+| :--------------------------------: | :-------------------------------------: | :----------------------------------: | :------------------------------------: |
+| ![Receita](screens/04-receita.png) | ![Dosagem](screens/05-dosagem.png)      | ![Alerta](screens/06-alerta.png)     | ![Devolução](screens/07-devolucao.png) |
 
 ---
 
@@ -464,7 +465,7 @@ erDiagram
 - **Regras de Negócio:** Módulos de domínio em TypeScript com funções puras (`src/domain/`)
 - **Banco de Dados e Backend como Serviço:** PostgreSQL via [Supabase](https://supabase.com/) (integração planejada)
 - **Identificação:** QR Code simulado no MVP (leitura real via WebRTC / câmera planejada)
-- **Qualidade & Testes:** Vitest 5 (16 testes unitários no domínio), ESLint 10 (Flat Config), Prettier 3
+- **Qualidade & Testes:** Vitest 5 (19 testes unitários no domínio), ESLint 10 (Flat Config), Prettier 3
 
 ---
 

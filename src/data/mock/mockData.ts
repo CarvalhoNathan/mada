@@ -224,6 +224,28 @@ export const MOCK_LOTES: Lote[] = [
     statusUrgencia: 'normal',
     prateleira: 'Prateleira A-01',
   },
+  {
+    id: 5,
+    produtoId: 3,
+    produtoNome: 'Diluidor Poliuretano 8000',
+    codigo: '#SY-5120',
+    validade: '2027-02-10',
+    diasAberto: 0,
+    quantidadeAtual: 2500,
+    statusUrgencia: 'normal',
+    prateleira: 'Prateleira B-01',
+  },
+  {
+    id: 6,
+    produtoId: 4,
+    produtoNome: 'Aditivo Retardador Especial',
+    codigo: '#SY-3015',
+    validade: '2027-03-20',
+    diasAberto: 0,
+    quantidadeAtual: 1000,
+    statusUrgencia: 'normal',
+    prateleira: 'Prateleira B-02',
+  },
 ];
 
 export const MOCK_RECEITAS: Receita[] = [

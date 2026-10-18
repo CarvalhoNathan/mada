@@ -175,7 +175,9 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
 
             {hasError && (
               <div className="pin-error-text">
-                PIN incorreto. Tente novamente ou use 1234.
+                {import.meta.env.DEV
+                  ? 'PIN incorreto. Tente novamente ou use 1234.'
+                  : 'PIN incorreto. Tente novamente.'}
               </div>
             )}
           </div>

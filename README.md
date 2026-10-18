@@ -54,15 +54,15 @@ flowchart LR
 
 > **[A PREENCHER]** Adicione os prints em `docs/screens/`.
 
-|             Login rápido              |                  Dashboard                  |                 Vincular OS                  |
+|                 Login                 |                  Dashboard                  |                 Vincular OS                  |
 | :-----------------------------------: | :-----------------------------------------: | :------------------------------------------: |
 |  ![Login](docs/screens/01-login.png)  | ![Dashboard](docs/screens/02-dashboard.png) |    ![Vincular OS](docs/screens/03-os.png)    |
 | PIN de 4 dígitos com foto do operador |     Ações grandes e alerta de validade      | Cliente, projeto e ambiente em poucos toques |
 
-|                 Receita                 |           Alerta de excesso (modal)           |             Devolução de sobras             |
-| :-------------------------------------: | :-------------------------------------------: | :-----------------------------------------: |
-| ![Receita](docs/screens/04-receita.png) |     ![Alerta](docs/screens/05-alerta.png)     | ![Devolução](docs/screens/06-devolucao.png) |
-|         Calculadora de mistura          | Trava de segurança com senha de supervisor    |          Nova etiqueta com QR Code          |
+|                 Receita                 |                 Dosagem                 |          Alerta de excesso           |                  Devolução                  |
+| :-------------------------------------: | :-------------------------------------: | :----------------------------------: | :-----------------------------------------: |
+| ![Receita](docs/screens/04-receita.png) | ![Dosagem](docs/screens/05-dosagem.png) | ![Alerta](docs/screens/06-alerta.png) | ![Devolução](docs/screens/07-devolucao.png) |
+|         Calculadora de mistura          |  Pesagem real em 2x2 com NumberStepper  |  Trava de segurança por tolerância   |          Nova etiqueta com QR Code          |
 
 ## 🎯 Impacto esperado
 
@@ -121,7 +121,7 @@ mada/
 │   │   ├── mixture.ts            # Cálculo proporcional dos componentes da mistura
 │   │   └── tolerance.ts          # Tolerâncias e alerta de excesso crítico (+5% / +200ml)
 │   ├── hooks/                    # Hooks utilitários customizados (useConnectionStatus)
-│   ├── screens/                  # Telas ativas da aplicação (Telas 1 a 6)
+│   ├── screens/                  # Telas e modais da aplicação
 │   ├── styles/                   # Tokens e estilos globais
 │   │   ├── global.css            # Estilos base e importação de variáveis
 │   │   └── tokens.css            # Definição canônica dos design tokens
@@ -148,7 +148,7 @@ mada/
 | Camada | Tecnologia | Situação |
 | :--- | :--- | :--- |
 | **Interface** | React 19, TypeScript 6, HTML5, CSS com design tokens | Implementado |
-| **Ferramenta de Build** | Vite 8 (servidor local na porta 3000) | Implementado |
+| **Ferramenta de Build** | Vite 8 (servidor de desenvolvimento, porta 3000 confirmada em vite.config.ts) | Implementado |
 | **Camada de Dados (MVP)** | Repositórios em memória com dados simulados (`src/data/`) | Implementado |
 | **Regras de Negócio** | Módulos puros em TypeScript isolados (`src/domain/`) | Implementado |
 | **Qualidade & Testes** | Vitest 5, ESLint 10 (Flat Config), Prettier 3 | Implementado |
@@ -160,7 +160,7 @@ mada/
 
 O projeto conta com ferramentas de verificação estática, formatação e testes automatizados:
 
-- **Testes unitários (`npm run test`):** Executados via Vitest, com 16 testes unitários em 4 arquivos de teste, cobrindo os cálculos e regras de negócio da camada `src/domain/` (`mixture.test.ts`, `tolerance.test.ts`, `fefo.test.ts` e `leftover.test.ts`).
+- **Testes unitários (`npm run test`):** Executados via Vitest, com 19 testes unitários em 4 arquivos de teste, cobrindo os cálculos e regras de negócio da camada `src/domain/` (`mixture.test.ts`, `tolerance.test.ts`, `fefo.test.ts` e `leftover.test.ts`).
 - **Análise estática (`npm run lint`):** Executa a verificação e padronização de código com ESLint 10 (Flat Config).
 - **Checagem de tipos (`npm run typecheck`):** Validação estrita de tipagem TypeScript via `tsc --noEmit`.
 - **Empacotamento (`npm run build`):** Compilação do bundle de produção com Vite 8.
@@ -178,19 +178,19 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 
 **Já prototipado / implementado**
 
-- [x] Login rápido com PIN de 4 dígitos (Tela 1)
-- [x] Dashboard operacional com alerta de validade FEFO (Tela 2)
-- [x] Vinculação de cliente, projeto e ambiente por Ordem de Serviço (Tela 3)
-- [x] Receita com calculadora dinâmica de proporções (Tela 4)
-- [x] Alerta de excesso crítico com liberação por supervisor (Modal)
-- [x] Devolução de sobras com cálculo de saldo e emissão de etiqueta QR (Tela 6)
+- [x] Login (Login rápido com PIN de 4 dígitos)
+- [x] Dashboard (Dashboard operacional com alerta de validade FEFO)
+- [x] Vincular OS (Vinculação de cliente, projeto e ambiente por Ordem de Serviço)
+- [x] Receita (Receita com calculadora dinâmica de proporções)
+- [x] Dosagem (Dosagem em grade 2x2 com NumberStepper, teclado numérico e verificação de tolerância)
+- [x] Alerta de excesso (Modal crítico com valores reais, cálculo de custo e bloqueio)
+- [x] Devolução (Devolução de sobras com cálculo de saldo e emissão de etiqueta QR)
 - [x] Leitura de QR Code simulada via software
 - [x] Camada de repositórios com alternância de fonte de dados (`VITE_DATA_SOURCE=mock`)
-- [x] Cobertura de testes unitários para a camada de domínio matemático (`src/domain/`)
+- [x] Testes unitários para a camada de domínio matemático (`src/domain/`)
 
 **Próximos passos**
 
-- [ ] Tela de dosagem dedicada com NumberStepper para pesagem individual por produto
 - [ ] Painel do gestor (planejado; existem apenas os componentes KpiCard e DataTable)
 - [ ] Leitura real de QR Code via câmera do tablet (WebRTC)
 - [ ] Integração com o Supabase da empresa

@@ -8,9 +8,9 @@ import { ScreenAuth } from './screens/ScreenAuth';
 import { ScreenDashboard } from './screens/ScreenDashboard';
 import { ScreenOS } from './screens/ScreenOS';
 import { ScreenRecipe } from './screens/ScreenRecipe';
+import { ScreenDosing } from './screens/ScreenDosing';
 import { ScreenReturn } from './screens/ScreenReturn';
 
-import { ModalCriticalExcess } from './screens/ModalCriticalExcess';
 import { ModalUseFirst } from './screens/ModalUseFirst';
 import { ModalCancelPrep } from './screens/ModalCancelPrep';
 
@@ -20,9 +20,11 @@ import {
   movimentacaoRepository,
   MOCK_OPERADORES,
   MOCK_ORDENS_SERVICO,
+  MOCK_RECEITAS,
+  MOCK_LOTES,
 } from './data';
 import { useConnectionStatus } from './hooks/useConnectionStatus';
-import { recalcularVolumePorComponente } from './domain/mixture';
+import { ordenarLotesFEFO } from './domain/fefo';
 
 const INITIAL_PIECE_LOT: PieceLot = MOCK_ORDENS_SERVICO[0].pecaLote;
 
@@ -68,7 +70,6 @@ export const App: React.FC = () => {
   const [recipe, setRecipe] = useState<RecipeState>(INITIAL_RECIPE);
 
   // Modais
-  const [isCriticalModalOpen, setIsCriticalModalOpen] = useState(false);
   const [isUseFirstModalOpen, setIsUseFirstModalOpen] = useState(false);
   const [isCancelPrepModalOpen, setIsCancelPrepModalOpen] = useState(false);
 
@@ -108,42 +109,39 @@ export const App: React.FC = () => {
     }, 800);
   };
 
-  // Recalcular receita por excesso (+200ml catalisador -> 450ml / 0.25 = 1.800ml total)
-  const handleRecalcularReceita = () => {
-    const volCatalisadorComExcesso = (recipe.totalVolume * recipe.proportions.catalisador) + 200;
-    const novoVolume = recalcularVolumePorComponente(volCatalisadorComExcesso, recipe.proportions.catalisador);
-    handleSetTotalVolume(novoVolume || 1800);
-    setIsCriticalModalOpen(false);
-    showToast(`✓ Receita recalculada para ${(novoVolume || 1800).toLocaleString('pt-BR')} ml: proporções químicas re-balanceadas!`, 'success');
+  const handleStartDosing = () => {
+    setCurrentScreen('dosing');
   };
 
-  const handleRepesarDoZero = () => {
-    setIsCriticalModalOpen(false);
-    showToast('Medição descartada da balança. Balança re-tarada em zero.', 'info');
-  };
+  const handleCompleteDosing = async (
+    dosingValues: Record<number, number>,
+    wasteJustification?: string
+  ) => {
+    const receita = MOCK_RECEITAS[0];
+    const osAtiva = MOCK_ORDENS_SERVICO.find(o => o.clienteNome === clientName) || MOCK_ORDENS_SERVICO[0];
 
-  const handleConfirmDesperdicio = (reason: string) => {
-    movimentacaoRepository.registrar({
-      loteId: 2,
-      tipo: 'DESCARTE',
-      quantidade: 200,
-      justificativa: reason,
-      registradaEm: new Date().toISOString(),
-    });
-    setIsCriticalModalOpen(false);
-    showToast(`🗑 Desperdício confirmado (${reason}) e registrado na OS (+200ml de catalisador).`, 'warn');
-    setCurrentScreen('dashboard');
-  };
+    // Registra uma Movimentacao do tipo RETIRADA por componente via MovimentacaoRepository (em memória)
+    // vinculada à OS e ao operador logado
+    for (const item of receita.itens) {
+      const quantidade = dosingValues[item.id] || 0;
+      if (quantidade > 0) {
+        const lotes = ordenarLotesFEFO(MOCK_LOTES.filter(l => l.produtoId === item.produtoId));
+        const loteId = lotes[0]?.id || item.id;
 
-  const handleConfirmWeighing = () => {
-    movimentacaoRepository.registrar({
-      loteId: 1,
-      tipo: 'RETIRADA',
-      quantidade: recipe.totalVolume,
-      registradaEm: new Date().toISOString(),
-    });
-    showToast('✓ Mistura concluída e baixa realizada no estoque com sucesso!', 'success');
-    setCurrentScreen('dashboard');
+        await movimentacaoRepository.registrar({
+          tipo: 'RETIRADA',
+          loteId,
+          ordemServicoId: osAtiva.id,
+          operadorId: selectedOperator.id,
+          quantidade,
+          justificativa: wasteJustification,
+          registradaEm: new Date().toISOString(),
+        });
+      }
+    }
+
+    showToast('✓ Dosagem concluída e baixa por componente registrada com sucesso!', 'success');
+    setCurrentScreen('return');
   };
 
   const handleSelectBatch = (batchCode: string) => {
@@ -243,10 +241,21 @@ export const App: React.FC = () => {
           recipe={recipe}
           onSetTotalVolume={handleSetTotalVolume}
           onAdjustVolume={handleAdjustVolume}
-          onOpenCriticalModal={() => setIsCriticalModalOpen(true)}
-          onConfirmWeighing={handleConfirmWeighing}
+          onConfirmWeighing={handleStartDosing}
           onNavigate={(screen) => setCurrentScreen(screen)}
           onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
+        />
+      )}
+
+      {currentScreen === 'dosing' && (
+        <ScreenDosing
+          recipe={recipe}
+          operator={selectedOperator}
+          activeOS={MOCK_ORDENS_SERVICO.find(o => o.clienteNome === clientName) || MOCK_ORDENS_SERVICO[0]}
+          onNavigate={(screen) => setCurrentScreen(screen)}
+          onCompleteDosing={handleCompleteDosing}
+          onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
+          showToast={showToast}
         />
       )}
 
@@ -257,18 +266,6 @@ export const App: React.FC = () => {
           showToast={showToast}
         />
       )}
-
-      {/* Modal Crítico de Excesso (+200ml) */}
-      <ModalCriticalExcess
-        isOpen={isCriticalModalOpen}
-        onClose={() => setIsCriticalModalOpen(false)}
-        onRepesarDoZero={handleRepesarDoZero}
-        onRecalcularReceita={handleRecalcularReceita}
-        onConfirmDesperdicio={handleConfirmDesperdicio}
-        componentName="Catalisador"
-        targetVolume={Math.round(recipe.totalVolume * recipe.proportions.catalisador)}
-        excessVolume={200}
-      />
 
       {/* Modal de Latas que vencem primeiro ("Use Primeiro") */}
       <ModalUseFirst

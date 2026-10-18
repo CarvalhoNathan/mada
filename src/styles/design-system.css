@@ -289,7 +289,7 @@
 }
 
 .ds-stepper-tap-hint {
-  font-size: 13px;
+  font-size: var(--fs-small);
   color: var(--primary);
   font-weight: 600;
   text-transform: uppercase;
