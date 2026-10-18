@@ -35,14 +35,26 @@ export const NumberStepper: React.FC<NumberStepperProps> = ({
   const isOverTolerance = toleranceMax !== undefined && value > toleranceMax;
   const difference = standardValue !== undefined ? value - standardValue : 0;
 
+  const triggerHaptic = () => {
+    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate(20);
+      } catch {
+        // Silently ignore if not supported or disabled
+      }
+    }
+  };
+
   const handleDecrement = () => {
     if (disabled) return;
+    triggerHaptic();
     const next = Math.max(min, value - step);
     onChange(next);
   };
 
   const handleIncrement = () => {
     if (disabled) return;
+    triggerHaptic();
     const next = Math.min(max, value + step);
     onChange(next);
   };

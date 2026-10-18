@@ -8,6 +8,7 @@ export interface NumericKeypadProps {
   onConfirm?: () => void;
   confirmLabel?: string;
   disabled?: boolean;
+  confirmDisabled?: boolean;
 }
 
 /**
@@ -23,8 +24,35 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onConfirm,
   confirmLabel = 'Confirmar',
   disabled = false,
+  confirmDisabled = false,
 }) => {
   const handleDigit = onDigit || onKeyPress || (() => {});
+
+  const triggerHaptic = (ms = 25) => {
+    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate(ms);
+      } catch {
+        // Silently ignore if not supported
+      }
+    }
+  };
+
+  const onDigitPress = (num: string) => {
+    triggerHaptic(20);
+    handleDigit(num);
+  };
+
+  const onBackspacePress = () => {
+    triggerHaptic(30);
+    onBackspace();
+  };
+
+  const onClearPress = () => {
+    triggerHaptic(35);
+    onClear();
+  };
+
   const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
   return (
@@ -35,7 +63,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
             key={num}
             type="button"
             className="ds-keypad-btn ds-keypad-digit"
-            onClick={() => handleDigit(num)}
+            onClick={() => onDigitPress(num)}
             disabled={disabled}
           >
             {num}
@@ -45,7 +73,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
         <button
           type="button"
           className="ds-keypad-btn ds-keypad-action ds-keypad-clear"
-          onClick={onClear}
+          onClick={onClearPress}
           disabled={disabled}
           aria-label="Limpar todos os dígitos"
         >
@@ -55,7 +83,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
         <button
           type="button"
           className="ds-keypad-btn ds-keypad-digit"
-          onClick={() => handleDigit('0')}
+          onClick={() => onDigitPress('0')}
           disabled={disabled}
         >
           0
@@ -64,7 +92,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
         <button
           type="button"
           className="ds-keypad-btn ds-keypad-action ds-keypad-backspace"
-          onClick={onBackspace}
+          onClick={onBackspacePress}
           disabled={disabled}
           aria-label="Apagar último dígito"
         >
@@ -77,7 +105,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
           type="button"
           className="ds-btn ds-btn-primary ds-btn-lg ds-keypad-confirm-btn"
           onClick={onConfirm}
-          disabled={disabled}
+          disabled={disabled || confirmDisabled}
         >
           {confirmLabel} →
         </button>

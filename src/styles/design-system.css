@@ -363,7 +363,7 @@
   font-size: var(--fs-small);
   font-weight: 700;
   text-transform: uppercase;
-  background-color: #243040;
+  background-color: var(--card-hover);
   color: var(--text-muted);
 }
 

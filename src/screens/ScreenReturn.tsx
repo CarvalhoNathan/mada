@@ -167,13 +167,13 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                   <svg viewBox="0 0 100 100" fill="black">
                     <path d="M0 0h30v30H0zm5 5h20v20H5zm35-5h30v30H40zm5 5h20v20H45zM0 40h30v30H0zm5 5h20v20H5zm45 5h10v10H50zm15 0h15v15H65zm0 25h10v10H65zm-25 0h10v10H40zm15 15h10v10H55z" />
                   </svg>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#1e293b', marginTop: '4px' }}>
+                  <span style={{ fontSize: 'var(--fs-small)', fontWeight: 700, color: 'var(--bg)', marginTop: '4px' }}>
                     {codigoEtiqueta}
                   </span>
                 </div>
               </div>
 
-              <div style={{ marginTop: '10px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: '6px' }}>
+              <div style={{ marginTop: '10px', fontSize: 'var(--fs-small)', color: 'var(--text-muted)', textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: '6px' }}>
                 DEVOLUÇÃO EM CONFORMIDADE • PROIBIDO DESCARTE EM RALO INDUSTRIAL
               </div>
             </div>

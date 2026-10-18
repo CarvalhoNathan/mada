@@ -83,10 +83,15 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
               <div className="os-highlight-item">
                 <div className="os-highlight-info">
                   <h4>{clientName}</h4>
-                  <p>{projectName}</p>
+                  <p style={{ fontSize: 'var(--fs-small)' }}>{projectName}</p>
                 </div>
-                <button className="btn-action-small" onClick={onChangeOS}>
-                  Trocar
+                <button
+                  className="btn-action-small"
+                  onClick={onChangeOS}
+                  style={{ minHeight: '64px', minWidth: '100px', fontSize: 'var(--fs-small)', fontWeight: 700 }}
+                  aria-label="Trocar Ordem de Serviço"
+                >
+                  Trocar OS ⟳
                 </button>
               </div>
             </div>
@@ -110,12 +115,13 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                       key={env.name}
                       className={`env-chip ${isSelected ? 'selected' : ''}`}
                       onClick={() => onSelectEnvironment(env.name)}
+                      style={{ minHeight: '64px' }}
                     >
                       <div className="env-chip-header">
-                        <span>{env.name}</span>
+                        <span style={{ fontSize: 'var(--fs-small)' }}>{env.name}</span>
                         {isSelected && <span>✓</span>}
                       </div>
-                      <span className="env-chip-sub">{env.code}</span>
+                      <span className="env-chip-sub" style={{ fontSize: 'var(--fs-small)' }}>{env.code}</span>
                     </div>
                   );
                 })}
@@ -128,31 +134,36 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
             <div className="os-box">
               <div className="os-box-header">
                 <span className="os-box-title">3. Lote de Peças</span>
-                <span className="badge-qty">{pieceLot.qty}</span>
+                <span className="badge-qty" style={{ fontSize: 'var(--fs-small)' }}>{pieceLot.qty}</span>
               </div>
               <div className="piece-detail-card">
                 <div className="piece-header">
                   <div>
                     <h4>{pieceLot.title}</h4>
-                    <span style={{ fontSize: '15px', color: 'var(--warn)', fontWeight: 700 }}>
+                    <span style={{ fontSize: 'var(--fs-small)', color: 'var(--warn)', fontWeight: 700 }}>
                       Laca Branca Fosca 20 Gloss
                     </span>
                   </div>
                 </div>
                 <div className="piece-specs-grid">
                   <div className="spec-item">
-                    <strong>Substrato Base</strong>
-                    <span>{pieceLot.substrate}</span>
+                    <strong style={{ fontSize: 'var(--fs-small)' }}>Substrato Base</strong>
+                    <span style={{ fontSize: 'var(--fs-small)' }}>{pieceLot.substrate}</span>
                   </div>
                   <div className="spec-item">
-                    <strong>Área Superficial</strong>
-                    <span style={{ fontWeight: 700, color: 'var(--primary)' }}>~ {pieceLot.area}</span>
+                    <strong style={{ fontSize: 'var(--fs-small)' }}>Área Superficial</strong>
+                    <span style={{ fontSize: 'var(--fs-small)', fontWeight: 700, color: 'var(--primary)' }}>~ {pieceLot.area}</span>
                   </div>
                 </div>
                 <div className="piece-change-bar">
-                  <span className="piece-change-hint">Lote vinculado à OS</span>
-                  <button className="btn-action-small" onClick={onChangePieceLot}>
-                    Trocar lote
+                  <span className="piece-change-hint" style={{ fontSize: 'var(--fs-small)' }}>Lote vinculado à OS</span>
+                  <button
+                    className="btn-action-small"
+                    onClick={onChangePieceLot}
+                    style={{ minHeight: '64px', minWidth: '120px', fontSize: 'var(--fs-small)', fontWeight: 700 }}
+                    aria-label="Alternar lote de peças"
+                  >
+                    Trocar lote ⟳
                   </button>
                 </div>
               </div>
