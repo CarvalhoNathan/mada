@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/mada/', // Adicione esta linha (coloque o nome exato do repo no GitHub)
+  base: process.env.NODE_ENV === 'production' ? '/mada/' : '/',
   server: {
     port: 3000,
     open: false,
