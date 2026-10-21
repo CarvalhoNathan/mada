@@ -371,11 +371,13 @@
   border-color: var(--border);
 }
 
+.ds-keypad-clear svg,
 .ds-keypad-backspace svg {
   color: var(--text-muted);
   transition: color 0.15s ease;
 }
 
+.ds-keypad-clear:active:not(:disabled) svg,
 .ds-keypad-backspace:active:not(:disabled) svg {
   color: var(--text);
 }
@@ -413,28 +415,31 @@
 }
 
 .apple-pin-dot {
-  width: 20px;  /* Tamanho 20px */
+  width: 20px;  /* Tamanho 18px a 20px */
   height: 20px;
   border-radius: 50%;
   box-sizing: border-box;
-  transition: all 0.15s ease;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .apple-pin-dot.empty {
-  border: 1.5px solid var(--border); /* Anel fino em #2C3947 */
+  border: 2px solid #334155; /* Slate-700 sólido para alto contraste imediato */
   background-color: transparent;
+  transform: scale(1);
 }
 
 .apple-pin-dot.filled {
-  border: 1.5px solid var(--text);
+  border: 2px solid var(--text);
   background-color: var(--text); /* Círculo sólido luminoso #F5F7FA */
-  box-shadow: 0 0 12px rgba(245, 247, 250, 0.45);
+  box-shadow: 0 0 14px rgba(245, 247, 250, 0.55);
+  transform: scale(1.1); /* Leve transição de escala (scale-110) */
 }
 
 .apple-pin-dot.error {
   border-color: var(--danger) !important;
   background-color: var(--danger) !important; /* Vermelho #EF4444 */
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.55) !important;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.65) !important;
+  transform: scale(1.1);
 }
 
 .apple-pin-error-msg {
