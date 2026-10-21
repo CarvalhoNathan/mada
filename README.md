@@ -7,10 +7,13 @@
 Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas, trava erros de dosagem, rastreia o consumo por cliente e ambiente e dá nova vida às sobras.
 
 [![Status](https://img.shields.io/badge/status-MVP%20em%20desenvolvimento-F59E0B)](#-status-e-roadmap)
+[![Demo Online](https://img.shields.io/badge/demo-GitHub%20Pages-2ea44f?logo=github&logoColor=white)](https://carvalhonathan.github.io/mada/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![UX](https://img.shields.io/badge/UX-tablet--first-3B82F6)](#-telas)
+
+🔗 **Acesse a Demonstração Online:** [https://carvalhonathan.github.io/mada/](https://carvalhonathan.github.io/mada/)
 
 <!-- [A PREENCHER] Troque pela imagem de capa (colagem das telas ou GIF do fluxo) -->
 
@@ -54,10 +57,10 @@ flowchart LR
 
 > **[A PREENCHER]** Adicione os prints em `docs/screens/`.
 
-|                 Login                 |                  Dashboard                  |                 Vincular OS                  |
-| :-----------------------------------: | :-----------------------------------------: | :------------------------------------------: |
-|  ![Login](docs/screens/01-login.png)  | ![Dashboard](docs/screens/02-dashboard.png) |    ![Vincular OS](docs/screens/03-os.png)    |
-| PIN de 4 dígitos com foto do operador |     Ações grandes e alerta de validade      | Cliente, projeto e ambiente em poucos toques |
+|                   Login                   |                  Dashboard                  |                 Vincular OS                  |
+| :---------------------------------------: | :-----------------------------------------: | :------------------------------------------: |
+|    ![Login](docs/screens/01-login.png)    | ![Dashboard](docs/screens/02-dashboard.png) |    ![Vincular OS](docs/screens/03-os.png)    |
+| PIN de 4 dígitos nos padrões Apple HIG    |     Ações grandes e alerta de validade      | Cliente, projeto e ambiente em poucos toques |
 
 |                 Receita                 |                 Dosagem                 |          Alerta de excesso           |                  Devolução                  |
 | :-------------------------------------: | :-------------------------------------: | :----------------------------------: | :-----------------------------------------: |
@@ -100,6 +103,8 @@ flowchart TB
 ```text
 mada/
 ├── .agents/                      # Regras de agentes e diretrizes (ex.: convenções de commit)
+├── .github/                      # Automação de CI/CD (GitHub Actions para deploy no Pages)
+│   └── workflows/deploy.yml
 ├── assets/                       # Imagens de referência e ideias de UX
 ├── docs/                         # Documentação técnica e estratégica do projeto
 │   ├── screens/                  # Capturas de tela da aplicação (.gitkeep)
@@ -110,12 +115,15 @@ mada/
 │   └── PROJETO.md                # Documento de visão, requisitos e arquitetura
 ├── src/
 │   ├── components/               # Componentes de interface modulares e reutilizáveis
+│   │   └── ui/                   # Design System próprio (AppShell, NumericKeypad, PinInput, etc.)
 │   ├── data/                     # Camada de repositórios e seletor VITE_DATA_SOURCE
+│   │   ├── __tests__/            # Testes unitários da camada de dados
 │   │   ├── mock/                 # Conjunto único de dados simulados (mockData.ts)
 │   │   ├── index.ts              # Exportação dos repositórios ativos
 │   │   ├── mockRepositories.ts   # Implementação em memória dos repositórios
 │   │   └── repositories.ts       # Interfaces TypeScript dos repositórios
 │   ├── domain/                   # Regras de negócio puras (cobertas por testes unitários)
+│   │   ├── __tests__/            # Suítes de testes unitários com Vitest
 │   │   ├── fefo.ts               # Ordenação por validade (First Expire, First Out)
 │   │   ├── leftover.ts           # Cálculo de saldo e aproveitamento de sobras
 │   │   ├── mixture.ts            # Cálculo proporcional dos componentes da mistura
@@ -123,13 +131,13 @@ mada/
 │   ├── hooks/                    # Hooks utilitários customizados (useConnectionStatus)
 │   ├── screens/                  # Telas e modais da aplicação
 │   ├── styles/                   # Tokens e estilos globais
+│   │   ├── design-system.css     # Estilos canônicos do Design System (keypad, pin, cards)
 │   │   ├── global.css            # Estilos base e importação de variáveis
+│   │   ├── styles.css            # Estilos de telas e layouts específicos
 │   │   └── tokens.css            # Definição canônica dos design tokens
 │   ├── App.tsx                   # Roteamento baseado em estado e alternância de telas
 │   ├── main.tsx                  # Ponto de montagem React
 │   └── types.ts                  # Definições centrais de tipos do sistema
-├── tests/
-│   └── domain/                   # Suítes de testes unitários com Vitest
 ├── .editorconfig                 # Padronização de indentação e formatação
 ├── .env.example                  # Modelo de variáveis de ambiente (prefixo VITE_)
 ├── .gitignore                    # Regras de exclusão do Git
@@ -160,7 +168,7 @@ mada/
 
 O projeto conta com ferramentas de verificação estática, formatação e testes automatizados:
 
-- **Testes unitários (`npm run test`):** Executados via Vitest, com 19 testes unitários em 4 arquivos de teste, cobrindo os cálculos e regras de negócio da camada `src/domain/` (`mixture.test.ts`, `tolerance.test.ts`, `fefo.test.ts` e `leftover.test.ts`).
+- **Testes unitários (`npm run test`):** Executados via Vitest, com 23 testes unitários em 5 arquivos de teste, cobrindo os cálculos e regras de negócio da camada `src/domain/` (`mixture.test.ts`, `tolerance.test.ts`, `fefo.test.ts` e `leftover.test.ts`) e a integridade da camada de repositórios em `src/data/` (`repositories.test.ts`).
 - **Análise estática (`npm run lint`):** Executa a verificação e padronização de código com ESLint 10 (Flat Config).
 - **Checagem de tipos (`npm run typecheck`):** Validação estrita de tipagem TypeScript via `tsc --noEmit`.
 - **Empacotamento (`npm run build`):** Compilação do bundle de produção com Vite 8.
@@ -178,7 +186,7 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 
 **Já prototipado / implementado**
 
-- [x] Login (Login rápido com PIN de 4 dígitos)
+- [x] Login (Login rápido por PIN de 4 dígitos nos padrões Apple HIG/Notion, sem ruído cognitivo, teclado tátil de 90px e auto-validação com pulso visual)
 - [x] Dashboard (Dashboard operacional com alerta de validade FEFO)
 - [x] Vincular OS (Vinculação de cliente, projeto e ambiente por Ordem de Serviço)
 - [x] Receita (Receita com calculadora dinâmica de proporções)
@@ -187,7 +195,7 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 - [x] Devolução (Devolução de sobras com cálculo de saldo e emissão de etiqueta QR)
 - [x] Leitura de QR Code simulada via software
 - [x] Camada de repositórios com alternância de fonte de dados (`VITE_DATA_SOURCE=mock`)
-- [x] Testes unitários para a camada de domínio matemático (`src/domain/`)
+- [x] Testes unitários para a camada de domínio matemático (`src/domain/`) e repositórios (`src/data/`)
 
 **Próximos passos**
 
@@ -228,6 +236,8 @@ npm run dev
 ```
 
 A aplicação será iniciada em modo de desenvolvimento em `http://localhost:3000`.
+
+> 💡 **Ambiente Online:** Você também pode testar a versão em produção diretamente pelo GitHub Pages sem precisar instalar dependências: [https://carvalhonathan.github.io/mada/](https://carvalhonathan.github.io/mada/)
 
 > **Nota:** Por padrão, o MVP roda imediatamente com dados simulados (`VITE_DATA_SOURCE=mock`) e **não exige a criação de arquivo `.env` para execução local**.
 
