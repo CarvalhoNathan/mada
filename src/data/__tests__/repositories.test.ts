@@ -1,0 +1,95 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { MockLoteRepository, MockMovimentacaoRepository } from '../mock/mockRepositories';
+
+describe('MockLoteRepository & Ciclo de Sobras', () => {
+  let loteRepo: MockLoteRepository;
+
+  beforeEach(() => {
+    // Limpa localStorage simulado
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+    }
+    loteRepo = new MockLoteRepository();
+  });
+
+  it('deve listar os lotes iniciais padrão', async () => {
+    const lotes = await loteRepo.listar();
+    expect(lotes.length).toBeGreaterThan(0);
+  });
+
+  it('deve adicionar uma sobra devolvida e incluí-la no topo dos prioritários FEFO', async () => {
+    const sobraCriada = await loteRepo.adicionarSobra({
+      produtoId: 1,
+      produtoNome: 'Verniz PU Sayersystem (Sobra)',
+      codigo: 'SOBRA-TESTE-01',
+      validade: '2026-11-20',
+      diasAberto: 1,
+      quantidadeAtual: 350,
+      statusUrgencia: 'alta',
+      prateleira: 'A-01 (Prateleira de Sobras)',
+    });
+
+    expect(sobraCriada.id).toBeDefined();
+    expect(sobraCriada.codigo).toBe('SOBRA-TESTE-01');
+    expect(sobraCriada.quantidadeAtual).toBe(350);
+
+    const prioritarios = await loteRepo.listarPrioritariosFEFO();
+    const achouSobra = prioritarios.find((l) => l.codigo === 'SOBRA-TESTE-01');
+    expect(achouSobra).toBeDefined();
+  });
+
+  it('deve atualizar o saldo de um lote após consumo', async () => {
+    const lotes = await loteRepo.listar();
+    const primeiro = lotes[0];
+    const saldoOriginal = primeiro.quantidadeAtual;
+
+    await loteRepo.atualizarQuantidade(primeiro.id, saldoOriginal - 200);
+    const atualizado = await loteRepo.buscarPorCodigo(primeiro.codigo);
+
+    expect(atualizado?.quantidadeAtual).toBe(saldoOriginal - 200);
+  });
+});
+
+describe('MockMovimentacaoRepository', () => {
+  let movRepo: MockMovimentacaoRepository;
+
+  beforeEach(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+    }
+    movRepo = new MockMovimentacaoRepository();
+  });
+
+  it('deve registrar movimentações de RETIRADA, DEVOLUCAO e DESCARTE', async () => {
+    const mov1 = await movRepo.registrar({
+      tipo: 'RETIRADA',
+      loteId: 1,
+      quantidade: 500,
+      ordemServicoId: 1,
+      operadorId: 1,
+      registradaEm: new Date().toISOString(),
+    });
+
+    const mov2 = await movRepo.registrar({
+      tipo: 'DEVOLUCAO',
+      loteId: 1,
+      quantidade: 150,
+      justificativa: 'Sobra de lata',
+      registradaEm: new Date().toISOString(),
+    });
+
+    const mov3 = await movRepo.registrar({
+      tipo: 'DESCARTE',
+      loteId: 1,
+      quantidade: 50,
+      justificativa: 'Contaminação',
+      registradaEm: new Date().toISOString(),
+    });
+
+    const todas = await movRepo.listar();
+    expect(todas).toHaveLength(3);
+    expect(mov1.id).toBe(1);
+    expect(mov2.tipo).toBe('DEVOLUCAO');
+    expect(mov3.tipo).toBe('DESCARTE');
+  });
+});

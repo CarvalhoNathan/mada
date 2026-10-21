@@ -31,6 +31,9 @@ export interface LoteRepository {
   listar(): Promise<Lote[]>;
   listarPrioritariosFEFO(): Promise<Lote[]>;
   buscarPorCodigo(codigo: string): Promise<Lote | undefined>;
+  adicionarSobra(lote: Omit<Lote, 'id'>): Promise<Lote>;
+  atualizarQuantidade(id: number, novaQuantidade: number): Promise<void>;
+  resetar(): Promise<void>;
 }
 
 export interface ReceitaRepository {
@@ -42,4 +45,5 @@ export interface ReceitaRepository {
 export interface MovimentacaoRepository {
   registrar(movimentacao: Movimentacao): Promise<Movimentacao>;
   listar(): Promise<Movimentacao[]>;
+  resetar(): Promise<void>;
 }

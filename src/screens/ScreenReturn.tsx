@@ -13,12 +13,22 @@ interface ScreenReturnProps {
   operator: Operator;
   onNavigate: (screen: 'dashboard') => void;
   showToast: (msg: string, type?: 'info' | 'success' | 'warn' | 'danger') => void;
+  onConfirmReturn?: (dados: {
+    volume: number;
+    produtoId: number;
+    produtoNome: string;
+    loteOriginalCodigo: string;
+    loteGeradoCodigo: string;
+  }) => Promise<void>;
+  onDiscardWaste?: (volume: number, produtoId: number) => Promise<void>;
 }
 
 export const ScreenReturn: React.FC<ScreenReturnProps> = ({
   operator,
   onNavigate,
   showToast,
+  onConfirmReturn,
+  onDiscardWaste,
 }) => {
   const [returnVolume, setReturnVolume] = useState(400);
   const maxVolume = 1000;
@@ -49,21 +59,36 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
     setReturnVolume((prev) => Math.max(50, Math.min(maxVolume, prev + delta)));
   };
 
-  const handleConfirmReturn = () => {
+  const handleConfirmReturn = async () => {
     if (!allChecked) {
       showToast('Atenção: Marque todos os itens do checklist de integridade.', 'warn');
       return;
     }
 
+    if (onConfirmReturn) {
+      await onConfirmReturn({
+        volume: returnVolume,
+        produtoId: produto.id,
+        produtoNome: produto.nome,
+        loteOriginalCodigo: loteOriginal.codigo,
+        loteGeradoCodigo: loteGerado,
+      });
+    }
+
     showToast(`🖨️ Etiqueta de sobra impressa! ${returnVolume}ml devolvidos ao estoque.`, 'success');
     setTimeout(() => {
       onNavigate('dashboard');
-    }, 1200);
+    }, 1000);
   };
 
-  const handleDiscardRefugo = () => {
+  const handleDiscardRefugo = async () => {
+    if (onDiscardWaste) {
+      await onDiscardWaste(returnVolume, produto.id);
+    }
     showToast(`🗑 Sobra de ${returnVolume}ml descartada como refugo químico.`, 'danger');
-    onNavigate('dashboard');
+    setTimeout(() => {
+      onNavigate('dashboard');
+    }, 800);
   };
 
   return (

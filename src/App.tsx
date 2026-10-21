@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Operator, PieceLot, RecipeState, ScreenId } from './types';
+import { Operator, PieceLot, RecipeState, ScreenId, Lote } from './types';
 import { AppShell } from './components/ui/AppShell';
 import { StatusBanner } from './components/ui/StatusBanner';
 import { Toast } from './components/ui/Toast';
+import { QrScannerModal } from './components/ui/QrScannerModal';
 
 import { ScreenAuth } from './screens/ScreenAuth';
 import { ScreenDashboard } from './screens/ScreenDashboard';
@@ -17,6 +18,7 @@ import { ModalCancelPrep } from './screens/ModalCancelPrep';
 import {
   operadorRepository,
   osRepository,
+  loteRepository,
   movimentacaoRepository,
   MOCK_OPERADORES,
   MOCK_ORDENS_SERVICO,
@@ -50,13 +52,21 @@ export const App: React.FC = () => {
   const [operators, setOperators] = useState<Operator[]>(MOCK_OPERADORES);
   const [selectedOperator, setSelectedOperator] = useState<Operator>(MOCK_OPERADORES[0]);
 
-  // Carregar operadores do repositório
+  // Lotes persistidos
+  const [lotes, setLotes] = useState<Lote[]>([]);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+
+  // Carregar operadores e lotes do repositório
   useEffect(() => {
     operadorRepository.listar().then((list) => {
       if (list.length > 0) {
         setOperators(list);
         setSelectedOperator(list[0]);
       }
+    });
+
+    loteRepository.listar().then((list) => {
+      setLotes(list.length > 0 ? list : MOCK_LOTES);
     });
   }, []);
 
@@ -100,13 +110,29 @@ export const App: React.FC = () => {
     }));
   };
 
-  // Simular QR Scan
-  const handleSimulateQR = () => {
-    showToast('📷 Câmera do tablet ativa: Lendo QR Code...', 'info');
-    setTimeout(() => {
-      showToast('✓ Verniz PU Sayersystem Lote #SY-8821 identificado (Saldo: 400ml)', 'success');
+  // Scanner de QR Code Real / Atalho
+  const handleOpenQR = () => {
+    setIsQrModalOpen(true);
+  };
+
+  const handleQrScanSuccess = (code: string) => {
+    if (code.startsWith('OS-') || code.includes('1084') || code.includes('1085')) {
+      const foundOS = MOCK_ORDENS_SERVICO.find((o) =>
+        code.includes(o.numero.replace('#', '')) || code.includes(o.numero)
+      ) || MOCK_ORDENS_SERVICO[0];
+      setClientName(foundOS.clienteNome);
+      setProjectName(foundOS.projetoNome);
+      setSelectedEnvironment(foundOS.ambienteNome);
+      setPieceLot(foundOS.pecaLote);
+      showToast(`✓ QR Code lido: ${foundOS.numero} (${foundOS.clienteNome})`, 'success');
       setCurrentScreen('recipe');
-    }, 800);
+    } else if (code.includes('SOBRA') || code.startsWith('L-')) {
+      showToast(`✓ Insumo químico identificado: ${code}. Lote priorizado!`, 'success');
+      setCurrentScreen('recipe');
+    } else {
+      showToast(`✓ Código identificado: ${code}`, 'success');
+      setCurrentScreen('recipe');
+    }
   };
 
   const handleStartDosing = () => {
@@ -120,13 +146,19 @@ export const App: React.FC = () => {
     const receita = MOCK_RECEITAS[0];
     const osAtiva = MOCK_ORDENS_SERVICO.find(o => o.clienteNome === clientName) || MOCK_ORDENS_SERVICO[0];
 
-    // Registra uma Movimentacao do tipo RETIRADA por componente via MovimentacaoRepository (em memória)
+    // Registra uma Movimentacao do tipo RETIRADA por componente via MovimentacaoRepository
     // vinculada à OS e ao operador logado
     for (const item of receita.itens) {
       const quantidade = dosingValues[item.id] || 0;
       if (quantidade > 0) {
-        const lotes = ordenarLotesFEFO(MOCK_LOTES.filter(l => l.produtoId === item.produtoId));
-        const loteId = lotes[0]?.id || item.id;
+        const lotesOrdenados = ordenarLotesFEFO(lotes.filter(l => l.produtoId === item.produtoId));
+        const loteId = lotesOrdenados[0]?.id || item.id;
+
+        // Deduz quantidade do lote se existir
+        if (lotesOrdenados[0]) {
+          const novoSaldo = Math.max(0, lotesOrdenados[0].quantidadeAtual - quantidade);
+          await loteRepository.atualizarQuantidade(lotesOrdenados[0].id, novoSaldo);
+        }
 
         await movimentacaoRepository.registrar({
           tipo: 'RETIRADA',
@@ -139,6 +171,9 @@ export const App: React.FC = () => {
         });
       }
     }
+
+    const lotesAtualizados = await loteRepository.listar();
+    setLotes(lotesAtualizados);
 
     showToast('✓ Dosagem concluída e baixa por componente registrada com sucesso!', 'success');
     setCurrentScreen('return');
@@ -202,7 +237,8 @@ export const App: React.FC = () => {
           operator={selectedOperator}
           onNavigate={(screen) => setCurrentScreen(screen)}
           onOpenUseFirstModal={() => setIsUseFirstModalOpen(true)}
-          onSimulateQR={handleSimulateQR}
+          onSimulateQR={handleOpenQR}
+          lotes={lotes}
         />
       )}
 
@@ -230,7 +266,7 @@ export const App: React.FC = () => {
               showToast('Ordem de Serviço alternada.', 'info');
             });
           }}
-          onScanOS={handleSimulateQR}
+          onScanOS={handleOpenQR}
           onNavigate={(screen) => setCurrentScreen(screen)}
           onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
         />
@@ -264,6 +300,46 @@ export const App: React.FC = () => {
           operator={selectedOperator}
           onNavigate={(screen) => setCurrentScreen(screen)}
           showToast={showToast}
+          onConfirmReturn={async (dados) => {
+            // 1. Registra movimentação do tipo DEVOLUCAO
+            await movimentacaoRepository.registrar({
+              tipo: 'DEVOLUCAO',
+              loteId: 1,
+              operadorId: selectedOperator.id,
+              quantidade: dados.volume,
+              justificativa: `Devolução formal ao estoque: ${dados.volume}ml`,
+              registradaEm: new Date().toISOString(),
+            });
+
+            // 2. Adiciona o lote de sobra ao estoque
+            const dataValidade = new Date();
+            dataValidade.setDate(dataValidade.getDate() + 30);
+            const validadeStr = dataValidade.toISOString().split('T')[0];
+
+            await loteRepository.adicionarSobra({
+              produtoId: dados.produtoId,
+              produtoNome: `${dados.produtoNome} (Sobra)`,
+              codigo: dados.loteGeradoCodigo,
+              validade: validadeStr,
+              diasAberto: 1,
+              quantidadeAtual: dados.volume,
+              statusUrgencia: 'alta',
+              prateleira: 'A-01 (Prateleira de Sobras)',
+            });
+
+            const lotesAtualizados = await loteRepository.listar();
+            setLotes(lotesAtualizados);
+          }}
+          onDiscardWaste={async (volume) => {
+            await movimentacaoRepository.registrar({
+              tipo: 'DESCARTE',
+              loteId: 1,
+              operadorId: selectedOperator.id,
+              quantidade: volume,
+              justificativa: `Descarte de refugo químico (${volume}ml)`,
+              registradaEm: new Date().toISOString(),
+            });
+          }}
         />
       )}
 
@@ -272,6 +348,14 @@ export const App: React.FC = () => {
         isOpen={isUseFirstModalOpen}
         onClose={() => setIsUseFirstModalOpen(false)}
         onSelectBatch={handleSelectBatch}
+        lotes={lotes}
+      />
+
+      {/* Modal Scanner Real de QR Code (WebRTC / Câmera) */}
+      <QrScannerModal
+        isOpen={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
+        onScanSuccess={handleQrScanSuccess}
       />
 
       {/* Modal de Cancelar Preparação */}

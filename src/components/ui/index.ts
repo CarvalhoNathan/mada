@@ -14,3 +14,4 @@ export * from './SidebarNav';
 export * from './StatusBanner';
 export * from './StepIndicator';
 export * from './Toast';
+export * from './QrScannerModal';

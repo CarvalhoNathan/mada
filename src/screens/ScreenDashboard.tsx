@@ -1,5 +1,5 @@
 import React from 'react';
-import { Operator } from '../types';
+import { Operator, Lote } from '../types';
 import { MOCK_LOTES } from '../data';
 import { ordenarLotesFEFO } from '../domain/fefo';
 
@@ -8,6 +8,7 @@ interface ScreenDashboardProps {
   onNavigate: (screen: 'auth' | 'os' | 'recipe' | 'return') => void;
   onOpenUseFirstModal: () => void;
   onSimulateQR: () => void;
+  lotes?: Lote[];
 }
 
 export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
@@ -15,16 +16,18 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
   onNavigate,
   onOpenUseFirstModal,
   onSimulateQR,
+  lotes,
 }) => {
   const fullName = operator.nome || operator.name || 'Operador';
   const firstName = fullName.split(' ')[0];
 
   // Cálculo dinâmico do alerta FEFO sem números fixos
-  const lotesOrdenados = ordenarLotesFEFO(MOCK_LOTES);
+  const lotesAtuais = lotes && lotes.length > 0 ? lotes : MOCK_LOTES;
+  const lotesOrdenados = ordenarLotesFEFO(lotesAtuais);
   const lotesPrioritarios = lotesOrdenados.filter(
-    (l) => (l.diasAberto ?? 0) > 0 || l.statusUrgencia === 'alta'
+    (l) => l.quantidadeAtual > 0 && ((l.diasAberto ?? 0) > 0 || l.statusUrgencia === 'alta')
   );
-  const loteMaisUrgente = lotesOrdenados[0];
+  const loteMaisUrgente = lotesPrioritarios[0] || lotesOrdenados[0];
   const totalPrioritarios = lotesPrioritarios.length;
 
   return (

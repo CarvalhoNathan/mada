@@ -82,8 +82,36 @@ export class MockProdutoRepository implements ProdutoRepository {
   }
 }
 
+const STORAGE_KEYS = {
+  LOTES: 'mada_lotes',
+  MOVIMENTACOES: 'mada_movimentacoes',
+};
+
+function loadStorage<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveStorage<T>(key: string, val: T): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(val));
+  } catch {
+    // Silenciosamente ignora em caso de modo restrito
+  }
+}
+
 export class MockLoteRepository implements LoteRepository {
-  private lotes = [...MOCK_LOTES];
+  private lotes: Lote[];
+
+  constructor() {
+    this.lotes = loadStorage<Lote[]>(STORAGE_KEYS.LOTES, [...MOCK_LOTES]);
+  }
 
   async listar(): Promise<Lote[]> {
     return [...this.lotes];
@@ -95,6 +123,27 @@ export class MockLoteRepository implements LoteRepository {
 
   async buscarPorCodigo(codigo: string): Promise<Lote | undefined> {
     return this.lotes.find(l => l.codigo === codigo);
+  }
+
+  async adicionarSobra(novoLote: Omit<Lote, 'id'>): Promise<Lote> {
+    const proximoId = this.lotes.reduce((max, l) => Math.max(max, l.id), 0) + 1;
+    const criado: Lote = {
+      ...novoLote,
+      id: proximoId,
+    };
+    this.lotes = [criado, ...this.lotes];
+    saveStorage(STORAGE_KEYS.LOTES, this.lotes);
+    return criado;
+  }
+
+  async atualizarQuantidade(id: number, novaQuantidade: number): Promise<void> {
+    this.lotes = this.lotes.map(l => (l.id === id ? { ...l, quantidadeAtual: novaQuantidade } : l));
+    saveStorage(STORAGE_KEYS.LOTES, this.lotes);
+  }
+
+  async resetar(): Promise<void> {
+    this.lotes = [...MOCK_LOTES];
+    saveStorage(STORAGE_KEYS.LOTES, this.lotes);
   }
 }
 
@@ -115,19 +164,29 @@ export class MockReceitaRepository implements ReceitaRepository {
 }
 
 export class MockMovimentacaoRepository implements MovimentacaoRepository {
-  private movimentacoes: Movimentacao[] = [];
+  private movimentacoes: Movimentacao[];
+
+  constructor() {
+    this.movimentacoes = loadStorage<Movimentacao[]>(STORAGE_KEYS.MOVIMENTACOES, []);
+  }
 
   async registrar(movimentacao: Movimentacao): Promise<Movimentacao> {
-    const nova = {
+    const nova: Movimentacao = {
       ...movimentacao,
       id: this.movimentacoes.length + 1,
       registradaEm: movimentacao.registradaEm || new Date().toISOString(),
     };
-    this.movimentacoes.push(nova);
+    this.movimentacoes = [nova, ...this.movimentacoes];
+    saveStorage(STORAGE_KEYS.MOVIMENTACOES, this.movimentacoes);
     return nova;
   }
 
   async listar(): Promise<Movimentacao[]> {
     return [...this.movimentacoes];
+  }
+
+  async resetar(): Promise<void> {
+    this.movimentacoes = [];
+    saveStorage(STORAGE_KEYS.MOVIMENTACOES, this.movimentacoes);
   }
 }
