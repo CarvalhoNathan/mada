@@ -38,9 +38,9 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   }, []);
 
   const handleBackspace = useCallback(() => {
-    setHasError(false);
+    if (hasError) setHasError(false);
     setPinEntered(prev => prev.slice(0, -1));
-  }, []);
+  }, [hasError]);
 
   const handleSubmit = useCallback((candidatePin?: string) => {
     const pin = candidatePin ?? pinEntered;
@@ -52,30 +52,35 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
       showToast('Por favor, digite os 4 dígitos do seu PIN.', 'warn');
       return;
     }
-    if (pin === PIN_ERRO_SIMULADO) {
+
+    const isValid = selectedOperator.pin
+      ? pin === selectedOperator.pin
+      : pin !== PIN_ERRO_SIMULADO;
+
+    if (!isValid || pin === PIN_ERRO_SIMULADO) {
       setHasError(true);
       setTimeout(() => {
         setPinEntered('');
         setHasError(false);
-      }, 1000);
+      }, 800);
       return;
     }
 
     onSuccessAuth();
-  }, [pinEntered, isOffline, showToast, onSuccessAuth]);
+  }, [pinEntered, isOffline, selectedOperator.pin, showToast, onSuccessAuth]);
 
   const handleDigit = useCallback((digit: string) => {
+    if (hasError) return;
     if (pinEntered.length < 4) {
-      setHasError(false);
       const nextPin = pinEntered + digit;
       setPinEntered(nextPin);
       if (nextPin.length === 4) {
         setTimeout(() => {
           handleSubmit(nextPin);
-        }, 150);
+        }, 120);
       }
     }
-  }, [pinEntered, handleSubmit]);
+  }, [hasError, pinEntered, handleSubmit]);
 
   // Suporte a teclado físico para conveniência e acessibilidade
   useEffect(() => {
@@ -97,119 +102,85 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleDigit, handleBackspace, handleClear, handleSubmit]);
 
-  return (
-    <div className="auth-grid">
-      {/* Coluna de Operadores */}
-      <div className="operators-column">
-        <div>
-          <div className="section-header-compact">
-            <div className="section-tag">01 / IDENTIFICAÇÃO</div>
-            <h2 className="section-title">Quem vai usar o sistema?</h2>
-            <p className="section-desc" style={{ fontSize: 'var(--fs-small)' }}>
-              Toque no seu perfil e digite seu PIN de 4 dígitos para entrar.
-            </p>
-          </div>
+  const selectedName = selectedOperator.nome || selectedOperator.name || 'Operador';
 
-          <div className="operators-grid">
-            {operators.map((op) => {
-              const opName = op.nome || op.name || '';
-              const selectedName = selectedOperator.nome || selectedOperator.name || '';
-              const isSelected = op.id ? op.id === selectedOperator.id : opName === selectedName;
-              return (
-                <div
-                  key={op.id || opName}
-                  className={`operator-card ${isSelected ? 'selected' : ''}`}
-                  onClick={() => {
+  return (
+    <div className="auth-layout-minimal">
+      {/* Coluna da Esquerda: Seleção do Pintor */}
+      <section className="auth-left-column" aria-label="Seleção de Operador">
+        <h2 className="auth-title-minimal">Quem está pintando?</h2>
+
+        <div className="auth-operators-vertical" role="radiogroup" aria-label="Operadores disponíveis">
+          {operators.map((op) => {
+            const opName = op.nome || op.name || '';
+            const opRole = op.papel || op.role || 'Operador de Pintura';
+            const isSelected = op.id ? op.id === selectedOperator.id : opName === selectedName;
+
+            return (
+              <div
+                key={op.id || opName}
+                role="radio"
+                aria-checked={isSelected}
+                tabIndex={0}
+                className={`operator-card-apple ${isSelected ? 'is-active' : ''}`}
+                onClick={() => {
+                  onSelectOperator(op);
+                  handleClear();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
                     onSelectOperator(op);
                     handleClear();
-                  }}
-                  style={{ minHeight: '64px' }}
-                >
-                  <span className="operator-check-badge">✓</span>
-                  <div
-                    className="operator-photo"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '26px',
-                      fontWeight: 800,
-                      color: 'var(--primary)',
-                      backgroundColor: 'var(--card-hover)',
-                      userSelect: 'none',
-                    }}
-                    aria-label={`Iniciais de ${opName}`}
-                  >
-                    {getInitials(opName)}
-                  </div>
-                  <div className="operator-card-body">
-                    <span className="operator-name">{opName}</span>
-                    <span className="operator-status-label" style={{ fontSize: 'var(--fs-small)' }}>
-                      {isSelected ? '✓ Selecionado(a)' : 'Toque para selecionar'}
-                    </span>
-                  </div>
+                  }
+                }}
+              >
+                <div className="operator-avatar-circle" aria-hidden="true">
+                  {getInitials(opName)}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="help-banner-card">
-          <div className="help-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-          </div>
-          <div className="help-text">
-            <h4 style={{ fontSize: 'var(--fs-small)', margin: 0 }}>Não encontrou seu nome ou esqueceu o PIN?</h4>
-            <p style={{ fontSize: 'var(--fs-small)', margin: '2px 0 0' }}>Peça ajuda imediata ao encarregado responsável pelo setor de pintura.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Coluna PIN e Teclado com componentes do Design System */}
-      <div className="pin-column">
-        <div className="pin-pad-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ width: '100%', marginBottom: '12px' }}>
-            <div className="pin-header" style={{ marginBottom: '8px' }}>
-              <h3 className="pin-title" style={{ fontSize: '20px', color: 'var(--text)' }}>
-                PIN de {selectedOperator.nome || selectedOperator.name}
-              </h3>
-              <div className="pin-lock-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
+                <div className="operator-info-apple">
+                  <span className="operator-name-apple">{opName}</span>
+                  <span className="operator-role-apple">{opRole}</span>
+                </div>
               </div>
-            </div>
+            );
+          })}
+        </div>
 
-            {/* Componente Canônico PinInput com animação de Shake */}
-            <PinInput
-              length={4}
-              value={pinEntered}
-              hasError={hasError}
-              errorMessage={
-                import.meta.env.DEV
-                  ? 'PIN incorreto. Tente novamente ou use 1234.'
-                  : 'PIN incorreto. Tente novamente.'
-              }
-            />
+        <button
+          type="button"
+          className="auth-help-link-subtle"
+          onClick={() => {
+            showToast('Solicite assistência ao encarregado para recuperar ou redefinir seu PIN.', 'info');
+          }}
+        >
+          Esqueceu o PIN ou precisa de ajuda?
+        </button>
+      </section>
+
+      {/* Coluna da Direita: Teclado Numérico & PIN estilo Apple */}
+      <section className="auth-right-column" aria-label="Autenticação com PIN">
+        <div className="auth-pin-card-apple">
+          <div className="auth-pin-card-header">
+            <h3 className="auth-pin-title">PIN de {selectedName}</h3>
           </div>
 
-          {/* Componente Canônico NumericKeypad com teclas táteis de 90px */}
+          <PinInput
+            length={4}
+            value={pinEntered}
+            hasError={hasError}
+            errorMessage="PIN incorreto"
+          />
+
           <NumericKeypad
             onDigit={handleDigit}
             onBackspace={handleBackspace}
             onClear={handleClear}
-            onConfirm={() => handleSubmit()}
-            confirmLabel="Entrar no Sistema"
             disabled={isOffline}
-            confirmDisabled={pinEntered.length < 4 || isOffline}
           />
         </div>
-      </div>
+      </section>
     </div>
   );
 };
+

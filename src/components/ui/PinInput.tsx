@@ -9,48 +9,48 @@ export interface PinInputProps {
 }
 
 /**
- * PinInput - Indicador Visual de PIN (4 dígitos)
- * Estados: vazio, preenchido, erro (com animação de shake e contorno vermelho)
+ * PinInput - Indicador Visual de PIN Minimalista (Estilo Apple HIG)
+ * 4 círculos (dots) de 20px com espaçamento de 16px.
+ * Vazio: anel fino #2C3947
+ * Preenchido: círculo sólido luminoso #F5F7FA
+ * Erro: shake suave e círculos vermelhos #EF4444
  */
 export const PinInput: React.FC<PinInputProps> = ({
   length = 4,
   value,
   hasError = false,
-  errorMessage = 'PIN incorreto. Tente novamente.',
+  errorMessage,
   label,
 }) => {
   const slots = Array.from({ length }, (_, i) => i);
   const currentLength = value.length;
 
   return (
-    <div className={`ds-pin-container ${hasError ? 'is-error' : ''}`}>
-      {label && <span className="ds-pin-label">{label}</span>}
+    <div className={`apple-pin-wrapper ${hasError ? 'shake' : ''}`}>
+      {label && <span className="apple-pin-label">{label}</span>}
 
-      <div className="ds-pin-slots-row" role="status" aria-label={`PIN com ${currentLength} de ${length} dígitos preenchidos`}>
+      <div
+        className="apple-pin-dots-row"
+        role="status"
+        aria-label={`PIN com ${currentLength} de ${length} dígitos preenchidos`}
+      >
         {slots.map((index) => {
           const isFilled = index < currentLength;
           return (
             <div
               key={index}
-              className={`ds-pin-slot ${isFilled ? 'is-filled' : ''}`}
-            >
-              <span className="ds-pin-dot" />
-            </div>
+              className={`apple-pin-dot ${isFilled ? 'filled' : 'empty'} ${hasError ? 'error' : ''}`}
+            />
           );
         })}
       </div>
 
-      <div className="ds-pin-status-message">
-        {hasError ? (
-          <span className="ds-pin-error-text" role="alert">
-            ⚠ {errorMessage}
-          </span>
-        ) : (
-          <span className="ds-pin-info-text">
-            {currentLength === length ? '✓ 4 de 4 dígitos inseridos' : `${currentLength} de ${length} dígitos`}
-          </span>
-        )}
-      </div>
+      {hasError && errorMessage && (
+        <div className="apple-pin-error-msg" role="alert">
+          {errorMessage}
+        </div>
+      )}
     </div>
   );
 };
+

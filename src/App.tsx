@@ -186,8 +186,7 @@ export const App: React.FC = () => {
 
   return (
     <AppShell
-      appName="Gerenciador de Químicos"
-      subTitle="MADA MARCENARIA • SETOR DE PINTURA"
+      appName="Cabine de Pintura"
       operator={
         currentScreen !== 'auth'
           ? {

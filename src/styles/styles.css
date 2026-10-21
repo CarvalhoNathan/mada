@@ -374,266 +374,178 @@ body {
 }
 
 /* ==========================================================================
-   TELA 1: Identificação & PIN (Login do Operador)
+   TELA 1: Identificação & PIN (Login do Operador Minimalista Apple HIG)
+   Resolução fixa 1280x800 sem rolagem. Zero ruído cognitivo.
    ========================================================================== */
-.auth-grid {
+.auth-layout-minimal {
   display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 24px;
-  align-items: stretch;
-  height: calc(100% - 70px);
+  grid-template-columns: 1fr 440px;
+  gap: 48px;
+  align-items: center;
+  height: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-.operators-column {
+/* Coluna da Esquerda: Seleção de Operador */
+.auth-left-column {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   height: 100%;
 }
 
-.operators-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+.auth-title-minimal {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text); /* #F5F7FA */
+  margin: 0 0 28px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
-.operator-card {
-  background: var(--card);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-card);
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
-  position: relative;
+.auth-operators-vertical {
   display: flex;
   flex-direction: column;
-  min-height: 140px;
+  gap: 16px;
 }
 
-.operator-card:active {
-  transform: scale(0.97);
-  filter: brightness(0.9);
+.operator-card-apple {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 84px;
+  padding: 16px 20px;
+  background-color: var(--card); /* #1B232C */
+  border: 1.5px solid var(--border); /* #2C3947 */
+  border-radius: var(--radius-card); /* 16px */
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+  outline: none;
+  box-sizing: border-box;
 }
 
-.operator-card.selected {
-  border-color: var(--primary);
+.operator-card-apple:hover {
   background-color: var(--card-hover);
-  box-shadow: 0 0 0 2px var(--primary-border);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
-.operator-photo {
-  width: 100%;
-  height: 75px;
-  object-fit: cover;
-  background-color: #1e2633;
-  display: block;
+.operator-card-apple:active {
+  transform: scale(0.985);
+  filter: brightness(0.92);
 }
 
-.operator-check-badge {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 24px;
-  height: 24px;
-  background: var(--primary);
-  color: white;
+.operator-card-apple.is-active {
+  border: 2px solid var(--primary); /* #2563EB */
+  background-color: rgba(37, 99, 235, 0.12); /* Preenchimento suave */
+}
+
+.operator-avatar-circle {
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
+  background-color: #243040;
+  color: var(--text); /* #F5F7FA */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 700;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-  opacity: 0;
-  transform: scale(0.6);
-  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  border: 1.5px solid var(--border);
+  transition: all 0.18s ease;
 }
 
-.operator-card.selected .operator-check-badge {
-  opacity: 1;
-  transform: scale(1);
+.operator-card-apple.is-active .operator-avatar-circle {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.35);
 }
 
-.operator-card-body {
-  padding: 6px 10px;
+.operator-info-apple {
   display: flex;
   flex-direction: column;
-  background: var(--card);
+  gap: 4px;
+  min-width: 0;
 }
 
-.operator-card.selected .operator-card-body {
-  background: var(--card-hover);
-}
-
-.operator-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
+.operator-name-apple {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text); /* #F5F7FA */
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.operator-status-label {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin-top: 1px;
+.operator-role-apple {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-muted); /* #AAB4BF */
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.operator-card.selected .operator-status-label {
-  color: var(--primary);
-  font-weight: 600;
+.auth-help-link-subtle {
+  margin-top: 32px;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-muted); /* #AAB4BF */
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: rgba(170, 180, 191, 0.35);
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
 
-.help-banner-card {
-  margin-top: 10px;
-  background: var(--card);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.auth-help-link-subtle:hover {
+  color: var(--text);
+  text-decoration-color: var(--text);
 }
 
-.help-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--card-hover);
+/* Coluna da Direita: Card Envolvente do PIN */
+.auth-right-column {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.help-text h4 {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.help-text p {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin-top: 1px;
-}
-
-/* Coluna PIN & Teclado */
-.pin-column {
   height: 100%;
 }
 
-.pin-pad-card {
-  background: var(--card);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 16px 22px;
-  box-shadow: var(--shadow-sm);
+.auth-pin-card-apple {
+  width: 100%;
+  background-color: var(--card); /* #1B232C */
+  border: 1.5px solid var(--border); /* #2C3947 */
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.pin-header {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
-.pin-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text);
+.auth-pin-card-header {
+  margin-bottom: 16px;
+  width: 100%;
+  text-align: center;
 }
 
-.pin-lock-icon {
-  color: var(--primary);
-}
-
-.pin-sub {
-  font-size: 15px;
-  color: var(--text-muted);
-  margin-top: 1px;
-  margin-bottom: 8px;
-}
-
-/* Indicador de Dígitos do PIN */
-.pin-slots {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
-.pin-slot {
-  height: 50px;
-  background: var(--bg);
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.pin-slot.filled {
-  border-color: var(--primary);
-  background: var(--primary-soft);
-}
-
-.pin-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--primary);
-  display: none;
-}
-
-.pin-slot.filled .pin-dot {
-  display: block;
-}
-
-/* Estado de Erro do PIN (Shake + Vermelho) */
-@keyframes pinShake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-8px); }
-  40%, 80% { transform: translateX(8px); }
-}
-
-.pin-slots.has-error {
-  animation: pinShake 0.4s ease-in-out;
-}
-
-.pin-slots.has-error .pin-slot {
-  border-color: var(--danger) !important;
-  background-color: var(--danger-soft) !important;
-}
-
-.pin-slots.has-error .pin-dot {
-  background-color: var(--danger) !important;
-}
-
-.pin-hint {
-  font-size: 15px;
+.auth-pin-title {
+  font-size: 20px;
   font-weight: 600;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 20px;
-  margin-bottom: 6px;
-}
-
-.pin-hint.hint-error {
-  color: var(--danger);
-  font-weight: 700;
-}
-
-.pin-hint.hint-success {
-  color: var(--ok);
-  font-weight: 700;
+  color: var(--text); /* #F5F7FA */
+  margin: 0;
+  line-height: 1.2;
 }
 
 /* Teclado Numérico de 90px / Táteis */

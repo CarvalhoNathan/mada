@@ -326,7 +326,7 @@
 .ds-numeric-keypad {
   display: flex;
   flex-direction: column;
-  gap: var(--space-16);
+  gap: var(--space-12);
   max-width: 380px;
   width: 100%;
 }
@@ -334,50 +334,140 @@
 .ds-keypad-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-16);
+  gap: 12px;
 }
 
 .ds-keypad-btn {
-  height: 90px; /* 90px táctil */
-  background-color: var(--card);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-button);
+  height: 88px; /* 88px a 90px para uso facilitado com luvas */
+  background-color: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
   color: var(--text);
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform var(--transition-press), background-color var(--transition-normal);
+  transition: transform 0.1s ease, filter 0.1s ease, border-color 0.15s ease, background-color 0.15s ease;
   user-select: none;
 }
 
 .ds-keypad-btn:active:not(:disabled) {
-  transform: scale(0.95);
-  background-color: var(--card-hover);
+  transform: scale(0.97);
+  filter: brightness(0.9);
   border-color: var(--primary);
 }
 
 .ds-keypad-action {
-  font-size: var(--fs-small);
-  font-weight: 700;
-  text-transform: uppercase;
-  background-color: var(--card-hover);
+  font-size: 24px;
+  font-weight: 600;
   color: var(--text-muted);
+  background-color: var(--bg);
 }
 
 .ds-keypad-action:active:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.ds-keypad-backspace svg {
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+
+.ds-keypad-backspace:active:not(:disabled) svg {
   color: var(--text);
 }
 
 .ds-keypad-confirm-btn {
   width: 100%;
+  margin-top: 4px;
 }
 
 /* ==========================================================================
-   5. PIN INPUT (4 BOLINHAS + ERRO SHAKE)
+   5. PIN INPUT (APPLE HIG - 4 CÍRCULOS DE 20PX COM GAP DE 16PX)
    ========================================================================== */
+.apple-pin-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.apple-pin-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.apple-pin-dots-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px; /* Espaçamento de 16px */
+  padding: 8px 0;
+}
+
+.apple-pin-dot {
+  width: 20px;  /* Tamanho 20px */
+  height: 20px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.apple-pin-dot.empty {
+  border: 1.5px solid var(--border); /* Anel fino em #2C3947 */
+  background-color: transparent;
+}
+
+.apple-pin-dot.filled {
+  border: 1.5px solid var(--text);
+  background-color: var(--text); /* Círculo sólido luminoso #F5F7FA */
+  box-shadow: 0 0 12px rgba(245, 247, 250, 0.45);
+}
+
+.apple-pin-dot.error {
+  border-color: var(--danger) !important;
+  background-color: var(--danger) !important; /* Vermelho #EF4444 */
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.55) !important;
+}
+
+.apple-pin-error-msg {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--danger);
+  text-align: center;
+  animation: appleFadeIn 0.2s ease;
+}
+
+.apple-pin-wrapper.shake {
+  animation: appleShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes appleShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+@keyframes appleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Suporte legado para ds-pin-container */
 .ds-pin-container {
   display: flex;
   flex-direction: column;
@@ -942,10 +1032,10 @@
 }
 
 .ds-shell-header {
-  height: 80px;
+  height: 56px;
   padding: 0 var(--space-24);
   background-color: var(--card);
-  border-bottom: 2px solid var(--border);
+  border-bottom: 1.5px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -955,37 +1045,37 @@
 .ds-shell-brand {
   display: flex;
   align-items: center;
-  gap: var(--space-16);
+  gap: var(--space-12);
 }
 
 .ds-shell-logo {
-  width: 48px;
-  height: 48px;
+  width: 34px;
+  height: 34px;
   border-radius: var(--radius-sm);
   background-color: var(--primary);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 .ds-shell-logo svg {
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
 }
 
 .ds-shell-app-name {
-  font-size: var(--fs-h2);
-  font-weight: var(--fw-h2);
-  line-height: 1.1;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
   color: var(--text);
+  letter-spacing: -0.01em;
 }
 
 .ds-shell-sub-name {
-  font-size: var(--fs-small);
+  font-size: 16px;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .ds-shell-header-right {
@@ -996,7 +1086,42 @@
 
 .ds-shell-chips-group {
   display: flex;
+  align-items: center;
   gap: var(--space-8);
+}
+
+.ds-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-muted);
+  user-select: none;
+  transition: all var(--transition-fast);
+}
+
+.ds-status-chip.is-connected {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.ds-status-chip.is-connected svg {
+  color: var(--text-muted);
+}
+
+.ds-status-chip.is-disconnected {
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.4);
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.ds-status-chip.is-disconnected svg {
+  color: var(--danger);
 }
 
 .ds-shell-operator-card {

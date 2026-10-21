@@ -30,8 +30,8 @@ export interface AppShellProps {
  * Cabeçalho fixo + Conteúdo dimensionado para caber SEM rolagem + Barra inferior fixa
  */
 export const AppShell: React.FC<AppShellProps> = ({
-  appName = 'Gerenciador de Químicos',
-  subTitle = 'MADA MARCENARIA • SETOR DE PINTURA',
+  appName = 'Cabine de Pintura',
+  subTitle,
   operator,
   isWifiConnected = true,
   isServerLocal = true,
@@ -41,7 +41,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 }) => {
   return (
     <div className="ds-app-shell">
-      {/* 1. Cabeçalho Fixo */}
+      {/* 1. Cabeçalho Compacto (56px) */}
       <header className="ds-shell-header">
         <div className="ds-shell-brand">
           <div className="ds-shell-logo">
@@ -53,19 +53,31 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
           <div className="ds-shell-titles">
             <h1 className="ds-shell-app-name">{appName}</h1>
-            <span className="ds-shell-sub-name">{subTitle}</span>
+            {subTitle && <span className="ds-shell-sub-name">{subTitle}</span>}
           </div>
         </div>
 
         <div className="ds-shell-header-right">
-          {/* Status de Conexão */}
+          {/* Status de Conexão Discreto (ícone + chip sutil) */}
           <div className="ds-shell-chips-group">
-            <span className={`ds-badge ${isWifiConnected ? 'ds-badge-ok' : 'ds-badge-danger'}`}>
-              <span className="ds-dot" /> {isWifiConnected ? 'Wi-Fi OK' : 'Sem Wi-Fi'}
-            </span>
-            <span className={`ds-badge ${isServerLocal ? 'ds-badge-ok' : 'ds-badge-danger'}`}>
-              <span className="ds-dot" /> {isServerLocal ? 'Sistema OK' : 'Offline'}
-            </span>
+            <div className={`ds-status-chip ${isWifiConnected ? 'is-connected' : 'is-disconnected'}`}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                <line x1="12" y1="20" x2="12.01" y2="20"/>
+              </svg>
+              <span>{isWifiConnected ? 'Wi-Fi' : 'Sem Wi-Fi'}</span>
+            </div>
+            <div className={`ds-status-chip ${isServerLocal ? 'is-connected' : 'is-disconnected'}`}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                <line x1="6" y1="6" x2="6.01" y2="6"/>
+                <line x1="6" y1="18" x2="6.01" y2="18"/>
+              </svg>
+              <span>{isServerLocal ? 'Sistema' : 'Offline'}</span>
+            </div>
           </div>
 
           {/* Operador Logado */}
