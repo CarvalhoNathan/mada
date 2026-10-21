@@ -442,6 +442,23 @@
   transform: scale(1.1);
 }
 
+.apple-pin-dot.success {
+  border-color: #10B981 !important; /* Verde esmeralda Apple HIG */
+  background-color: #10B981 !important;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.75) !important;
+  transform: scale(1.18);
+}
+
+.apple-pin-wrapper.success .apple-pin-dots-row {
+  animation: appleSuccessPulse 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes appleSuccessPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
 .apple-pin-error-msg {
   margin-top: 10px;
   font-size: 16px;

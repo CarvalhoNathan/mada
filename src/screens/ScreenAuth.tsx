@@ -31,18 +31,22 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
 }) => {
   const [pinEntered, setPinEntered] = useState<string>('');
   const [hasError, setHasError] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
   const handleClear = useCallback(() => {
+    if (isSuccess) return;
     setPinEntered('');
     setHasError(false);
-  }, []);
+  }, [isSuccess]);
 
   const handleBackspace = useCallback(() => {
+    if (isSuccess) return;
     if (hasError) setHasError(false);
     setPinEntered(prev => prev.slice(0, -1));
-  }, [hasError]);
+  }, [hasError, isSuccess]);
 
   const handleSubmit = useCallback((candidatePin?: string) => {
+    if (isSuccess) return;
     const pin = candidatePin ?? pinEntered;
     if (isOffline) {
       showToast('Ação indisponível: Sistema offline.', 'danger');
@@ -66,11 +70,17 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
       return;
     }
 
-    onSuccessAuth();
-  }, [pinEntered, isOffline, selectedOperator.pin, showToast, onSuccessAuth]);
+    // Microinteração de Sucesso: acende os 4 dots em verde luminoso antes da transição
+    setIsSuccess(true);
+    setTimeout(() => {
+      onSuccessAuth();
+      setIsSuccess(false);
+      setPinEntered('');
+    }, 280);
+  }, [isSuccess, pinEntered, isOffline, selectedOperator.pin, showToast, onSuccessAuth]);
 
   const handleDigit = useCallback((digit: string) => {
-    if (hasError) return;
+    if (hasError || isSuccess) return;
     if (pinEntered.length < 4) {
       const nextPin = pinEntered + digit;
       setPinEntered(nextPin);
@@ -80,11 +90,12 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
         }, 120);
       }
     }
-  }, [hasError, pinEntered, handleSubmit]);
+  }, [hasError, isSuccess, pinEntered, handleSubmit]);
 
   // Suporte a teclado físico para conveniência e acessibilidade
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isSuccess) return;
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
@@ -100,7 +111,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleDigit, handleBackspace, handleClear, handleSubmit]);
+  }, [isSuccess, handleDigit, handleBackspace, handleClear, handleSubmit]);
 
   const selectedName = selectedOperator.nome || selectedOperator.name || 'Operador';
 
@@ -169,6 +180,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
             length={4}
             value={pinEntered}
             hasError={hasError}
+            isSuccess={isSuccess}
             errorMessage="PIN incorreto"
           />
 

@@ -4,6 +4,7 @@ export interface PinInputProps {
   length?: number; // padrão 4
   value: string;   // ex: "12" ou "1234"
   hasError?: boolean;
+  isSuccess?: boolean;
   errorMessage?: string;
   label?: string;
 }
@@ -11,14 +12,16 @@ export interface PinInputProps {
 /**
  * PinInput - Indicador Visual de PIN Minimalista (Estilo Apple HIG)
  * 4 círculos (dots) de 20px com espaçamento de 16px.
- * Vazio: anel fino #2C3947
+ * Vazio: anel fino #334155
  * Preenchido: círculo sólido luminoso #F5F7FA
  * Erro: shake suave e círculos vermelhos #EF4444
+ * Sucesso: pulso luminoso verde (#10B981) antes da transição
  */
 export const PinInput: React.FC<PinInputProps> = ({
   length = 4,
   value,
   hasError = false,
+  isSuccess = false,
   errorMessage,
   label,
 }) => {
@@ -26,7 +29,7 @@ export const PinInput: React.FC<PinInputProps> = ({
   const currentLength = value.length;
 
   return (
-    <div className={`apple-pin-wrapper ${hasError ? 'shake' : ''}`}>
+    <div className={`apple-pin-wrapper ${hasError ? 'shake' : ''} ${isSuccess ? 'success' : ''}`}>
       {label && <span className="apple-pin-label">{label}</span>}
 
       <div
@@ -39,7 +42,7 @@ export const PinInput: React.FC<PinInputProps> = ({
           return (
             <div
               key={index}
-              className={`apple-pin-dot ${isFilled ? 'filled' : 'empty'} ${hasError ? 'error' : ''}`}
+              className={`apple-pin-dot ${isFilled ? 'filled' : 'empty'} ${hasError ? 'error' : ''} ${isSuccess ? 'success' : ''}`}
             />
           );
         })}
