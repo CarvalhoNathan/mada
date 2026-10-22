@@ -25,6 +25,14 @@ export interface AppShellProps {
   children: React.ReactNode;
 }
 
+function getInitials(name: string): string {
+  const parts = name.trim().split(' ').filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
 /**
  * AppShell - Moldura Principal Tablet (1280x800)
  * Cabeçalho fixo + Conteúdo dimensionado para caber SEM rolagem + Barra inferior fixa
@@ -87,16 +95,28 @@ export const AppShell: React.FC<AppShellProps> = ({
               onClick={onOperatorClick}
               role={onOperatorClick ? 'button' : undefined}
               title={onOperatorClick ? 'Toque para trocar de operador' : undefined}
+              aria-label={`Operador logado: ${operator.name}. Toque para trocar de operador.`}
             >
-              {operator.avatarUrl ? (
-                <img src={operator.avatarUrl} alt={operator.name} className="ds-shell-avatar" />
-              ) : (
-                <div className="ds-shell-avatar-fallback">{operator.name.charAt(0)}</div>
-              )}
-              <div className="ds-shell-operator-meta">
-                <span className="ds-shell-operator-name">{operator.name}</span>
-                <span className="ds-shell-operator-role">{operator.role || 'Operador Conectado'}</span>
+              <div className="ds-shell-avatar-fallback">
+                {getInitials(operator.name)}
               </div>
+              <span className="ds-shell-operator-name">{operator.name}</span>
+              <button
+                type="button"
+                className="ds-shell-logout-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOperatorClick?.();
+                }}
+                title="Trocar operador"
+                aria-label="Trocar operador"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
             </div>
           )}
         </div>
