@@ -116,6 +116,11 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
               Consulte a receita oficial e prepare a mistura por cliente, projeto e ambiente.
             </p>
           </div>
+
+          <div className="dash-card-footer">
+            <span className="dash-card-tag tag-primary">4 OS na fila</span>
+            <span className="dash-card-meta-text">Última: Cozinha Provençal • há 35 min</span>
+          </div>
         </div>
 
         {/* Card 2: Devolver Sobras */}
@@ -149,6 +154,11 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
             <p className="dash-card-desc">
               Pese a sobra na lata, emita etiqueta com QR Code e devolva o saldo ao estoque.
             </p>
+          </div>
+
+          <div className="dash-card-footer">
+            <span className="dash-card-tag tag-warn">1 sobra pendente</span>
+            <span className="dash-card-meta-text">Lote anterior: Laca Branca Fosca</span>
           </div>
         </div>
 
@@ -186,6 +196,11 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
             <p className="dash-card-desc">
               Identifique instantaneamente a Ordem de Serviço ou consulte o saldo de uma lata.
             </p>
+          </div>
+
+          <div className="dash-card-footer">
+            <span className="dash-card-tag tag-success">Leitor / Câmera ativo</span>
+            <span className="dash-card-meta-text">Aproxime a O.S. ou o galão</span>
           </div>
         </div>
       </div>

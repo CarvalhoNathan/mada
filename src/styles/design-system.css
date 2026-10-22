@@ -1146,6 +1146,43 @@
   color: var(--danger);
 }
 
+.ds-shell-clean-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  height: 42px;
+  box-sizing: border-box;
+  user-select: none;
+  transition: all var(--transition-fast);
+}
+
+.ds-shell-clean-btn:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.22);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.ds-shell-clean-btn:active {
+  transform: scale(0.96);
+}
+
+.ds-shell-clean-btn svg {
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.ds-shell-clean-btn:hover svg {
+  color: var(--primary);
+}
+
 .ds-shell-operator-card {
   display: flex;
   align-items: center;
@@ -1360,3 +1397,112 @@
   color: var(--text-muted);
   padding: var(--space-32) !important;
 }
+
+/* ==========================================================================
+   Modo Limpeza de Tela (Touch Lock 15s)
+   ========================================================================== */
+.ds-clean-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: rgba(15, 20, 25, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  animation: ds-fade-in 0.2s ease-out;
+}
+
+.ds-clean-card {
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 28px;
+  padding: 40px;
+  width: 500px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+}
+
+.ds-clean-circle-box {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ds-clean-progress-ring {
+  transform: rotate(-90deg);
+}
+
+.ds-clean-ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.ds-clean-ring-bar {
+  fill: none;
+  stroke: var(--primary);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s linear;
+}
+
+.ds-clean-countdown {
+  position: absolute;
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.ds-clean-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ds-clean-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.ds-clean-desc {
+  font-size: 18px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.ds-clean-cancel-btn {
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 600;
+  padding: 0 28px;
+  height: 56px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.ds-clean-cancel-btn:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.ds-clean-cancel-btn:active {
+  transform: scale(0.97);
+}
+

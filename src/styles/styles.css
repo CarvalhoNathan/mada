@@ -854,6 +854,50 @@ body {
   line-height: 1.45;
 }
 
+.dash-card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.dash-card-tag {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.dash-card-tag.tag-primary {
+  background-color: rgba(37, 99, 235, 0.16);
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  color: #93c5fd;
+}
+
+.dash-card-tag.tag-warn {
+  background-color: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fcd34d;
+}
+
+.dash-card-tag.tag-success {
+  background-color: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+}
+
+.dash-card-meta-text {
+  font-size: 16px;
+  color: var(--text-muted); /* #AAB4BF */
+  line-height: 1.35;
+}
+
 /* Compatibilidade com classes legadas caso algum modal ou tela faça referência */
 .dashboard-top-row {
   display: flex;

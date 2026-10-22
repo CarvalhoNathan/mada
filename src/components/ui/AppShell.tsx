@@ -47,6 +47,28 @@ export const AppShell: React.FC<AppShellProps> = ({
   bottomBar,
   children,
 }) => {
+  const [isCleaning, setIsCleaning] = React.useState(false);
+  const [countdown, setCountdown] = React.useState(15);
+
+  const handleStartCleaning = () => {
+    setCountdown(15);
+    setIsCleaning(true);
+  };
+
+  React.useEffect(() => {
+    if (!isCleaning) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setIsCleaning(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isCleaning]);
   return (
     <div className="ds-app-shell">
       {/* 1. Cabeçalho Compacto (56px) */}
@@ -87,6 +109,20 @@ export const AppShell: React.FC<AppShellProps> = ({
               <span>{isServerLocal ? 'Sistema' : 'Offline'}</span>
             </div>
           </div>
+
+          {/* Botão Modo Limpeza de Tela */}
+          <button
+            type="button"
+            className="ds-shell-clean-btn"
+            onClick={handleStartCleaning}
+            title="Limpar tela (bloqueia o toque por 15 segundos)"
+            aria-label="Limpar tela"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
+            </svg>
+            <span>Limpar tela</span>
+          </button>
 
           {/* Operador Logado */}
           {operator && (
@@ -157,6 +193,57 @@ export const AppShell: React.FC<AppShellProps> = ({
             )}
           </div>
         </footer>
+      )}
+
+      {/* 4. Overlay de Modo Limpeza de Tela (15s Touch Lock) */}
+      {isCleaning && (
+        <div
+          className="ds-clean-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Modo Limpeza de Tela Ativo"
+        >
+          <div className="ds-clean-card">
+            <div className="ds-clean-circle-box">
+              <svg className="ds-clean-progress-ring" width="130" height="130" viewBox="0 0 130 130">
+                <circle
+                  className="ds-clean-ring-bg"
+                  cx="65"
+                  cy="65"
+                  r="56"
+                  strokeWidth="8"
+                />
+                <circle
+                  className="ds-clean-ring-bar"
+                  cx="65"
+                  cy="65"
+                  r="56"
+                  strokeWidth="8"
+                  style={{
+                    strokeDasharray: 2 * Math.PI * 56,
+                    strokeDashoffset: (2 * Math.PI * 56) * (1 - countdown / 15),
+                  }}
+                />
+              </svg>
+              <span className="ds-clean-countdown">{countdown}s</span>
+            </div>
+
+            <div className="ds-clean-text-group">
+              <h2 className="ds-clean-title">Modo Limpeza de Tela</h2>
+              <p className="ds-clean-desc">
+                Toques na tela bloqueados temporariamente. Passe uma flanela para higienizar o vidro do tablet.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="ds-clean-cancel-btn"
+              onClick={() => setIsCleaning(false)}
+            >
+              Desbloquear agora
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
