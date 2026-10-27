@@ -1,8 +1,6 @@
 import React from 'react';
 import { Ambiente, PieceLot } from '../types';
 import { MOCK_AMBIENTES } from '../data/mock/mockData';
-import { StepIndicator } from '../components/ui/StepIndicator';
-import { Button } from '../components/ui/Button';
 
 interface ScreenOSProps {
   selectedOS: string;
@@ -20,6 +18,7 @@ interface ScreenOSProps {
 }
 
 export const ScreenOS: React.FC<ScreenOSProps> = ({
+  selectedOS,
   clientName,
   projectName,
   selectedEnvironment,
@@ -33,185 +32,226 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
   ambientes,
 }) => {
   const listaAmbientes = (ambientes || MOCK_AMBIENTES).map(a => ({ name: a.nome, code: a.codigoOS }));
-  return (
-    <>
-      <div className="screen-content-area">
-        {/* Indicador de Etapas */}
-        <StepIndicator
-          steps={[
-            { id: 1, label: '1. Identificar OS & Peça', status: 'active' },
-            { id: 2, label: '2. Receita & Calculadora', status: 'pending' },
-            { id: 3, label: '3. Dosagem & Baixa', status: 'pending' },
-          ]}
-          onStepClick={(step) => {
-            if (step.id === 2) onNavigate('recipe');
-          }}
-        />
 
-        {/* Botão Ler QR Code em destaque */}
-        <div className="btn-scan-os-featured" onClick={onScanOS}>
-          <div className="btn-scan-os-left">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-              <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-              <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-              <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-              <rect x="7" y="7" width="10" height="10" rx="1" />
-            </svg>
-            <span>Ler QR Code da OS (Identificação Rápida)</span>
+  return (
+    <div className="os-screen-container">
+      {/* 1. Stepper de Progresso Industrial (Compacto) */}
+      <nav className="os-stepper-bar" aria-label="Etapas da preparação">
+        <div className="os-step-pill active" aria-current="step">
+          <span className="os-step-badge">1</span>
+          <span className="os-step-text">Peça & O.S.</span>
+        </div>
+        <span className="os-step-separator" aria-hidden="true">→</span>
+        <div
+          className="os-step-pill clickable"
+          onClick={() => onNavigate('recipe')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onNavigate('recipe');
+            }
+          }}
+          title="Avançar para Receita & Cálculo"
+        >
+          <span className="os-step-badge">2</span>
+          <span className="os-step-text">Receita & Cálculo</span>
+        </div>
+        <span className="os-step-separator" aria-hidden="true">→</span>
+        <div className="os-step-pill pending">
+          <span className="os-step-badge">3</span>
+          <span className="os-step-text">Pesagem na Balança</span>
+        </div>
+      </nav>
+
+      {/* 2. Área de Trabalho Principal em 2 Colunas */}
+      <div className="os-layout-minimal">
+        {/* Coluna Esquerda: O.S. & Ambiente */}
+        <div className="os-col-left">
+          {/* Card da Ordem de Serviço */}
+          <div className="os-card-surface">
+            <div className="os-card-header-row">
+              <span className="os-section-label">Ordem de Serviço Ativa</span>
+              <span className="os-number-tag">{selectedOS || 'OS #8841'}</span>
+            </div>
+
+            <div className="os-info-block">
+              <h3 className="os-client-title">{clientName}</h3>
+              <p className="os-project-subtitle">{projectName}</p>
+            </div>
+
+            <div className="os-card-actions-row">
+              <button
+                type="button"
+                className="os-action-btn os-btn-scan"
+                onClick={onScanOS}
+                title="Escanear QR Code da Ordem de Serviço"
+                aria-label="Escanear QR Code da Ordem de Serviço"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+                  <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+                  <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+                  <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+                  <rect x="7" y="7" width="10" height="10" rx="1.5" />
+                </svg>
+                <span>Ler QR Code</span>
+              </button>
+
+              <button
+                type="button"
+                className="os-action-btn os-btn-secondary"
+                onClick={onChangeOS}
+                title="Alternar entre Ordens de Serviço cadastradas"
+                aria-label="Alternar Ordem de Serviço"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+                <span>Alternar O.S.</span>
+              </button>
+            </div>
           </div>
-          <span style={{ fontSize: '16px', color: 'var(--primary)', fontWeight: 700 }}>
-            Preencher dados da ficha impressa →
-          </span>
+
+          {/* Card de Ambientes / Cômodos */}
+          <div className="os-card-surface os-env-surface">
+            <div className="os-card-header-row">
+              <span className="os-section-label">Ambiente / Cômodo</span>
+              <span className="os-hint-label">Toque para selecionar</span>
+            </div>
+
+            <div className="os-env-grid" role="radiogroup" aria-label="Selecione o ambiente da peça">
+              {listaAmbientes.map((env) => {
+                const isSelected = env.name === selectedEnvironment;
+                return (
+                  <button
+                    key={env.name}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    className={`os-env-chip ${isSelected ? 'is-selected' : ''}`}
+                    onClick={() => onSelectEnvironment(env.name)}
+                  >
+                    <div className="os-env-chip-header">
+                      <span className="os-env-name">{env.name}</span>
+                      {isSelected && (
+                        <span className="os-env-check" aria-hidden="true">✓</span>
+                      )}
+                    </div>
+                    <span className="os-env-code">{env.code}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        {/* Grid de Seleção da OS */}
-        <div className="os-selection-layout">
-          {/* Coluna Esquerda */}
-          <div className="os-card-group">
-            <div className="os-box">
-              <div className="os-box-header">
-                <span className="os-box-title">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                  1. Ordem de Serviço & Contratante
-                </span>
-                <span className="badge-validated">✓ Validado</span>
-              </div>
-              <div className="os-highlight-item">
-                <div className="os-highlight-info">
-                  <h4>{clientName}</h4>
-                  <p style={{ fontSize: 'var(--fs-small)' }}>{projectName}</p>
-                </div>
-                <button
-                  className="btn-action-small"
-                  onClick={onChangeOS}
-                  style={{ minHeight: '64px', minWidth: '100px', fontSize: 'var(--fs-small)', fontWeight: 700 }}
-                  aria-label="Trocar Ordem de Serviço"
-                >
-                  Trocar OS ⟳
-                </button>
+        {/* Coluna Direita: Peça & Consumo Previsto */}
+        <div className="os-col-right">
+          {/* Card do Lote de Peças */}
+          <div className="os-card-surface">
+            <div className="os-card-header-row">
+              <span className="os-section-label">Lote de Peças</span>
+              <span className="os-qty-pill">{pieceLot.qty || pieceLot.quantidade || '12 frentes'}</span>
+            </div>
+
+            <div className="os-piece-info">
+              <h3 className="os-piece-title">{pieceLot.title || pieceLot.titulo || 'Armários Superiores - Portas 18mm'}</h3>
+              <div className="os-finish-tag">
+                <span className="os-finish-dot" aria-hidden="true" />
+                <span>Laca Branca Fosca 20 Gloss</span>
               </div>
             </div>
 
-            <div className="os-box">
-              <div className="os-box-header">
-                <span className="os-box-title">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <path d="M3 9h18" />
-                    <path d="M9 21V9" />
-                  </svg>
-                  2. Ambiente / Cômodo
-                </span>
+            <div className="os-specs-grid">
+              <div className="os-spec-card">
+                <span className="os-spec-k">Substrato Base</span>
+                <strong className="os-spec-v">{pieceLot.substrate || pieceLot.substrato || 'MDF Cru 18mm Berneck'}</strong>
               </div>
-              <div className="environments-grid">
-                {listaAmbientes.map((env) => {
-                  const isSelected = env.name === selectedEnvironment;
-                  return (
-                    <div
-                      key={env.name}
-                      className={`env-chip ${isSelected ? 'selected' : ''}`}
-                      onClick={() => onSelectEnvironment(env.name)}
-                      style={{ minHeight: '64px' }}
-                    >
-                      <div className="env-chip-header">
-                        <span style={{ fontSize: 'var(--fs-small)' }}>{env.name}</span>
-                        {isSelected && <span>✓</span>}
-                      </div>
-                      <span className="env-chip-sub" style={{ fontSize: 'var(--fs-small)' }}>{env.code}</span>
-                    </div>
-                  );
-                })}
+              <div className="os-spec-card">
+                <span className="os-spec-k">Área Superficial</span>
+                <strong className="os-spec-v os-spec-highlight">~ {pieceLot.area || '42 m²'}</strong>
               </div>
             </div>
+
+            <button
+              type="button"
+              className="os-action-btn os-btn-secondary os-btn-full"
+              onClick={onChangePieceLot}
+              title="Alternar lote de peças vinculado"
+              aria-label="Alternar lote de peças"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+              </svg>
+              <span>Alternar lote de peças</span>
+            </button>
           </div>
 
-          {/* Coluna Direita */}
-          <div className="os-card-group">
-            <div className="os-box">
-              <div className="os-box-header">
-                <span className="os-box-title">3. Lote de Peças</span>
-                <span className="badge-qty" style={{ fontSize: 'var(--fs-small)' }}>{pieceLot.qty}</span>
+          {/* Card de Métricas de Consumo */}
+          <div className="os-card-surface os-metrics-surface">
+            <div className="os-card-header-row">
+              <span className="os-section-label">Previsão de Consumo Químico</span>
+            </div>
+
+            <div className="os-metrics-row">
+              <div className="os-metric-box">
+                <span className="os-metric-label">Área Calculada</span>
+                <span className="os-metric-val">{pieceLot.area || '42 m²'}</span>
               </div>
-              <div className="piece-detail-card">
-                <div className="piece-header">
-                  <div>
-                    <h4>{pieceLot.title}</h4>
-                    <span style={{ fontSize: 'var(--fs-small)', color: 'var(--warn)', fontWeight: 700 }}>
-                      Laca Branca Fosca 20 Gloss
-                    </span>
-                  </div>
-                </div>
-                <div className="piece-specs-grid">
-                  <div className="spec-item">
-                    <strong style={{ fontSize: 'var(--fs-small)' }}>Substrato Base</strong>
-                    <span style={{ fontSize: 'var(--fs-small)' }}>{pieceLot.substrate}</span>
-                  </div>
-                  <div className="spec-item">
-                    <strong style={{ fontSize: 'var(--fs-small)' }}>Área Superficial</strong>
-                    <span style={{ fontSize: 'var(--fs-small)', fontWeight: 700, color: 'var(--primary)' }}>~ {pieceLot.area}</span>
-                  </div>
-                </div>
-                <div className="piece-change-bar">
-                  <span className="piece-change-hint" style={{ fontSize: 'var(--fs-small)' }}>Lote vinculado à OS</span>
-                  <button
-                    className="btn-action-small"
-                    onClick={onChangePieceLot}
-                    style={{ minHeight: '64px', minWidth: '120px', fontSize: 'var(--fs-small)', fontWeight: 700 }}
-                    aria-label="Alternar lote de peças"
-                  >
-                    Trocar lote ⟳
-                  </button>
-                </div>
+              <div className="os-metric-divider" aria-hidden="true" />
+              <div className="os-metric-box os-metric-box-primary">
+                <span className="os-metric-label">Volume Estimado</span>
+                <span className="os-metric-val os-metric-val-primary">{pieceLot.estVolume || pieceLot.volumeEstimado || '1.050 ml'}</span>
               </div>
             </div>
 
-            <div className="consumption-box">
-              <div className="os-box-header">
-                <span className="os-box-title">4. Previsão de Consumo & Rastreabilidade</span>
-              </div>
-              <div className="consumption-values-row">
-                <div className="consumption-val-group">
-                  <span>Área Calculada</span>
-                  <strong>{pieceLot.area}</strong>
-                </div>
-                <div className="consumption-val-group highlight">
-                  <span>Consumo Estimado</span>
-                  <strong>{pieceLot.estVolume}</strong>
-                </div>
-              </div>
-              <p className="consumption-desc">
-                🛡️ <strong>Rastreabilidade ativa:</strong> Todo consumo de catalisador e tinta pesado na balança da cabine será vinculado a esta Ordem de Serviço.
-              </p>
+            <div className="os-trace-note">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <span>Vinculado à balança da cabine na etapa de pesagem.</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Barra Inferior Fixa */}
-      <footer className="ds-bottom-bar">
-        <div className="ds-bottom-bar-left">
-          <Button variant="secondary" size="md" onClick={() => onNavigate('dashboard')}>
+      {/* 3. Barra Inferior Padronizada */}
+      <footer className="os-bottom-bar-minimal">
+        <div className="os-bottom-left">
+          <button
+            type="button"
+            className="os-bar-btn os-btn-back"
+            onClick={() => onNavigate('dashboard')}
+          >
             ← Voltar
-          </Button>
-          <Button
-            variant="secondary"
-            size="md"
+          </button>
+          <button
+            type="button"
+            className="os-bar-btn os-btn-cancel"
             onClick={onOpenCancelPrep}
-            style={{ borderColor: 'var(--danger-border)', color: 'var(--danger)' }}
           >
             ✕ Cancelar preparação
-          </Button>
+          </button>
         </div>
-        <div className="ds-bottom-bar-right">
-          <Button variant="primary" size="md" onClick={() => onNavigate('recipe')} style={{ minWidth: '240px' }}>
-            Ver receita →
-          </Button>
+
+        <div className="os-bottom-right">
+          <button
+            type="button"
+            className="os-bar-btn os-btn-continue"
+            onClick={() => onNavigate('recipe')}
+          >
+            <span>Ver receita e calcular mistura</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
         </div>
       </footer>
-    </>
+    </div>
   );
 };
