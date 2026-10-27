@@ -96,7 +96,8 @@ flowchart TB
 - **Camada de repositórios (`src/data/`):** Implementada para isolar a origem dos dados. O MVP roda com repositórios simulados em memória (`VITE_DATA_SOURCE=mock`). A troca para o Supabase é prevista por configuração de ambiente.
 - **Regras de negócio puras (`src/domain/`):** Cálculos de frações de mistura, tolerâncias de pesagem, aproveitamento de sobras e ordenação FEFO desacoplados de qualquer camada visual.
 - **Navegação por estado:** A alternância entre telas é gerenciada por estado local (`useState<ScreenId>`), sem biblioteca de roteamento externa (sem roteador).
-- **Leitura de QR Code:** No MVP atual, a leitura é simulada via software; a leitura real por câmera via WebRTC é planejada.
+- **Leitura de QR Code:** Leitura pela câmera do tablet (`getUserMedia` + `BarcodeDetector` nativo, suportado no Chrome/Edge/Android), com atalhos de simulação para teste sem câmera (`src/components/ui/QrScannerModal.tsx`). Fallback para Safari/iPadOS planejado.
+- **Persistência local:** Os repositórios simulados gravam as movimentações no `localStorage` do navegador, mantendo os dados entre recarregamentos da página.
 
 ### 📁 Estrutura do projeto
 
@@ -118,9 +119,11 @@ mada/
 │   │   └── ui/                   # Design System próprio (AppShell, NumericKeypad, PinInput, etc.)
 │   ├── data/                     # Camada de repositórios e seletor VITE_DATA_SOURCE
 │   │   ├── __tests__/            # Testes unitários da camada de dados
-│   │   ├── mock/                 # Conjunto único de dados simulados (mockData.ts)
-│   │   ├── index.ts              # Exportação dos repositórios ativos
-│   │   ├── mockRepositories.ts   # Implementação em memória dos repositórios
+│   │   ├── mock/                 # Fonte de dados simulada
+│   │   │   ├── index.ts          # Exportação da implementação simulada
+│   │   │   ├── mockData.ts       # Conjunto único de dados fictícios
+│   │   │   └── mockRepositories.ts # Repositórios em memória com persistência em localStorage
+│   │   ├── index.ts              # Seletor da fonte de dados (VITE_DATA_SOURCE)
 │   │   └── repositories.ts       # Interfaces TypeScript dos repositórios
 │   ├── domain/                   # Regras de negócio puras (cobertas por testes unitários)
 │   │   ├── __tests__/            # Suítes de testes unitários com Vitest
@@ -162,7 +165,7 @@ mada/
 | **Qualidade & Testes** | Vitest 5, ESLint 10 (Flat Config), Prettier 3 | Implementado |
 | **Design** | Design system próprio, tema escuro e alto contraste, _tablet-first_ | Implementado |
 | **Banco de Dados** | PostgreSQL via Supabase | Planejado |
-| **Identificação** | Leitura de QR Code via câmera/WebRTC | Planejado (simulado no MVP) |
+| **Identificação** | Leitura de QR Code via câmera (`getUserMedia` + `BarcodeDetector`) | Implementado (Chrome/Edge/Android; fallback iPadOS planejado) |
 
 ## 🧪 Testes e qualidade
 
@@ -193,14 +196,15 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 - [x] Dosagem (Dosagem em grade 2x2 com NumberStepper, teclado numérico e verificação de tolerância)
 - [x] Alerta de excesso (Modal crítico com valores reais, cálculo de custo e bloqueio)
 - [x] Devolução (Devolução de sobras com cálculo de saldo e emissão de etiqueta QR)
-- [x] Leitura de QR Code simulada via software
+- [x] Leitura de QR Code pela câmera do tablet (com atalhos de simulação para teste sem câmera)
 - [x] Camada de repositórios com alternância de fonte de dados (`VITE_DATA_SOURCE=mock`)
+- [x] Persistência local das movimentações (`localStorage`)
 - [x] Testes unitários para a camada de domínio matemático (`src/domain/`) e repositórios (`src/data/`)
 
 **Próximos passos**
 
 - [ ] Painel do gestor (planejado; existem apenas os componentes KpiCard e DataTable)
-- [ ] Leitura real de QR Code via câmera do tablet (WebRTC)
+- [ ] Leitura de QR Code no Safari/iPadOS (fallback para navegadores sem `BarcodeDetector`)
 - [ ] Integração com o Supabase da empresa
 - [ ] Recebimento de lotes e validades no estoque
 - [ ] Cadastro/importação de ordens de serviço
@@ -223,7 +227,7 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 
 ### Pré-requisitos
 
-- **Node.js:** Mínimo comprovado `>=22.12.0` (exigido por Vitest e Vite); versão recomendada e testada: `24.18.0` (definida em `.nvmrc`).
+- **Node.js:** `>=24.18.0` (definido em `engines` no `package.json` e em `.nvmrc`).
 - **npm:** Gerenciador de pacotes padrão do Node.
 
 ### Passo a passo

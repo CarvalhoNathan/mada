@@ -144,7 +144,7 @@ Desenvolvimento de uma **aplicação web em TypeScript**, otimizada para operaç
 
 A Mada Marcenaria já possui um sistema próprio, hospedado no **Supabase**, com as informações sobre os insumos que utiliza. Este projeto será integrado a esses dados em **modo de leitura**; as entidades novas (receitas, preparações, movimentações e sobras) ficam em um **schema separado**, sem alterar as tabelas da empresa.
 
-**Situação atual:** o acesso aos dados reais ainda não foi liberado. O MVP usa **dados fictícios** por meio de uma camada de repositórios (`ProdutoRepository`, `LoteRepository`, `OsRepository`, etc.) com duas implementações: uma simulada e outra baseada no Supabase. Quando o acesso estiver disponível, a troca é feita por configuração.
+**Situação atual:** o acesso aos dados reais ainda não foi liberado. O MVP usa **dados fictícios** por meio de uma camada de repositórios (`ProdutoRepository`, `LoteRepository`, `OsRepository`, etc.). Hoje existe apenas a implementação simulada; a implementação baseada no Supabase será criada quando o acesso estiver disponível, e a troca será feita por configuração (`VITE_DATA_SOURCE`).
 
 **Contrato de dados (o que o projeto precisa receber):**
 
@@ -224,7 +224,7 @@ Legenda: `[x]` = implementado no MVP (com dados simulados); `[~]` = parcial ou s
 - [x] **RF04 - Gestão de Embalagens Parciais (Sobras):** Registrar o retorno do saldo remanescente ao almoxarifado com checklist de integridade e geração de etiqueta de sobra (`src/screens/ScreenReturn.tsx`, `src/domain/leftover.ts`).
 - [~] **RF05 - Previsto vs. Real:** Parcial: comparação entre meta teórica da receita e consumo real apontado na pesagem individual com trava de tolerância (`src/screens/ScreenDosing.tsx`); painel gerencial consolidado de histórico previsto vs. realizado é planejado.
 - [x] **RF06 - Priorização por Validade:** Indicar a ordem prioritária de retirada de produtos com base no lote e validade (FEFO) (`src/domain/fefo.ts`, `src/screens/ScreenDashboard.tsx`, `src/screens/ModalUseFirst.tsx`).
-- [~] **RF07 - Identificação via QR Code:** Simulado via software no protótipo (leitura por câmera planejada); simula leitura de OS e latas e gera etiquetas com QR Code (`src/App.tsx`, `src/screens/ScreenReturn.tsx`).
+- [~] **RF07 - Identificação via QR Code:** Leitura pela câmera do tablet implementada (`getUserMedia` + `BarcodeDetector`, Chrome/Edge/Android), com atalhos de simulação para teste sem câmera; gera etiquetas com QR Code para as sobras. Pendente: fallback para Safari/iPadOS (`src/components/ui/QrScannerModal.tsx`, `src/App.tsx`, `src/screens/ScreenReturn.tsx`).
 - [~] **RF08 - Gestão Multimarca:** Parcial: insumos e receitas associados às marcas correspondentes no modelo de dados (`src/data/mock/mockData.ts`) e exibidos na interface; ajuste automático e troca dinâmica de fórmulas por fabricante em interface é planejada.
 
 **Backlog pós-MVP:**
@@ -461,18 +461,18 @@ erDiagram
 - **Linguagem Principal:** [TypeScript 6](https://www.typescriptlang.org/)
 - **Interface:** React 19 + TypeScript 6, Web Responsive / Tablet-First (HTML5 e CSS com variáveis de design tokens)
 - **Ferramenta de Build:** [Vite 8](https://vite.dev/) (porta 3000)
-- **Camada de Dados (MVP):** Repositórios em memória com dados simulados (`src/data/`, seletor `VITE_DATA_SOURCE=mock`)
+- **Camada de Dados (MVP):** Repositórios com dados simulados e persistência em `localStorage` (`src/data/`, seletor `VITE_DATA_SOURCE=mock`)
 - **Regras de Negócio:** Módulos de domínio em TypeScript com funções puras (`src/domain/`)
 - **Banco de Dados e Backend como Serviço:** PostgreSQL via [Supabase](https://supabase.com/) (integração planejada)
-- **Identificação:** QR Code simulado no MVP (leitura real via WebRTC / câmera planejada)
-- **Qualidade & Testes:** Vitest 5 (19 testes unitários no domínio), ESLint 10 (Flat Config), Prettier 3
+- **Identificação:** Leitura de QR Code pela câmera (`getUserMedia` + `BarcodeDetector`); fallback para Safari/iPadOS planejado
+- **Qualidade & Testes:** Vitest 5 (23 testes unitários em 5 arquivos: domínio e repositórios), ESLint 10 (Flat Config), Prettier 3
 
 ---
 
 ## 12. Como Executar
 
 ### Pré-requisitos
-- **Node.js:** Mínimo comprovado `>=22.12.0` (versão recomendada `24.18.0` indicada em `.nvmrc`)
+- **Node.js:** `>=24.18.0` (definido em `engines` no `package.json` e em `.nvmrc`)
 - **npm:** Gerenciador de pacotes padrão
 
 ```bash
