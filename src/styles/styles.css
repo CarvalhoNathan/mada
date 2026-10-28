@@ -1559,249 +1559,338 @@ body {
 }
 
 /* ==========================================================================
-   TELA 4: Calculadora da Receita Sayerlack
+   TELA 4: Receita & Calculadora (Padrão Industrial Minimalista Apple HIG / Notion)
+   Resolução fixa 1280x800 sem rolagem. Zero ruído cognitivo.
    ========================================================================== */
-.recipe-header-bar {
-  background: var(--card);
-  color: var(--text);
+.recipe-screen-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: space-between;
+}
+
+/* 2. Cabeçalho da Receita (Apple / Notion) */
+.recipe-header-card {
+  background-color: var(--card);
   border: 1.5px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 14px 22px;
+  border-radius: 16px;
+  padding: 12px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
   margin-bottom: 12px;
 }
 
-.recipe-header-info h2 {
+.recipe-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recipe-main-title {
   font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 600;
   color: var(--text);
+  margin: 0;
+  line-height: 1.2;
 }
 
-.recipe-header-info p {
-  font-size: var(--fs-small);
+.recipe-sub-title {
+  font-size: 16px;
   color: var(--text-muted);
-  margin-top: 2px;
+  margin: 0;
+  line-height: 1.3;
 }
 
-.badge-brand-homologated {
-  background: var(--ok-soft);
-  border: 1.5px solid var(--ok);
-  color: var(--ok);
+.recipe-brand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 6px 14px;
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1.5px solid rgba(34, 197, 94, 0.35);
   border-radius: var(--radius-pill);
-  font-weight: 700;
-  font-size: var(--fs-small);
+  color: #4ade80;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.recipe-brand-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #4ade80;
+}
+
+/* 3. Superfície da Calculadora de Volume */
+.recipe-volume-surface {
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 22px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.recipe-volume-top-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  width: 100%;
 }
 
-/* Seletor de Volume Total da Mistura */
-.volume-control-box {
-  background: var(--card);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 14px 20px;
-  margin-bottom: 14px;
-}
-
-.volume-control-label {
-  text-align: center;
-  font-size: var(--fs-small);
-  font-weight: 700;
+.recipe-volume-label {
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-muted);
-  letter-spacing: 0.04em;
-  margin-bottom: 8px;
 }
 
-.volume-selector-row {
+.recipe-volume-hint {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.recipe-stepper-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 10px;
 }
 
-.btn-stepper-round {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-card);
-  border: 2px solid var(--border);
-  background: var(--card-hover);
-  font-size: 28px;
-  font-weight: 700;
+.recipe-stepper-btn {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background-color: rgba(255, 255, 255, 0.05);
   color: var(--text);
+  font-size: 28px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform var(--transition-fast), filter var(--transition-fast);
+  transition: all 0.15s ease;
+  user-select: none;
 }
 
-.btn-stepper-round:active {
-  transform: scale(0.97);
-  filter: brightness(0.9);
+.recipe-stepper-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
-.volume-display-main {
+.recipe-stepper-btn:active {
+  transform: scale(0.96);
+}
+
+.recipe-volume-display {
   flex: 1;
-  max-width: 380px;
-  height: 64px;
+  max-width: 360px;
+  height: 56px;
   border: 2px solid var(--primary);
-  background: var(--primary-soft);
-  border-radius: var(--radius-card);
+  background-color: rgba(37, 99, 235, 0.12);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  font-size: var(--fs-number);
+  gap: 8px;
+}
+
+.recipe-volume-num {
+  font-size: 34px;
   font-weight: 700;
-  color: var(--primary);
+  color: #60a5fa;
   line-height: 1;
 }
 
-.volume-display-unit {
-  font-size: 22px;
+.recipe-volume-unit {
+  font-size: 20px;
   font-weight: 600;
-  color: var(--text);
-  margin-top: 8px;
+  color: var(--text-muted);
+  margin-top: 6px;
 }
 
-/* Presets Rápidos de Volume (>= 64px de altura) */
-.volume-presets-row {
+.recipe-presets-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   max-width: 680px;
+  width: 100%;
   margin: 0 auto;
 }
 
-.preset-chip-btn {
-  height: 64px;
-  background: var(--bg);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-card);
-  font-weight: 700;
-  font-size: 18px;
+.recipe-preset-chip {
+  height: 50px;
+  min-height: 50px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 17px;
   color: var(--text);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all 0.15s ease;
+  user-select: none;
 }
 
-.preset-chip-btn:active {
-  transform: scale(0.97);
-  filter: brightness(0.9);
+.recipe-preset-chip:hover {
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.preset-chip-btn.active {
-  background: var(--primary-soft);
+.recipe-preset-chip.is-active {
+  background-color: rgba(37, 99, 235, 0.16);
   border-color: var(--primary);
-  color: var(--primary);
+  color: #93c5fd;
+  font-weight: 700;
 }
 
-/* As 4 Frações Químicas Calculadas (Grid sem rolagem) */
-.chemicals-grid {
+/* 4. Grade dos 4 Componentes Químicos */
+.recipe-chemicals-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
 }
 
-.chem-card {
-  background: var(--card);
+.recipe-chem-card {
+  background-color: var(--card);
   border: 1.5px solid var(--border);
-  border-radius: var(--radius-card);
+  border-radius: 16px;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  position: relative;
-  border-top-width: 4px;
-  min-height: 140px;
+  box-sizing: border-box;
+  min-height: 155px;
+  transition: all 0.15s ease;
+  border-top: 3px solid var(--border);
 }
 
-.chem-card.card-base { border-top-color: var(--text-muted); }
-.chem-card.card-cat { border-top-color: var(--warn); }
-.chem-card.card-dil { border-top-color: var(--primary); }
-.chem-card.card-ret { border-top-color: var(--ok); }
+.recipe-chem-card.is-catalyst {
+  border-top: 3px solid var(--warn);
+  background-color: rgba(245, 158, 11, 0.04);
+}
 
-.chem-card-header {
+.recipe-chem-top {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 6px;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.chem-info h4 {
+.recipe-chem-role-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.recipe-chem-role {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
 }
 
-.chem-info span {
-  font-size: var(--fs-small);
+.recipe-chem-percent-pill {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.recipe-chem-percent-pill.pill-warn {
+  background-color: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: var(--warn);
+}
+
+.recipe-chem-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.recipe-chem-code {
+  font-size: 16px;
   color: var(--text-muted);
 }
 
-.chem-percent-badge {
-  font-weight: 700;
-  font-size: var(--fs-small);
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
+.recipe-chem-fefo-box {
+  margin: 6px 0;
 }
 
-/* Etiqueta Grande de Destaque: Lata Aberta / Use Primeiro */
-.badge-use-first-inside {
-  background: var(--warn-soft);
-  border: 1.5px solid var(--warn);
+.recipe-fefo-urgent {
+  background-color: var(--warn-soft);
+  border: 1px solid var(--warn);
   color: var(--warn);
-  font-weight: 700;
-  font-size: var(--fs-small);
   padding: 5px 8px;
   border-radius: 8px;
-  margin: 6px 0;
+  font-size: 15px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 6px;
+  line-height: 1.25;
 }
 
-.chem-values-row {
+.recipe-fefo-normal {
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.25;
+}
+
+.recipe-fefo-icon {
+  flex-shrink: 0;
+}
+
+.recipe-chem-bottom {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.chem-volume-large {
-  font-size: 26px;
+.recipe-chem-vol {
+  font-size: 24px;
   font-weight: 700;
   color: var(--text);
+  line-height: 1;
 }
 
-.chem-weight-sub {
-  font-size: var(--fs-small);
-  font-weight: 600;
+.recipe-chem-vol.vol-warn {
+  color: var(--warn);
+}
+
+.recipe-chem-weight {
+  font-size: 16px;
   color: var(--text-muted);
-}
-
-/* Ações Auxiliares da Receita */
-.recipe-aux-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 4px;
+  font-weight: 500;
 }
 
 /* ==========================================================================
