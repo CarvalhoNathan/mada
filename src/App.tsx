@@ -185,8 +185,9 @@ export const App: React.FC = () => {
   };
 
   return (
-    <AppShell
-      appName="Cabine de Pintura"
+    <>
+      <AppShell
+        appName="Cabine de Pintura"
       currentScreen={currentScreen}
       onNavigate={(screen) => setCurrentScreen(screen)}
       operator={
@@ -370,7 +371,9 @@ export const App: React.FC = () => {
         }}
       />
 
-      {/* Toast Notificações */}
+      </AppShell>
+
+      {/* Toast Notificações no topo da raiz da aplicação */}
       {toast && (
         <Toast
           key={toast.key}
@@ -380,7 +383,7 @@ export const App: React.FC = () => {
           onClose={() => setToast(null)}
         />
       )}
-    </AppShell>
+    </>
   );
 };
 
