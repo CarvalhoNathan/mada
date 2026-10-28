@@ -7,48 +7,45 @@
 
 :root {
   /* ========================================================================
-     1. CORES BASE (TEMA ESCURO INDUSTRIAL)
+     1. CORES BASE (TEMA BOARDUI DARK - MATTE CONTRASTE)
      ======================================================================== */
-  --bg: #0F1419;
-  --card: #1B232C;
-  --card-hover: #243040;
-  --border: #2C3947;
-  --text: #F5F7FA;
-  --text-muted: #AAB4BF; /* Mínimo contraste 4.5:1 sobre fundos escuros */
+  --bg: #0D0E11;
+  --card: #16171B;
+  --card-hover: #202127;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --text: #F4F4F6;
+  --text-muted: #9CA3AF;
+  --text-tertiary: #71717A;
 
   /* ========================================================================
-     2. CORES SEMÂNTICAS & VARIANTES SOFT (~15% OPACIDADE)
-     Regra de uso estrita:
-     - AZUL: Ação principal e navegação
-     - VERDE: Sucesso, confirmado, etapa concluída
-     - ÂMBAR: Atenção, validade próxima, dentro da tolerância (NUNCA botão primário)
-     - VERMELHO: Erro, excesso, destrutivo, sem conexão (NUNCA botão primário padrão)
+     2. CORES SEMÂNTICAS & BOARDUI ELECTRIC ACCENT
      ======================================================================== */
-  --primary: #2563EB;
-  --primary-hover: #1D4ED8;
-  --primary-soft: rgba(37, 99, 235, 0.15);
-  --primary-border: rgba(37, 99, 235, 0.4);
+  --primary: #2B7FFF;
+  --primary-hover: #3B8BFF;
+  --primary-soft: rgba(43, 127, 255, 0.14);
+  --primary-border: rgba(43, 127, 255, 0.38);
 
   --ok: #22C55E;
   --ok-hover: #16A34A;
-  --ok-soft: rgba(34, 197, 94, 0.15);
-  --ok-border: rgba(34, 197, 94, 0.4);
+  --ok-soft: rgba(34, 197, 94, 0.14);
+  --ok-border: rgba(34, 197, 94, 0.38);
 
   --warn: #F59E0B;
   --warn-hover: #D97706;
-  --warn-soft: rgba(245, 158, 11, 0.15);
-  --warn-border: rgba(245, 158, 11, 0.4);
+  --warn-soft: rgba(245, 158, 11, 0.14);
+  --warn-border: rgba(245, 158, 11, 0.38);
 
   --danger: #EF4444;
   --danger-hover: #DC2626;
-  --danger-soft: rgba(239, 68, 68, 0.15);
-  --danger-border: rgba(239, 68, 68, 0.4);
+  --danger-soft: rgba(239, 68, 68, 0.14);
+  --danger-border: rgba(239, 68, 68, 0.38);
 
   /* Neutros para botões secundários */
-  --btn-secondary-bg: #243040;
-  --btn-secondary-hover: #2D3D52;
-  --btn-disabled-bg: #1A232D;
-  --btn-disabled-text: #4B5563;
+  --btn-secondary-bg: #202127;
+  --btn-secondary-hover: #2B2C33;
+  --btn-disabled-bg: rgba(255, 255, 255, 0.04);
+  --btn-disabled-text: #52525B;
 
   /* ========================================================================
      3. TIPOGRAFIA (INTER / ATKINSON HYPERLEGIBLE / SYSTEM-UI)
@@ -94,9 +91,9 @@
   /* ========================================================================
      5. RAIOS DE BORDA (RADII)
      ======================================================================== */
-  --radius-card: 16px;
-  --radius-button: 16px;
-  --radius-pill: 999px; /* Apenas para chips e badges */
+  --radius-card: 18px;
+  --radius-button: 12px;
+  --radius-pill: 9999px;
   --radius-sm: 8px;
 
   /* ========================================================================

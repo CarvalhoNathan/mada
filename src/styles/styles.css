@@ -655,9 +655,9 @@ body {
 
 /* Banner de FEFO / "Use Primeiro" (Latas Prioritárias) */
 .dash-use-first-banner {
-  background-color: var(--warn-soft); /* rgba(245, 158, 11, 0.15) */
-  border: 2px solid var(--warn); /* #F59E0B */
-  border-radius: 16px; /* rounded-2xl */
+  background-color: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 18px;
   padding: 16px 24px;
   display: flex;
   align-items: center;
@@ -665,13 +665,16 @@ body {
   cursor: pointer;
   margin-bottom: 24px;
   box-sizing: border-box;
-  transition: transform 0.15s ease, filter 0.15s ease, border-color 0.15s ease;
+  transition: all 0.15s ease;
   user-select: none;
   outline: none;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.06);
 }
 
 .dash-use-first-banner:hover {
-  filter: brightness(1.05);
+  background-color: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.55);
+  transform: translateY(-1px);
 }
 
 .dash-use-first-banner:active {
@@ -792,13 +795,15 @@ body {
 
 /* Card 1: Nova Preparação (Leve destaque primário) */
 .dash-action-card.card-primary-highlight {
-  border: 2px solid var(--primary); /* #2563EB */
-  background-color: rgba(37, 99, 235, 0.08);
+  border: 1.5px solid var(--primary);
+  background-color: rgba(43, 127, 255, 0.08);
+  box-shadow: 0 0 24px rgba(43, 127, 255, 0.12);
 }
 
 .dash-action-card.card-primary-highlight:hover {
-  background-color: rgba(37, 99, 235, 0.12);
-  border-color: var(--primary);
+  background-color: rgba(43, 127, 255, 0.12);
+  border-color: #3b8bff;
+  box-shadow: 0 0 32px rgba(43, 127, 255, 0.2);
 }
 
 .dash-card-header {

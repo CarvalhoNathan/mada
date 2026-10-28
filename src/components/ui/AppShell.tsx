@@ -87,11 +87,35 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
         </div>
 
+        {/* Busca Rápida (BoardUI Quick Search) */}
+        <div
+          className="ds-shell-search-box"
+          role="button"
+          tabIndex={0}
+          title="Busca rápida de Ordens de Serviço e Receitas (⌘K)"
+        >
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <span className="ds-shell-search-label">Busca rápida</span>
+          <kbd className="ds-shell-search-kbd">⌘K</kbd>
+        </div>
+
         <div className="ds-shell-header-right">
           {/* Status de Conexão Discreto (ícone + chip sutil) */}
           <div className="ds-shell-chips-group">
             <div className={`ds-status-chip ${isWifiConnected ? 'is-connected' : 'is-disconnected'}`}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
                 <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
                 <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
@@ -100,7 +124,7 @@ export const AppShell: React.FC<AppShellProps> = ({
               <span>{isWifiConnected ? 'Wi-Fi' : 'Sem Wi-Fi'}</span>
             </div>
             <div className={`ds-status-chip ${isServerLocal ? 'is-connected' : 'is-disconnected'}`}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
                 <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
                 <line x1="6" y1="6" x2="6.01" y2="6"/>
@@ -118,41 +142,28 @@ export const AppShell: React.FC<AppShellProps> = ({
             title="Limpar tela (bloqueia o toque por 15 segundos)"
             aria-label="Limpar tela"
           >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
             </svg>
             <span>Limpar tela</span>
           </button>
 
-          {/* Operador Logado */}
+          {/* Operador Logado - Estilo BoardUI Profile Selector */}
           {operator && (
             <div
               className="ds-shell-operator-card"
               onClick={onOperatorClick}
               role={onOperatorClick ? 'button' : undefined}
-              title={onOperatorClick ? 'Toque para trocar de operador' : undefined}
+              title={onOperatorClick ? 'Toque para alternar operador' : undefined}
               aria-label={`Operador logado: ${operator.name}. Toque para trocar de operador.`}
             >
               <div className="ds-shell-avatar-fallback">
                 {getInitials(operator.name)}
               </div>
               <span className="ds-shell-operator-name">{operator.name}</span>
-              <button
-                type="button"
-                className="ds-shell-logout-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOperatorClick?.();
-                }}
-                title="Trocar operador"
-                aria-label="Trocar operador"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                  <polyline points="16 17 21 12 16 7"/>
-                  <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
-              </button>
+              <span className="ds-shell-operator-chevron" aria-hidden="true">
+                ↕
+              </span>
             </div>
           )}
         </div>
