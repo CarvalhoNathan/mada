@@ -2583,40 +2583,73 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
-  margin-top: 6px;
+  margin: 10px 0;
+}
+
+.btn-stepper-round {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  min-height: 52px;
+  border-radius: 14px;
+  background-color: #1a1b20;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  color: #ededed;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  padding: 0;
+  outline: none;
+}
+
+.btn-stepper-round:hover {
+  background-color: #24252b;
+  border-color: #2b7fff;
+  color: #2b7fff;
+  box-shadow: 0 0 16px rgba(43, 127, 255, 0.35);
+}
+
+.btn-stepper-round:active {
+  transform: scale(0.92);
+  filter: brightness(0.9);
 }
 
 .sobra-value-center {
-  min-width: 190px;
+  min-width: 210px;
   height: 54px;
-  background: var(--bg);
-  border: 2px solid var(--primary);
-  border-radius: var(--radius-card);
+  background-color: rgba(43, 127, 255, 0.08);
+  border: 1.5px solid rgba(43, 127, 255, 0.4);
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  cursor: pointer;
+  cursor: default;
+  box-shadow: 0 0 20px rgba(43, 127, 255, 0.15);
+  user-select: none;
   transition: all var(--transition-fast);
-}
-
-.sobra-value-center:active {
-  transform: scale(0.97);
 }
 
 .sobra-val-num {
   font-size: 32px;
   font-weight: 700;
-  color: var(--primary);
+  color: #2b7fff;
   line-height: 1;
 }
 
 .sobra-val-unit {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--text);
+  color: #ededed;
 }
 
 /* ChecklistRow (Adaptado para caber estritamente sem rolagem no tablet) */

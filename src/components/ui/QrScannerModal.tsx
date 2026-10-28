@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Button } from './Button';
 
 export interface QrScannerModalProps {
   isOpen: boolean;
@@ -35,12 +34,16 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [hasTorch, setHasTorch] = useState<boolean>(false);
   const [torchOn, setTorchOn] = useState<boolean>(false);
+  const [isRetrying, setIsRetrying] = useState<boolean>(false);
 
   // Fecha e limpa o stream de vídeo
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     setCameraActive(false);
     setTorchOn(false);
@@ -59,84 +62,122 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
     onClose();
   }, [onScanSuccess, onClose, stopCamera]);
 
-  // Inicia a câmera quando o modal for aberto
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+  // Inicia a câmera com fallback progressivo
+  const startCamera = useCallback(async () => {
+    try {
+      setCameraError(null);
+      setIsRetrying(true);
 
-    let isMounted = true;
-    let scanInterval: number | undefined;
+      // Limpa qualquer stream anterior pendente
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
 
-    const startCamera = async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Navegador não suporta acesso direto à câmera.');
+      }
+
+      let stream: MediaStream | null = null;
+
+      // 1ª Tentativa: Câmera traseira do tablet / bancada
       try {
-        setCameraError(null);
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          throw new Error('Navegador não suporta acesso direto à câmera.');
-        }
-
-        const stream = await navigator.mediaDevices.getUserMedia({
+        stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: { ideal: 'environment' },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
           },
         });
-
-        if (!isMounted) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play().catch(() => {});
-        }
-        setCameraActive(true);
-
-        // Verifica suporte a lanterna/flash
-        const track = stream.getVideoTracks()[0];
-        const capabilities = (track?.getCapabilities?.() || {}) as { torch?: boolean };
-        if (capabilities.torch) {
-          setHasTorch(true);
-        }
-
-        // Se o navegador tiver BarcodeDetector nativo (Chrome/Android/Edge)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const win = window as any;
-        if ('BarcodeDetector' in win) {
-          const barcodeDetector = new win.BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13'] });
-          scanInterval = window.setInterval(async () => {
-            if (videoRef.current && videoRef.current.readyState >= 2) {
-              try {
-                const barcodes = await barcodeDetector.detect(videoRef.current);
-                if (barcodes.length > 0 && barcodes[0].rawValue) {
-                  clearInterval(scanInterval);
-                  handleDetected(barcodes[0].rawValue);
-                }
-              } catch {
-                // frame ignorado
-              }
-            }
-          }, 350);
-        }
-      } catch (err: unknown) {
-        if (!isMounted) return;
-        const msg = err instanceof Error ? err.message : 'Não foi possível acessar a câmera.';
-        setCameraError(msg);
-        setCameraActive(false);
+      } catch (err1) {
+        console.warn('Tentativa 1 com environment falhou, tentando fallback simples...', err1);
+        // 2ª Tentativa: Fallback universal para qualquer câmera (USB, integrada, virtual)
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
       }
-    };
 
-    startCamera();
+      if (!stream) {
+        throw new Error('Nenhum sinal de vídeo recebido da câmera.');
+      }
+
+      streamRef.current = stream;
+
+      // Anexa o stream diretamente ao elemento de vídeo já montado
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          console.warn('Play da câmera prevenido:', playErr);
+        }
+      }
+
+      setCameraActive(true);
+
+      // Verifica suporte a lanterna
+      const track = stream.getVideoTracks()[0];
+      const capabilities = (track?.getCapabilities?.() || {}) as { torch?: boolean };
+      if (capabilities.torch) {
+        setHasTorch(true);
+      }
+
+      // BarcodeDetector nativo se suportado
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const win = window as any;
+      if ('BarcodeDetector' in win) {
+        const barcodeDetector = new win.BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13'] });
+        const scanTimer = window.setInterval(async () => {
+          if (videoRef.current && videoRef.current.readyState >= 2) {
+            try {
+              const barcodes = await barcodeDetector.detect(videoRef.current);
+              if (barcodes.length > 0 && barcodes[0].rawValue) {
+                clearInterval(scanTimer);
+                handleDetected(barcodes[0].rawValue);
+              }
+            } catch {
+              // frame ignorado
+            }
+          }
+        }, 350);
+      }
+    } catch (err: unknown) {
+      let msg = 'Não foi possível acessar a câmera.';
+      if (err instanceof Error) {
+        if (err.name === 'NotReadableError' || err.message.includes('Could not start video source')) {
+          msg = 'Câmera em uso por outro aplicativo ou bloqueada pelo Windows ("Could not start video source").';
+        } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          msg = 'Permissão de câmera não concedida no navegador.';
+        } else {
+          msg = err.message;
+        }
+      }
+      setCameraError(msg);
+      setCameraActive(false);
+    } finally {
+      setIsRetrying(false);
+    }
+  }, [handleDetected]);
+
+  // Garante que o stream seja montado ao abrir
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const timer = setTimeout(() => {
+      startCamera();
+    }, 0);
 
     return () => {
-      isMounted = false;
-      if (scanInterval) clearInterval(scanInterval);
+      clearTimeout(timer);
       stopCamera();
     };
-  }, [isOpen, handleDetected, stopCamera]);
+  }, [isOpen, startCamera, stopCamera]);
+
+  // Sincroniza srcObject caso o elemento de vídeo seja atualizado
+  useEffect(() => {
+    if (cameraActive && videoRef.current && streamRef.current) {
+      if (videoRef.current.srcObject !== streamRef.current) {
+        videoRef.current.srcObject = streamRef.current;
+        videoRef.current.play().catch(() => {});
+      }
+    }
+  }, [cameraActive]);
 
   const toggleTorch = async () => {
     if (!streamRef.current) return;
@@ -158,7 +199,19 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
 
   return (
     <div className="ds-modal-backdrop" role="dialog" aria-modal="true">
-      <div className="ds-modal-card ds-modal-standard" style={{ maxWidth: '640px', padding: 0 }}>
+      <div
+        className="ds-modal-card ds-modal-standard"
+        style={{
+          maxWidth: '620px',
+          width: '92%',
+          padding: 0,
+          backgroundColor: '#141519',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '18px',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.7)',
+          overflow: 'hidden',
+        }}
+      >
         {/* Cabeçalho do Scanner */}
         <header
           style={{
@@ -166,31 +219,31 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid var(--border)',
-            background: 'var(--card-hover)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            background: 'rgba(255, 255, 255, 0.02)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '8px',
-                background: 'var(--primary-soft)',
-                color: 'var(--primary)',
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
+                background: 'rgba(43, 127, 255, 0.14)',
+                color: '#2b7fff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '20px',
+                fontSize: '18px',
               }}
             >
               📷
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '18px', color: 'var(--text)', fontWeight: 700 }}>
+              <h3 style={{ margin: 0, fontSize: '17px', color: '#ededed', fontWeight: 700 }}>
                 {title}
               </h3>
-              <p style={{ margin: 0, fontSize: 'var(--fs-small)', color: 'var(--text-muted)' }}>
+              <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#a1a1aa' }}>
                 {description}
               </p>
             </div>
@@ -203,91 +256,124 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               onClose();
             }}
             aria-label="Fechar scanner"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#71717a',
+              fontSize: '18px',
+              cursor: 'pointer',
+              padding: '6px',
+            }}
           >
             ✕
           </button>
         </header>
 
-        {/* Visor de Câmera ou Alerta de Falha */}
+        {/* Visor de Câmera */}
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '460px',
-              height: '260px',
-              background: '#090d16',
-              borderRadius: '12px',
+              maxWidth: '480px',
+              height: '240px',
+              background: '#090a0d',
+              borderRadius: '14px',
               overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '2px solid var(--border)',
+              border: '1.5px solid rgba(255, 255, 255, 0.1)',
             }}
           >
-            {cameraActive && (
-              <video
-                ref={videoRef}
-                playsInline
-                muted
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
-              />
-            )}
-
-            {/* Retículo e linha laser de mira industrial */}
-            <div
+            {/* O elemento de vídeo SEMPRE existe no DOM */}
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
               style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '180px',
-                height: '180px',
-                border: '2px dashed var(--primary)',
-                borderRadius: '12px',
-                pointerEvents: 'none',
-                boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.45)',
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: cameraActive ? 'block' : 'none',
               }}
-            >
+            />
+
+            {/* Retículo e Mira Laser */}
+            {cameraActive && (
               <div
                 style={{
                   position: 'absolute',
                   top: '50%',
-                  left: 0,
-                  right: 0,
-                  height: '2px',
-                  background: 'var(--ok)',
-                  boxShadow: '0 0 8px var(--ok)',
-                  opacity: 0.85,
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '160px',
+                  height: '160px',
+                  border: '2px dashed #2b7fff',
+                  borderRadius: '12px',
+                  pointerEvents: 'none',
+                  boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.4)',
                 }}
-              />
-            </div>
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: 0,
+                    right: 0,
+                    height: '2px',
+                    background: '#22c55e',
+                    boxShadow: '0 0 10px #22c55e',
+                    opacity: 0.85,
+                  }}
+                />
+              </div>
+            )}
 
-            {/* Mensagem quando a câmera estiver inativa ou sem permissão */}
+            {/* Mensagem quando a câmera estiver inativa ou bloqueada */}
             {!cameraActive && (
               <div
                 style={{
                   padding: '20px',
                   textAlign: 'center',
-                  color: 'var(--text-muted)',
-                  fontSize: 'var(--fs-small)',
+                  color: '#a1a1aa',
+                  fontSize: '14px',
                   zIndex: 2,
+                  maxWidth: '380px',
                 }}
               >
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>📸</div>
-                <strong>Câmera em modo de bancada</strong>
-                <p style={{ margin: '4px 0 0', fontSize: 'var(--fs-small)' }}>
-                  {cameraError || 'Aponte o código ou clique em uma das etiquetas abaixo para teste rápido.'}
+                <div style={{ fontSize: '28px', marginBottom: '8px' }}>📸</div>
+                <strong style={{ color: '#ededed', display: 'block', marginBottom: '4px' }}>
+                  Câmera em modo de bancada
+                </strong>
+                <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: cameraError ? '#f87171' : '#71717a' }}>
+                  {cameraError || 'Aponte o código QR ou clique em uma das etiquetas abaixo para teste rápido.'}
                 </p>
+
+                <button
+                  type="button"
+                  onClick={startCamera}
+                  disabled={isRetrying}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: 'rgba(43, 127, 255, 0.15)',
+                    border: '1px solid rgba(43, 127, 255, 0.4)',
+                    color: '#60a5fa',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {isRetrying ? 'Tentando conectar...' : '🔄 Tentar ligar câmera'}
+                </button>
               </div>
             )}
 
-            {/* Controle de Lanterna se suportado */}
-            {hasTorch && (
+            {/* Controle de Lanterna */}
+            {hasTorch && cameraActive && (
               <button
                 type="button"
                 onClick={toggleTorch}
@@ -295,12 +381,12 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   position: 'absolute',
                   bottom: '12px',
                   right: '12px',
-                  background: torchOn ? 'var(--warn)' : 'rgba(0,0,0,0.6)',
+                  background: torchOn ? '#f59e0b' : 'rgba(0,0,0,0.6)',
                   color: torchOn ? '#000' : '#fff',
                   border: 'none',
                   borderRadius: '20px',
                   padding: '6px 14px',
-                  fontSize: 'var(--fs-small)',
+                  fontSize: '13px',
                   fontWeight: 700,
                   cursor: 'pointer',
                   zIndex: 3,
@@ -311,13 +397,13 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             )}
           </div>
 
-          {/* Atalhos Rápidos de Simulação (Para teste ágil ou sem câmera) */}
+          {/* Atalhos Rápidos de Simulação */}
           <div style={{ width: '100%', marginTop: '16px' }}>
             <span
               style={{
-                fontSize: 'var(--fs-small)',
+                fontSize: '12px',
                 fontWeight: 700,
-                color: 'var(--text-muted)',
+                color: '#71717a',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 display: 'block',
@@ -337,25 +423,26 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                     alignItems: 'center',
                     gap: '8px',
                     padding: '10px 12px',
-                    background: 'var(--card)',
-                    border: '1.5px solid var(--border)',
-                    borderRadius: '8px',
-                    color: 'var(--text)',
-                    fontSize: 'var(--fs-small)',
+                    background: '#1a1b20',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '10px',
+                    color: '#ededed',
+                    fontSize: '13px',
                     fontWeight: 600,
                     textAlign: 'left',
                     cursor: 'pointer',
-                    minHeight: '52px',
+                    minHeight: '48px',
+                    transition: 'all 0.15s ease',
                   }}
                 >
                   <span
                     style={{
                       padding: '2px 6px',
                       borderRadius: '4px',
-                      background: 'var(--card-hover)',
-                      fontSize: '12px',
+                      background: 'rgba(43, 127, 255, 0.15)',
+                      fontSize: '11px',
                       fontWeight: 800,
-                      color: 'var(--primary)',
+                      color: '#60a5fa',
                     }}
                   >
                     {opt.badge}
@@ -373,22 +460,32 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         <footer
           style={{
             padding: '14px 20px',
-            background: 'var(--card-hover)',
-            borderTop: '1px solid var(--border)',
+            background: 'rgba(255, 255, 255, 0.02)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             justifyContent: 'flex-end',
           }}
         >
-          <Button
-            variant="secondary"
-            size="md"
+          <button
+            type="button"
             onClick={() => {
               stopCamera();
               onClose();
             }}
+            style={{
+              height: '42px',
+              padding: '0 20px',
+              borderRadius: '10px',
+              backgroundColor: '#202127',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: '#ededed',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
           >
             Cancelar
-          </Button>
+          </button>
         </footer>
       </div>
     </div>

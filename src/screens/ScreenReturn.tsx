@@ -131,6 +131,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
             {/* Controles de Sobra */}
             <div className="sobra-stepper-box">
               <button
+                type="button"
                 className="btn-stepper-round"
                 onClick={() => adjustVolume(-50)}
                 aria-label="Diminuir 50ml"
@@ -142,6 +143,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                 <span className="sobra-val-unit">ml restantes</span>
               </div>
               <button
+                type="button"
                 className="btn-stepper-round"
                 onClick={() => adjustVolume(50)}
                 aria-label="Aumentar 50ml"

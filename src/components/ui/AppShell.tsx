@@ -104,30 +104,6 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
         </div>
 
-        {/* Busca Rápida Estilo BoardUI (Busca rápida ⌘K) */}
-        <div
-          className="boardui-search-pill"
-          role="button"
-          tabIndex={0}
-          title="Busca rápida de Ordens de Serviço e Receitas (⌘K)"
-        >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <span>Busca rápida</span>
-          <kbd className="boardui-search-kbd">⌘K</kbd>
-        </div>
-
         {/* Lado Direito: Status + Modo Limpeza + Operador */}
         <div className="boardui-header-right">
           {/* Chips de Conexão */}
