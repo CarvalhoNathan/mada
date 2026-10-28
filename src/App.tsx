@@ -187,6 +187,8 @@ export const App: React.FC = () => {
   return (
     <AppShell
       appName="Cabine de Pintura"
+      currentScreen={currentScreen}
+      onNavigate={(screen) => setCurrentScreen(screen)}
       operator={
         currentScreen !== 'auth'
           ? {
