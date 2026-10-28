@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { RecipeState, Operator, OrdemServico } from '../types';
-import { StepIndicator } from '../components/ui/StepIndicator';
 import { Button } from '../components/ui/Button';
-import { NumberStepper } from '../components/ui/NumberStepper';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
 import { ModalCriticalExcess } from './ModalCriticalExcess';
 import { calcularFracoesMistura } from '../domain/mixture';
@@ -31,7 +29,6 @@ interface ScreenDosingProps {
 
 export const ScreenDosing: React.FC<ScreenDosingProps> = ({
   recipe,
-  operator,
   activeOS,
   onNavigate,
   onCompleteDosing,
@@ -93,12 +90,13 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
     cost: number;
   } | null>(null);
 
-  // Todos os componentes devem ter valor > 0 para liberar a conclusão
+  // Verificações de conclusão
   const allDosed = componentes.every((c) => (dosingValues[c.item.id] || 0) > 0);
   const hasAnyValue = componentes.some((c) => (dosingValues[c.item.id] || 0) > 0);
+  const totalDosed = componentes.reduce((sum, c) => sum + (dosingValues[c.item.id] || 0), 0);
 
   const handleValueChange = (itemId: number, newValue: number) => {
-    setDosingValues((prev) => ({ ...prev, [itemId]: newValue }));
+    setDosingValues((prev) => ({ ...prev, [itemId]: Math.max(0, newValue) }));
   };
 
   const handleOpenKeypad = (itemId: number) => {
@@ -175,7 +173,11 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
   const handleBack = () => {
     if (hasAnyValue) {
-      if (window.confirm('Existem pesagens registradas nesta tela. Deseja realmente voltar à receita?')) {
+      if (
+        window.confirm(
+          'Existem pesagens registradas nesta tela. Deseja realmente voltar à receita?'
+        )
+      ) {
         onNavigate('recipe');
       }
     } else {
@@ -185,60 +187,102 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
   return (
     <>
-      <div className="screen-content-area" style={{ paddingBottom: '90px' }}>
-        {/* Indicador de Etapas: Passo 3 Ativo */}
-        <StepIndicator
-          steps={[
-            { id: 1, label: `1. ${os.numero} (${os.ambienteNome})`, status: 'completed' },
-            { id: 2, label: '2. Receita & Calculadora', status: 'completed' },
-            { id: 3, label: '3. Dosagem & Baixa', status: 'active' },
-          ]}
-          onStepClick={(step) => {
-            if (step.id === 2) handleBack();
-          }}
-        />
-
-        {/* Cabeçalho da Tela de Dosagem */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '12px',
-          }}
-        >
-          <div>
-            <div className="section-tag">03 / DOSAGEM & PESAGEM REAL</div>
-            <h2 className="section-title" style={{ fontSize: '24px', margin: '2px 0' }}>
-              Pesagem de Componentes • {receita.nome}
-            </h2>
-            <p className="section-desc" style={{ fontSize: 'var(--fs-small)', margin: 0 }}>
-              Operador: <strong>{operator.nome || operator.name}</strong> • Marca homologada: {marca.nome}
-            </p>
-          </div>
+      <main
+        className="screen-content-area"
+        style={{
+          padding: '12px 24px 74px 24px',
+          boxSizing: 'border-box',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          overflow: 'hidden',
+        }}
+      >
+        {/* 1. Stepper Unificado Compacto (44px) */}
+        <nav className="dosing-step-bar" aria-label="Progresso da preparação">
           <div
-            style={{
-              padding: '6px 14px',
-              borderRadius: '8px',
-              background: 'var(--card-hover)',
-              border: '1px solid var(--border)',
-              fontSize: 'var(--fs-small)',
-              fontWeight: 700,
-              color: 'var(--text-muted)',
-            }}
+            className="dosing-step-pill completed"
+            onClick={handleBack}
+            role="button"
+            tabIndex={0}
+            title="Voltar para Peça & O.S."
           >
-            Volume Total Meta: <strong style={{ color: 'var(--text)' }}>{vol} ml</strong>
+            <span>✓</span>
+            <span>1. Peça & O.S.</span>
           </div>
-        </div>
 
-        {/* Grade 2x2 com os 4 Componentes (otimizada para 1280x800 sem rolagem) */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '12px',
-          }}
-        >
+          <span className="dosing-step-separator" aria-hidden="true">
+            →
+          </span>
+
+          <div
+            className="dosing-step-pill completed"
+            onClick={handleBack}
+            role="button"
+            tabIndex={0}
+            title="Voltar para Receita & Cálculo"
+          >
+            <span>✓</span>
+            <span>2. Receita & Cálculo</span>
+          </div>
+
+          <span className="dosing-step-separator" aria-hidden="true">
+            →
+          </span>
+
+          <div className="dosing-step-pill active">
+            <span className="dosing-step-dot" aria-hidden="true" />
+            <span>3. Pesagem na Balança</span>
+          </div>
+
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
+              OS <strong style={{ color: 'var(--text)' }}>#{os.numero}</strong> • {os.clienteNome}
+            </span>
+          </div>
+        </nav>
+
+        {/* 2. Cabeçalho Operacional e Contexto da Balança (48px) */}
+        <header className="dosing-header-card">
+          <div className="dosing-title-group">
+            <h2 className="dosing-main-title">
+              Pesagem de Componentes
+            </h2>
+            <span className="dosing-recipe-pill">
+              {receita.nome} • {receita.codigoFormula} • {marca.nome}
+            </span>
+          </div>
+
+          <div className="dosing-header-right">
+            <div className="dosing-scale-indicator">
+              <span className="dosing-scale-dot" aria-hidden="true" />
+              <span>Balança Toledo: Conectada</span>
+            </div>
+
+            <div className="dosing-total-target-pill">
+              <span style={{ color: 'var(--text-muted)' }}>Meta:</span>
+              <span>{vol.toLocaleString('pt-BR')} ml</span>
+            </div>
+
+            <div
+              style={{
+                fontSize: '15px',
+                fontWeight: 600,
+                color: totalDosed >= vol ? '#4ade80' : 'var(--text-muted)',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              Dosado: <strong style={{ color: 'var(--text)' }}>{totalDosed.toLocaleString('pt-BR')} ml</strong> ({Math.min(100, Math.round((totalDosed / vol) * 100))}%)
+            </div>
+          </div>
+        </header>
+
+        {/* 3. Grade 2x2 com os 4 Componentes Químicos */}
+        <section className="dosing-grid" aria-label="Componentes da mistura">
           {componentes.map((comp, idx) => {
             const val = dosingValues[comp.item.id] || 0;
             const meta = comp.metaMl;
@@ -247,176 +291,195 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
             const isExactOrWithin = val >= meta && !isExceeded;
             const isUnder = val > 0 && val < meta;
             const diff = val - meta;
+            const isCatalyst = comp.item.papel.toLowerCase().includes('catalisador');
 
-            // Cores do Card conforme o estado
-            const borderColor = isExceeded
-              ? 'var(--danger)'
-              : isExactOrWithin
-              ? 'var(--ok)'
-              : 'var(--border)';
-
-            const badgeBg = isExceeded
-              ? 'var(--danger-soft)'
-              : isExactOrWithin
-              ? 'var(--ok-soft)'
-              : isUnder
-              ? 'var(--warn-soft)'
-              : 'var(--card-hover)';
-
-            const badgeColor = isExceeded
-              ? 'var(--danger)'
-              : isExactOrWithin
-              ? 'var(--ok)'
-              : isUnder
-              ? 'var(--warn)'
-              : 'var(--text-muted)';
+            // Determina as classes de estado do card
+            let cardStateClass = '';
+            if (isExceeded) {
+              cardStateClass = 'is-exceeded';
+            } else if (isExactOrWithin) {
+              cardStateClass = 'is-within';
+            } else if (isUnder) {
+              cardStateClass = 'is-under';
+            }
 
             return (
-              <div
+              <article
                 key={comp.item.id}
-                style={{
-                  background: 'var(--card)',
-                  border: `2px solid ${borderColor}`,
-                  borderRadius: '12px',
-                  padding: '12px 16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  boxShadow: isExceeded
-                    ? '0 0 0 1px var(--danger)'
-                    : isExactOrWithin
-                    ? '0 0 0 1px var(--ok)'
-                    : 'none',
-                }}
+                className={`dosing-card ${cardStateClass} ${isCatalyst ? 'is-catalyst' : ''}`}
               >
-                {/* Cabeçalho do Componente */}
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: '8px',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span
-                        style={{
-                          width: '28px',
-                          height: '28px',
-                          borderRadius: '50%',
-                          background: 'var(--card-hover)',
-                          color: 'var(--text)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: 'var(--fs-small)',
-                          fontWeight: 800,
-                        }}
-                      >
-                        {idx + 1}
-                      </span>
-                      <h4
-                        style={{
-                          margin: 0,
-                          fontSize: '18px',
-                          fontWeight: 700,
-                          color: 'var(--text)',
-                        }}
-                      >
-                        {comp.item.produtoNome}
-                      </h4>
+                {/* Cabeçalho do Card */}
+                <div className="dosing-card-header">
+                  <div className="dosing-card-title-group">
+                    <span className="dosing-step-badge">{idx + 1}</span>
+                    <div>
+                      <h3 className="dosing-chem-name">{comp.item.produtoNome}</h3>
+                      <div className="dosing-chem-code">
+                        <span>Cód: {comp.item.codigoProduto}</span>
+                        <span>•</span>
+                        <span>Lote: {comp.loteAtivo ? comp.loteAtivo.codigo : 'LT-2024-03'}</span>
+                        {isCatalyst && (
+                          <span
+                            style={{
+                              marginLeft: '4px',
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              background: 'rgba(245, 158, 11, 0.18)',
+                              color: 'var(--warn)',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                            }}
+                          >
+                            Crítico (±5%)
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <span
-                      style={{
-                        fontSize: 'var(--fs-small)',
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        marginTop: '2px',
-                      }}
-                    >
-                      Cód: {comp.item.codigoProduto} • Lote: {comp.loteAtivo ? comp.loteAtivo.codigo : 'Padrão'}
-                    </span>
                   </div>
 
-                  {/* Badge de Meta e Proporção */}
-                  <div style={{ textAlign: 'right' }}>
-                    <span
-                      style={{
-                        padding: '2px 8px',
-                        borderRadius: '6px',
-                        background: 'var(--card-hover)',
-                        fontSize: 'var(--fs-small)',
-                        fontWeight: 700,
-                        color: 'var(--text)',
-                      }}
-                    >
-                      Meta: {meta} ml
+                  <div className="dosing-target-box">
+                    <span className="dosing-target-pill">
+                      Meta: {meta.toLocaleString('pt-BR')} ml
                     </span>
-                    <span
-                      style={{
-                        display: 'block',
-                        fontSize: 'var(--fs-small)',
-                        color: 'var(--text-muted)',
-                        marginTop: '2px',
-                      }}
-                    >
-                      ~ {comp.pesoMetaG} g
-                    </span>
+                    <div className="dosing-target-weight">~ {comp.pesoMetaG} g</div>
                   </div>
                 </div>
 
-                {/* NumberStepper com Alvo de Toque de 64px e passo de 10ml */}
-                <NumberStepper
-                  value={val}
-                  unit="ml"
-                  step={10}
-                  min={0}
-                  max={5000}
-                  standardValue={meta}
-                  toleranceMax={toleranceMax}
-                  onChange={(newVal) => handleValueChange(comp.item.id, newVal)}
-                  onOpenKeypad={() => handleOpenKeypad(comp.item.id)}
-                />
+                {/* Controles de Dosagem e Visor Central */}
+                <div className="dosing-controls-row">
+                  <button
+                    type="button"
+                    className="dosing-control-btn"
+                    onClick={() => handleValueChange(comp.item.id, val - 10)}
+                    disabled={val <= 0}
+                    aria-label={`Diminuir 10 ml de ${comp.item.produtoNome}`}
+                  >
+                    −
+                  </button>
 
-                {/* Linha de Feedback de Estado */}
+                  <div
+                    className="dosing-value-display"
+                    onClick={() => handleOpenKeypad(comp.item.id)}
+                    role="button"
+                    tabIndex={0}
+                    title="Toque para digitar o valor no teclado numérico"
+                  >
+                    <div className="dosing-val-num-row">
+                      <span className="dosing-val-num">{val.toLocaleString('pt-BR')}</span>
+                      <span className="dosing-val-unit">ml</span>
+                    </div>
+                    <span className="dosing-val-sub">
+                      {val > 0
+                        ? `~ ${Math.round(val * comp.item.densidade)} g • Toque p/ digitar`
+                        : 'Toque para digitar'}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="dosing-control-btn"
+                    onClick={() => handleValueChange(comp.item.id, val + 10)}
+                    aria-label={`Aumentar 10 ml de ${comp.item.produtoNome}`}
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Atalhos Rápidos de Simulação para Operador */}
+                <div className="dosing-shortcuts-row">
+                  <button
+                    type="button"
+                    className="dosing-shortcut-chip"
+                    onClick={() => handleValueChange(comp.item.id, val + 50)}
+                  >
+                    +50 ml
+                  </button>
+                  <button
+                    type="button"
+                    className="dosing-shortcut-chip chip-target"
+                    onClick={() => handleValueChange(comp.item.id, meta)}
+                  >
+                    Meta Exata ({meta} ml)
+                  </button>
+                  <button
+                    type="button"
+                    className="dosing-shortcut-chip"
+                    onClick={() => handleValueChange(comp.item.id, toleranceMax + 10)}
+                    title="Simular teste de excesso crítico (>5%)"
+                    style={{ color: '#f87171' }}
+                  >
+                    +5% Excesso
+                  </button>
+                  {val > 0 && (
+                    <button
+                      type="button"
+                      className="dosing-shortcut-chip"
+                      onClick={() => handleValueChange(comp.item.id, 0)}
+                    >
+                      Zerar
+                    </button>
+                  )}
+                </div>
+
+                {/* Linha de Feedback de Estado / Tolerância */}
                 <div
-                  style={{
-                    marginTop: '8px',
-                    padding: '6px 10px',
-                    borderRadius: '6px',
-                    background: badgeBg,
-                    color: badgeColor,
-                    fontSize: 'var(--fs-small)',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
+                  className={`dosing-status-bar ${
+                    isExceeded
+                      ? 'status-exceeded'
+                      : isExactOrWithin
+                      ? 'status-within'
+                      : isUnder
+                      ? 'status-under'
+                      : 'status-default'
+                  }`}
                 >
                   <span>
                     {isExceeded
-                      ? `⚠️ +${diff} ml acima do padrão (+5%)`
+                      ? `⚠️ +${diff} ml acima do limite seguro (+5%)`
                       : isExactOrWithin
-                      ? `✓ Dentro da meta (${val === meta ? 'exato' : `+${diff} ml na tolerância`})`
+                      ? `✓ ${val === meta ? 'Meta exata atingida' : `Dentro da tolerância (+${diff} ml)`}`
                       : isUnder
                       ? `Em pesagem (faltam ${meta - val} ml)`
-                      : 'Toque em + ou no visor para dosar'}
+                      : 'Aguardando pesagem na balança...'}
                   </span>
                   <span>Tolerância máx: {toleranceMax} ml</span>
                 </div>
-              </div>
+              </article>
             );
           })}
-        </div>
-      </div>
+        </section>
+      </main>
 
       {/* Modal de Teclado Numérico Direto (NumericKeypad) */}
       {keypadItemId !== null && (
-        <div className="ds-modal-backdrop" role="dialog" aria-modal="true">
+        <div
+          className="ds-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 90,
+            padding: '16px',
+            boxSizing: 'border-box',
+          }}
+        >
           <div
             className="ds-modal-card ds-modal-standard"
-            style={{ maxWidth: '420px', padding: '20px' }}
+            style={{
+              maxWidth: '440px',
+              width: '100%',
+              backgroundColor: 'var(--card)',
+              border: '1.5px solid var(--border)',
+              borderRadius: '20px',
+              padding: '20px 24px',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.6)',
+            }}
           >
             <div
               style={{
@@ -427,8 +490,10 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
               }}
             >
               <div>
-                <h3 style={{ margin: 0, fontSize: '18px', color: 'var(--text)' }}>Digitar Volume</h3>
-                <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)' }}>
+                <h3 style={{ margin: 0, fontSize: '20px', color: 'var(--text)', fontWeight: 700 }}>
+                  Digitar Volume
+                </h3>
+                <span style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
                   {componentes.find((c) => c.item.id === keypadItemId)?.item.produtoNome}
                 </span>
               </div>
@@ -436,6 +501,19 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                 type="button"
                 className="ds-modal-close-btn"
                 onClick={() => setKeypadItemId(null)}
+                style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-muted)',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
                 ✕
               </button>
@@ -444,20 +522,30 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
             {/* Display do Teclado */}
             <div
               style={{
-                height: '70px',
-                background: 'var(--card-hover)',
-                border: '2px solid var(--border)',
-                borderRadius: '8px',
+                height: '74px',
+                background: 'rgba(0, 0, 0, 0.35)',
+                border: '2px solid var(--primary)',
+                borderRadius: '14px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '42px',
+                fontSize: '44px',
                 fontWeight: 800,
                 color: 'var(--text)',
                 marginBottom: '16px',
               }}
             >
-              {keypadBuffer || '0'} <span style={{ fontSize: '20px', color: 'var(--text-muted)', marginLeft: '6px' }}>ml</span>
+              {keypadBuffer || '0'}{' '}
+              <span
+                style={{
+                  fontSize: '22px',
+                  color: 'var(--text-muted)',
+                  marginLeft: '8px',
+                  fontWeight: 600,
+                }}
+              >
+                ml
+              </span>
             </div>
 
             {/* Teclado Numérico */}
@@ -472,7 +560,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
         </div>
       )}
 
-      {/* Modal Crítico de Excesso (disparado pela dosagem real) */}
+      {/* Modal Crítico de Excesso (Intertravamento de Segurança) */}
       {criticalItem && (
         <ModalCriticalExcess
           isOpen={true}
@@ -486,7 +574,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
         />
       )}
 
-      {/* Barra Inferior Fixa */}
+      {/* Barra Inferior Fixa Padronizada (56px) */}
       <footer className="ds-bottom-bar">
         <div className="ds-bottom-bar-left">
           <Button variant="secondary" size="md" onClick={handleBack}>
@@ -507,9 +595,9 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
             size="md"
             onClick={handleAttemptFinish}
             disabled={!allDosed}
-            style={{ minWidth: '260px' }}
+            style={{ minWidth: '280px', height: '56px', fontSize: '17px', fontWeight: 700 }}
           >
-            Concluir dosagem →
+            Concluir dosagem e dar baixa →
           </Button>
         </div>
       </footer>
