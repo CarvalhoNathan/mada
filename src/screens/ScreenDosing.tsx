@@ -3,6 +3,7 @@ import { AlertTriangle, Check } from 'lucide-react';
 import { RecipeState, Operator, OrdemServico, Receita } from '../types';
 import { Button } from '../components/ui/Button';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
+import { BeakerVisualizer } from '../components/ui/BeakerVisualizer';
 import { ModalCriticalExcess } from './ModalCriticalExcess';
 import { calcularFracoesMistura } from '../domain/mixture';
 import { excedeTolerancia, calcularCustoExcesso } from '../domain/tolerance';
@@ -200,7 +201,8 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
           display: 'flex',
           flexDirection: 'column',
           gap: '10px',
-          overflow: 'hidden',
+          overflowX: 'hidden',
+          overflowY: 'auto',
         }}
       >
         {/* 1. Stepper Unificado Compacto (44px) */}
@@ -349,8 +351,17 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                   </div>
                 </div>
 
-                {/* Controles de Dosagem e Visor Central */}
+                {/* Controles de Dosagem e Visor Central com Béquer Graduado */}
                 <div className="dosing-controls-row">
+                  <BeakerVisualizer
+                    value={val}
+                    target={meta}
+                    toleranceMax={toleranceMax}
+                    isExceeded={isExceeded}
+                    isWithin={isExactOrWithin}
+                    isCatalyst={isCatalyst}
+                  />
+
                   <button
                     type="button"
                     className="dosing-control-btn"

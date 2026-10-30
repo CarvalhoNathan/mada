@@ -169,40 +169,59 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
             </div>
           </div>
 
-          {/* Coluna Direita: Etiqueta Térmica & Refugo */}
+          {/* Coluna Direita: Etiqueta Térmica Realista & Refugo */}
           <div className="return-right-col">
             <div className="thermal-sticker-card">
-              <div className="sticker-badge-urgent" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                <AlertTriangle size={14} strokeWidth={2.4} /> PRIORIDADE DE USO IMEDIATO (USAR PRIMEIRO)
+              {/* Serrilha de corte da impressora térmica */}
+              <div className="thermal-tear-edge" aria-hidden="true" />
+
+              <div className="sticker-printer-badge">
+                <Printer size={12} strokeWidth={2.5} />
+                <span>ZEBRA ZT410 • TERMOTRANSFERÊNCIA 203 DPI</span>
               </div>
 
               <div className="sticker-header">
-                <strong>CONTROLE DE SOBRA QUÍMICA</strong>
-                <span>ALMOX-PU</span>
+                <div>
+                  <strong style={{ fontSize: '15px', letterSpacing: '0.04em' }}>MADA MARCENARIA</strong>
+                  <span style={{ display: 'block', fontSize: '11px', color: '#64748B' }}>CABINE PU • ALMOXARIFADO</span>
+                </div>
+                <div className="sticker-stamp">
+                  REUSO IMEDIATO
+                </div>
+              </div>
+
+              <div className="sticker-badge-urgent" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <AlertTriangle size={14} strokeWidth={2.4} /> PRIORIDADE FEFO: CONSUMIR ANTES DE VIOLAR LATAS LACRADAS
               </div>
 
               <div className="sticker-body">
                 <div className="sticker-details">
-                  <p><strong>PRODUTO:</strong> {produto.nome.toUpperCase()}</p>
-                  <p><strong>SALDO:</strong> <span>{returnVolume} ml</span> (± {saldo.pesoEstimadoGramas}g)</p>
-                  <p><strong>LOTE GERADO:</strong> {loteGerado}</p>
-                  <p><strong>ORIGEM:</strong> {ordemServico.numero} ({ordemServico.ambienteNome})</p>
-                  <p><strong>OPERADOR:</strong> <span>{operator.nome || operator.name}</span></p>
-                  <p><strong>DATA:</strong> {dataFormatada}</p>
+                  <p><strong>PRODUTO:</strong> <span>{produto.nome.toUpperCase()}</span></p>
+                  <p><strong>VOLUME REAL:</strong> <strong style={{ color: '#0F172A', fontSize: '15px' }}>{returnVolume} ml</strong> <span style={{ color: '#64748B' }}>(± {saldo.pesoEstimadoGramas}g)</span></p>
+                  <p><strong>LOTE GERADO:</strong> <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{loteGerado}</span></p>
+                  <p><strong>ORIGEM:</strong> <span>{ordemServico.numero} ({ordemServico.ambienteNome})</span></p>
+                  <p><strong>PINTOR:</strong> <span>{operator.nome || operator.name}</span></p>
+                  <p><strong>HORA:</strong> <span>{dataFormatada}</span></p>
                 </div>
 
                 <div className="sticker-qr-box">
                   <svg viewBox="0 0 100 100" fill="black">
                     <path d="M0 0h30v30H0zm5 5h20v20H5zm35-5h30v30H40zm5 5h20v20H45zM0 40h30v30H0zm5 5h20v20H5zm45 5h10v10H50zm15 0h15v15H65zm0 25h10v10H65zm-25 0h10v10H40zm15 15h10v10H55z" />
                   </svg>
-                  <span style={{ fontSize: 'var(--fs-small)', fontWeight: 700, color: 'var(--bg)', marginTop: '4px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#0F172A', marginTop: '4px', letterSpacing: '0.05em' }}>
                     {codigoEtiqueta}
                   </span>
                 </div>
               </div>
 
-              <div style={{ marginTop: '10px', fontSize: 'var(--fs-small)', color: 'var(--text-muted)', textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: '6px' }}>
-                DEVOLUÇÃO EM CONFORMIDADE • PROIBIDO DESCARTE EM RALO INDUSTRIAL
+              {/* Código de barras 1D linear simulado */}
+              <div className="sticker-barcode-row" aria-hidden="true">
+                <div className="barcode-bars" />
+                <span className="barcode-number">*{loteGerado}*</span>
+              </div>
+
+              <div className="sticker-footer-note">
+                ETIQUETA TÉRMICA PADRÃO ABNT/FEFO • PROIBIDO DESCARTE EM ESGOTO INDUSTRIAL
               </div>
             </div>
 

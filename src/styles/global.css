@@ -2,23 +2,26 @@
 @import './design-system.css';
 @import './styles.css';
 
-/* Reset e Configurações Globais do App React (Tablet Industrial) */
+/* Reset e Configurações Globais do App React (Tablet Industrial Responsivo) */
 html, body {
   margin: 0;
   padding: 0;
   width: 100%;
+  min-height: 100dvh;
   height: 100%;
   background-color: var(--bg);
   color: var(--text);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   user-select: none;
 }
 
 #root {
   width: 100%;
+  min-height: 100dvh;
   height: 100%;
   display: flex;
   flex-direction: column;

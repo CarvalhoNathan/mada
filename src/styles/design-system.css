@@ -338,7 +338,7 @@
 }
 
 .ds-keypad-btn {
-  height: 88px; /* 88px a 90px para uso facilitado com luvas */
+  height: clamp(68px, 9.5vh, 88px); /* >= 68px para uso facilitado com luvas e adaptável ao viewport */
   background-color: var(--bg);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-card);
@@ -1038,19 +1038,20 @@
 }
 
 /* ==========================================================================
-   12. APP SHELL (TABLET 1280X800 SEM ROLAGEM)
+   12. APP SHELL (RESPONSIVO TABLET-FIRST: IPAD MINI, IPAD PRO, 1280X800)
    ========================================================================== */
 .ds-app-shell {
   width: 100%;
-  max-width: 1280px;
-  height: 800px; /* Alvo tablet exato */
+  min-height: 100dvh;
+  height: 100dvh;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   background-color: var(--bg);
   color: var(--text);
-  overflow: hidden;
-  border: 1px solid var(--border);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: none;
 }
 
 .ds-shell-header {
@@ -1301,8 +1302,10 @@
 /* Conteúdo Central */
 .ds-shell-main {
   flex: 1;
+  min-height: 0;
   padding: var(--space-24);
-  overflow: hidden; /* SEM ROLAGEM */
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
