@@ -54,3 +54,31 @@ Durante a primeira apresentação de validação do Canvas e do escopo, foram ap
 - **Sem Amarras de Identidade Visual Corporativa:** O gestor concedeu liberdade estética total à equipe, reforçando que a prioridade número 1 é **eficiência operacional e legibilidade no tablet**.
 - **Desafio Multimarca:** Se a marcenaria trocar de fornecedor ou marca de química (ex: Sayerlack por outra marca), a proporção de catalisador/diluidor se altera. O sistema deve suportar múltiplas formulações associadas à marca do insumo.
 - **Infraestrutura:** Não é necessário instalar nada no servidor físico da fábrica; a marcenaria prefere o modelo web para facilitar acesso via rede Wi-Fi dos tablets.
+
+---
+
+## 🪵 3. Ata da Segunda Reunião Técnica & Validação do MVP (28/10/2026 - Fábio)
+
+### Contexto:
+Apresentação do fluxo demonstrável do MVP e alinhamento sobre as dúvidas em aberto da modelagem física e operacional da oficina.
+
+### Principais Definições & Decisões Operacionais:
+
+1. **Unidade de Medida Oficial: Volume em Béquer (ml)**
+   - **Diagnóstico:** A equipe não utiliza balança de pesagem digital no chão de fábrica da cabine de pintura; a medição de bases, catalisadores e diluidores é feita estritamente por **volume em mililitros (ml)** utilizando **béqueres graduados**.
+   - **Decisão:** Remover termos que remetam a balança física e densidade em gramas nos fluxos operacionais, padronizando a unidade canônica como **ml** com instruções diretas para dosagem em béquer.
+
+2. **Ergonomia do Tablet & Câmera Frontal (Selfie) para QR Code:**
+   - **Diagnóstico:** O tablet operacional fica instalado em um **suporte rígido preso à parede** ao lado da bancada de preparação. Por isso, é fisicamente impossível apontar a câmera traseira para a lata ou para a ficha da OS.
+   - **Decisão:** Inverter a câmera padrão do scanner de QR Code para a **câmera frontal (`facingMode: 'user'`)** com espelhamento horizontal no visor de vídeo, permitindo ao operador apresentar o frasco ou a ficha diretamente em frente à tela.
+
+3. **Tempo de Vida Útil da Mistura (*Pot Life* / Catalisação) — 20 Minutos:**
+   - **Diagnóstico:** Uma vez homogeneizada a mistura PU com o catalisador, o produto entra em processo irreversível de cura química. O tempo hábil de aplicação na pistola é de **exatamente 20 minutos**. Após esse período, o produto endurece, perde a viscosidade adequada e **deve ser obrigatoriamente descartado como refugo químico**, sob risco de estragar a peça e a pistola de pintura.
+   - **Decisão:** Implementar timer regressivo visual de 20 minutos (*pot life*) acionado após a conclusão da dosagem, com avisos de urgência e opção de registrar descarte automático caso o tempo expire.
+
+4. **Regras de FEFO & Validade Próxima:**
+   - **Diagnóstico:** O gestor aprovou com entusiasmo a indicação visual de tempo de abertura da lata e reforçou a necessidade de priorizar não apenas latas abertas, mas também lotes com **vencimento próximo**.
+   - **Decisão:** Reforçar a visibilidade dos prazos de validade no Dashboard e na seleção de lotes.
+
+5. **Expansão de Escopo Solicitada pelo Gestor:**
+   - **Gestão de Estoque & Solicitação de Compra:** Necessidade de visualizar níveis de estoque e permitir ao operador/encarregado adicionar itens com estoque crítico diretamente a uma **Lista de Solicitação de Compras**.

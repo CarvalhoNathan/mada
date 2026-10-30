@@ -18,7 +18,7 @@ export interface ModalCriticalExcessProps {
 const REASONS = [
   { id: 'gotejamento', label: 'Gotejamento do bico da lata' },
   { id: 'falha_operador', label: 'Falha manual do operador' },
-  { id: 'descalibracao', label: 'Descalibração da balança' },
+  { id: 'descalibracao', label: 'Erro de graduação no béquer' },
   { id: 'supervisor', label: 'Autorização do supervisor' },
 ];
 
@@ -399,7 +399,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                 borderRadius: '12px',
               }}
             >
-              ↺ Repesar do zero
+              ↺ Redosar do zero
             </Button>
             {onRecalcularReceita && (
               <Button

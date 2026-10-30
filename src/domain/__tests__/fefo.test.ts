@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { ordenarLotesFEFO } from '../fefo';
+import {
+  ordenarLotesFEFO,
+  calcularDiasAteVencimento,
+  formatarStatusValidade,
+} from '../fefo';
 
 describe('Domain: fefo (Ordenação por Validade e Latas Abertas)', () => {
   const lotesExemplo = [
@@ -30,5 +34,25 @@ describe('Domain: fefo (Ordenação por Validade e Latas Abertas)', () => {
     ordenarLotesFEFO(lotesExemplo);
 
     expect(lotesExemplo).toEqual(copia);
+  });
+
+  it('deve calcular dias até o vencimento corretamente', () => {
+    const ref = new Date(2026, 9, 29); // 29/10/2026
+    expect(calcularDiasAteVencimento('2026-11-05', ref)).toBe(7);
+    expect(calcularDiasAteVencimento('2026-10-25', ref)).toBe(-4);
+  });
+
+  it('deve formatar status de validade destacando urgência e tempo aberto', () => {
+    const ref = new Date(2026, 9, 29);
+    const vencido = formatarStatusValidade('2026-10-25', 0, ref);
+    expect(vencido.nivel).toBe('urgente');
+    expect(vencido.rotulo).toContain('Vencido');
+
+    const abertoCritico = formatarStatusValidade('2026-11-05', 3, ref);
+    expect(abertoCritico.nivel).toBe('urgente');
+    expect(abertoCritico.rotulo).toContain('Aberto (3d)');
+
+    const loteNormal = formatarStatusValidade('2027-02-10', 0, ref);
+    expect(loteNormal.nivel).toBe('normal');
   });
 });

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Operator, PieceLot, RecipeState, ScreenId, Lote } from './types';
+import { Operator, PieceLot, RecipeState, ScreenId, Lote, ItemSolicitacaoCompra } from './types';
 import { AppShell } from './components/ui/AppShell';
 import { StatusBanner } from './components/ui/StatusBanner';
 import { Toast } from './components/ui/Toast';
 import { QrScannerModal } from './components/ui/QrScannerModal';
+import { PotLifeTimerBanner, PotLifeState } from './components/ui/PotLifeTimerBanner';
 
 import { ScreenAuth } from './screens/ScreenAuth';
 import { ScreenDashboard } from './screens/ScreenDashboard';
@@ -11,6 +12,7 @@ import { ScreenOS } from './screens/ScreenOS';
 import { ScreenRecipe } from './screens/ScreenRecipe';
 import { ScreenDosing } from './screens/ScreenDosing';
 import { ScreenReturn } from './screens/ScreenReturn';
+import { ScreenInventory } from './screens/ScreenInventory';
 
 import { ModalUseFirst } from './screens/ModalUseFirst';
 import { ModalCancelPrep } from './screens/ModalCancelPrep';
@@ -83,7 +85,91 @@ export const App: React.FC = () => {
   const [isUseFirstModalOpen, setIsUseFirstModalOpen] = useState(false);
   const [isCancelPrepModalOpen, setIsCancelPrepModalOpen] = useState(false);
 
-  // Monitoramento de Rede Real via Hook
+  // Controle de Pot Life (Vida Útil da Mistura Catalisada - 20 minutos)
+  const [potLife, setPotLife] = useState<PotLifeState | null>(() => {
+    try {
+      const saved = localStorage.getItem('mada_active_pot_life');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Se ainda não expirou há mais de 1 hora, mantém o timer visível
+        if (Date.now() - parsed.startTime < 3600 * 1000) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Ignora erro de parsing
+    }
+    return null;
+  });
+
+  const handleFinishApplication = () => {
+    setPotLife(null);
+    localStorage.removeItem('mada_active_pot_life');
+    showToast('✓ Aplicação do acabamento finalizada com sucesso dentro do prazo!', 'success');
+  };
+
+  const handleDiscardHardened = async () => {
+    if (potLife) {
+      await movimentacaoRepository.registrar({
+        tipo: 'DESCARTE',
+        loteId: 1,
+        operadorId: selectedOperator.id,
+        quantidade: potLife.volumeTotal,
+        justificativa: `Descarte obrigatório por cura/endurecimento (>20 min pot life esgotado)`,
+        registradaEm: new Date().toISOString(),
+      });
+      setPotLife(null);
+      localStorage.removeItem('mada_active_pot_life');
+      showToast(`Refugo químico de ${potLife.volumeTotal}ml registrado no tambor de descarte.`, 'warn');
+    }
+  };
+
+  // Solicitações de Compras (Gestão de Insumos da Cabine)
+  const [solicitacoesCompras, setSolicitacoesCompras] = useState<ItemSolicitacaoCompra[]>(() => {
+    try {
+      const saved = localStorage.getItem('mada_solicitacoes_compras');
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // Ignora erro
+    }
+    return [
+      {
+        id: 'sc-1',
+        produtoId: 2,
+        produtoNome: '2º Catalisador PU Médio',
+        codigoProduto: '#SY-7410',
+        quantidadeSugerida: '2 galões de 3,6L',
+        motivo: 'estoque_critico',
+        urgencia: 'alta',
+        solicitadoEm: new Date().toISOString(),
+        solicitadoPor: 'Carlos Silva',
+      },
+    ];
+  });
+
+  const handleAdicionarSolicitacao = (
+    item: Omit<ItemSolicitacaoCompra, 'id' | 'solicitadoEm'>
+  ) => {
+    const nova: ItemSolicitacaoCompra = {
+      ...item,
+      id: `sc-${Date.now()}`,
+      solicitadoEm: new Date().toISOString(),
+    };
+    setSolicitacoesCompras((prev) => {
+      const atualizada = [nova, ...prev];
+      localStorage.setItem('mada_solicitacoes_compras', JSON.stringify(atualizada));
+      return atualizada;
+    });
+  };
+
+  const handleRemoverSolicitacao = (id: string) => {
+    setSolicitacoesCompras((prev) => {
+      const filtrada = prev.filter((s) => s.id !== id);
+      localStorage.setItem('mada_solicitacoes_compras', JSON.stringify(filtrada));
+      return filtrada;
+    });
+    showToast('Item removido da lista de compras.', 'info');
+  };
   const { isOnline, isServerLocal, isOffline } = useConnectionStatus();
 
   // Toast
@@ -96,7 +182,7 @@ export const App: React.FC = () => {
   const showToast = useCallback((message: string, type: 'info' | 'success' | 'warn' | 'danger' = 'info') => {
     const mappedType: 'info' | 'ok' | 'warn' | 'danger' = type === 'success' ? 'ok' : type;
     setToast({ message, type: mappedType, key: Date.now() });
-  }, []);
+  }, [setToast]);
 
   // Ações de Receita
   const handleSetTotalVolume = (vol: number) => {
@@ -175,7 +261,18 @@ export const App: React.FC = () => {
     const lotesAtualizados = await loteRepository.listar();
     setLotes(lotesAtualizados);
 
-    showToast('✓ Dosagem concluída e baixa por componente registrada com sucesso!', 'success');
+    // Inicia o cronômetro estrito de 20 minutos (Pot Life)
+    const newPotLife: PotLifeState = {
+      startTime: Date.now(),
+      durationSeconds: 20 * 60, // 20 minutos
+      recipeName: receita.nome,
+      osNumber: osAtiva.numero,
+      volumeTotal: recipe.totalVolume,
+    };
+    setPotLife(newPotLife);
+    localStorage.setItem('mada_active_pot_life', JSON.stringify(newPotLife));
+
+    showToast('✓ Dosagem concluída! Cronômetro de 20 min (Pot Life) iniciado.', 'success');
     setCurrentScreen('return');
   };
 
@@ -214,9 +311,18 @@ export const App: React.FC = () => {
           <StatusBanner
             variant="danger"
             title="SISTEMA OFFLINE"
-            description="Sem comunicação com o sistema. Salvamento de dados e pesagens bloqueados para evitar divergência de estoque."
+            description="Sem comunicação com o sistema. Salvamento de dados e dosagens bloqueados para evitar divergência de estoque."
           />
         </div>
+      )}
+
+      {/* Banner de Cronômetro de Vida Útil da Mistura (Pot Life - 20 min) */}
+      {currentScreen !== 'auth' && potLife && (
+        <PotLifeTimerBanner
+          potLife={potLife}
+          onFinishApplication={handleFinishApplication}
+          onDiscardHardened={handleDiscardHardened}
+        />
       )}
 
       {/* Roteamento de Telas */}
@@ -342,6 +448,18 @@ export const App: React.FC = () => {
               registradaEm: new Date().toISOString(),
             });
           }}
+        />
+      )}
+
+      {currentScreen === 'inventory' && (
+        <ScreenInventory
+          lotes={lotes}
+          operator={selectedOperator}
+          onNavigate={(screen) => setCurrentScreen(screen)}
+          showToast={showToast}
+          solicitacoes={solicitacoesCompras}
+          onAdicionarSolicitacao={handleAdicionarSolicitacao}
+          onRemoverSolicitacao={handleRemoverSolicitacao}
         />
       )}
 

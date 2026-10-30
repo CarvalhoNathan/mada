@@ -25,8 +25,8 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   isOpen,
   onClose,
   onScanSuccess,
-  title = 'Escanear QR Code',
-  description = 'Aponte a câmera do tablet para a ficha da OS ou etiqueta da lata.',
+  title = 'Apresente o QR Code',
+  description = 'Apresente a etiqueta ou O.S. em frente à câmera frontal do tablet (suporte na parede).',
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -35,6 +35,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   const [hasTorch, setHasTorch] = useState<boolean>(false);
   const [torchOn, setTorchOn] = useState<boolean>(false);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
+  const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user');
 
   // Fecha e limpa o stream de vídeo
   const stopCamera = useCallback(() => {
@@ -80,15 +81,15 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
 
       let stream: MediaStream | null = null;
 
-      // 1ª Tentativa: Câmera traseira do tablet / bancada
+      // 1ª Tentativa: Câmera frontal (selfie) por padrão devido ao tablet preso na parede
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: { ideal: 'environment' },
+            facingMode: { ideal: cameraFacing },
           },
         });
       } catch (err1) {
-        console.warn('Tentativa 1 com environment falhou, tentando fallback simples...', err1);
+        console.warn(`Tentativa com ${cameraFacing} falhou, tentando fallback universal...`, err1);
         // 2ª Tentativa: Fallback universal para qualquer câmera (USB, integrada, virtual)
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
       }
@@ -153,9 +154,9 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
     } finally {
       setIsRetrying(false);
     }
-  }, [handleDetected]);
+  }, [handleDetected, cameraFacing]);
 
-  // Garante que o stream seja montado ao abrir
+  // Garante que o stream seja montado ao abrir ou alternar câmera
   useEffect(() => {
     if (!isOpen) return;
 
@@ -167,7 +168,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
       clearTimeout(timer);
       stopCamera();
     };
-  }, [isOpen, startCamera, stopCamera]);
+  }, [isOpen, cameraFacing, startCamera, stopCamera]);
 
   // Sincroniza srcObject caso o elemento de vídeo seja atualizado
   useEffect(() => {
@@ -297,6 +298,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                 height: '100%',
                 objectFit: 'cover',
                 display: cameraActive ? 'block' : 'none',
+                transform: cameraFacing === 'user' ? 'scaleX(-1)' : 'none',
               }}
             />
 
@@ -372,29 +374,57 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               </div>
             )}
 
-            {/* Controle de Lanterna */}
-            {hasTorch && cameraActive && (
+            {/* Controle de Lanterna e Alternância Frontal/Traseira */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '12px',
+                right: '12px',
+                display: 'flex',
+                gap: '8px',
+                zIndex: 3,
+              }}
+            >
               <button
                 type="button"
-                onClick={toggleTorch}
+                onClick={() => setCameraFacing((prev) => (prev === 'user' ? 'environment' : 'user'))}
+                title="Alternar entre câmera frontal (tablet na parede) e traseira"
                 style={{
-                  position: 'absolute',
-                  bottom: '12px',
-                  right: '12px',
-                  background: torchOn ? '#f59e0b' : 'rgba(0,0,0,0.6)',
-                  color: torchOn ? '#000' : '#fff',
-                  border: 'none',
+                  background: 'rgba(0,0,0,0.7)',
+                  color: '#60a5fa',
+                  border: '1px solid rgba(96, 165, 250, 0.4)',
                   borderRadius: '20px',
-                  padding: '6px 14px',
-                  fontSize: '13px',
+                  padding: '6px 12px',
+                  fontSize: '12px',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  zIndex: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
                 }}
               >
-                🔦 {torchOn ? 'Lanterna Ligada' : 'Ligar Lanterna'}
+                🔄 {cameraFacing === 'user' ? 'Frontal (Parede)' : 'Traseira'}
               </button>
-            )}
+
+              {hasTorch && cameraActive && cameraFacing === 'environment' && (
+                <button
+                  type="button"
+                  onClick={toggleTorch}
+                  style={{
+                    background: torchOn ? '#f59e0b' : 'rgba(0,0,0,0.7)',
+                    color: torchOn ? '#000' : '#fff',
+                    border: 'none',
+                    borderRadius: '20px',
+                    padding: '6px 14px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  🔦 {torchOn ? 'Ligada' : 'Lanterna'}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Atalhos Rápidos de Simulação */}

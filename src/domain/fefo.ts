@@ -38,3 +38,69 @@ export function ordenarLotesFEFO<T extends ItemComValidade>(lotes: T[]): T[] {
     return 0;
   });
 }
+
+/**
+ * Calcula a quantidade de dias restantes até o vencimento.
+ * Retorna número negativo se já estiver vencido.
+ */
+export function calcularDiasAteVencimento(validade: string, dataReferencia: Date = new Date()): number {
+  if (!validade) return 999;
+  const parts = validade.split('-').map(Number);
+  if (parts.length !== 3) return 999;
+  const [ano, mes, dia] = parts;
+  const dataVal = new Date(ano, mes - 1, dia);
+  // Zera horas para comparação puramente por dias
+  const dataRef = new Date(dataReferencia.getFullYear(), dataReferencia.getMonth(), dataReferencia.getDate());
+  const diffMs = dataVal.getTime() - dataRef.getTime();
+  return Math.round(diffMs / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Formata um badge amigável de status de validade e tempo aberto
+ */
+export function formatarStatusValidade(validade: string, diasAberto = 0, dataRef = new Date()): {
+  rotulo: string;
+  nivel: 'urgente' | 'alerta' | 'normal';
+} {
+  const diasRestantes = calcularDiasAteVencimento(validade, dataRef);
+
+  if (diasRestantes < 0) {
+    return {
+      rotulo: `🚨 Vencido há ${Math.abs(diasRestantes)} dias`,
+      nivel: 'urgente',
+    };
+  }
+
+  if (diasAberto > 0 && diasRestantes <= 15) {
+    return {
+      rotulo: `🚨 Aberto (${diasAberto}d) e vence em ${diasRestantes}d`,
+      nivel: 'urgente',
+    };
+  }
+
+  if (diasAberto > 0) {
+    return {
+      rotulo: `⚡ Aberto há ${diasAberto} dias (prioridade)`,
+      nivel: 'alerta',
+    };
+  }
+
+  if (diasRestantes <= 15) {
+    return {
+      rotulo: `⚠️ Validade crítica (${diasRestantes} dias)`,
+      nivel: 'urgente',
+    };
+  }
+
+  if (diasRestantes <= 30) {
+    return {
+      rotulo: `⚠️ Vence em ${diasRestantes} dias`,
+      nivel: 'alerta',
+    };
+  }
+
+  return {
+    rotulo: `📅 Validade: ${validade.split('-').reverse().join('/')} (${diasRestantes}d)`,
+    nivel: 'normal',
+  };
+}

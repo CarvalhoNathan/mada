@@ -1,11 +1,11 @@
 import React from 'react';
-import { Operator, Lote } from '../types';
+import { Operator, Lote, ScreenId } from '../types';
 import { MOCK_LOTES } from '../data';
 import { ordenarLotesFEFO } from '../domain/fefo';
 
 interface ScreenDashboardProps {
   operator: Operator;
-  onNavigate: (screen: 'auth' | 'os' | 'recipe' | 'return') => void;
+  onNavigate: (screen: ScreenId) => void;
   onOpenUseFirstModal: () => void;
   onSimulateQR: () => void;
   lotes?: Lote[];
@@ -32,9 +32,40 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
 
   return (
     <div className="boardui-dash-container">
-      {/* 1. Título Humanizado e Direto */}
-      <div className="boardui-dash-header">
-        <h2 className="boardui-dash-title">O que vamos fazer, {firstName}?</h2>
+      {/* 1. Título Humanizado e Direto + Acesso a Estoque & Compras */}
+      <div
+        className="boardui-dash-header"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}
+      >
+        <h2 className="boardui-dash-title" style={{ margin: 0 }}>
+          O que vamos fazer, {firstName}?
+        </h2>
+        <button
+          type="button"
+          onClick={() => onNavigate('inventory')}
+          style={{
+            background: 'var(--card-hover)',
+            border: '1px solid var(--border)',
+            borderRadius: '12px',
+            padding: '10px 18px',
+            color: 'var(--text)',
+            fontSize: '14px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          📦 Estoque & Lista de Compras
+        </button>
       </div>
 
       {/* 2. Banner de Alerta FEFO "Use Primeiro" (Estilo BoardUI Amber Glass) */}

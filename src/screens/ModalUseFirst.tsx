@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '../components/ui/Button';
 import { Lote } from '../types';
 import { MOCK_LOTES } from '../data/mock/mockData';
-import { ordenarLotesFEFO } from '../domain/fefo';
+import { ordenarLotesFEFO, formatarStatusValidade } from '../domain/fefo';
 
 interface ModalUseFirstProps {
   isOpen: boolean;
@@ -50,58 +50,74 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
 
         <div className="ds-modal-body" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {lotesPrioritarios.map((lote) => (
-              <div
-                key={lote.codigo}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '14px 18px',
-                  borderRadius: '10px',
-                  background: 'var(--card)',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                    <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text)' }}>
-                      {lote.produtoNome}
-                    </span>
-                    <span
-                      style={{
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        background: 'var(--warn-soft)',
-                        color: 'var(--warn)',
-                        border: '1px solid var(--warn)',
-                      }}
-                    >
-                      {lote.codigo}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '14px', color: 'var(--text-muted)', display: 'flex', gap: '14px' }}>
-                    <span>📍 {lote.prateleira}</span>
-                    <span>⏳ Aberto há {lote.diasAberto} dias</span>
-                    <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Saldo: {lote.quantidadeAtual} ml restantes</span>
-                  </div>
-                </div>
+            {lotesPrioritarios.map((lote) => {
+              const statusVal = formatarStatusValidade(lote.validade, lote.diasAberto);
 
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={() => {
-                    if (onSelectBatch) onSelectBatch(lote.codigo);
-                    onClose();
+              return (
+                <div
+                  key={lote.codigo}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 18px',
+                    borderRadius: '10px',
+                    background: 'var(--card)',
+                    border: `1px solid ${statusVal.nivel === 'urgente' ? 'var(--danger-border)' : 'var(--border)'}`,
                   }}
-                  style={{ minWidth: '120px' }}
                 >
-                  Usar nesta OS
-                </Button>
-              </div>
-            ))}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                      <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text)' }}>
+                        {lote.produtoNome}
+                      </span>
+                      <span
+                        style={{
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          background: 'var(--warn-soft)',
+                          color: 'var(--warn)',
+                          border: '1px solid var(--warn)',
+                        }}
+                      >
+                        {lote.codigo}
+                      </span>
+                      <span
+                        style={{
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          background: statusVal.nivel === 'urgente' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                          color: statusVal.nivel === 'urgente' ? '#f87171' : '#fbbf24',
+                          border: `1px solid ${statusVal.nivel === 'urgente' ? '#ef4444' : '#f59e0b'}`,
+                        }}
+                      >
+                        {statusVal.rotulo}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', display: 'flex', gap: '14px' }}>
+                      <span>📍 {lote.prateleira}</span>
+                      <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Saldo: {lote.quantidadeAtual} ml restantes</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() => {
+                      if (onSelectBatch) onSelectBatch(lote.codigo);
+                      onClose();
+                    }}
+                    style={{ minWidth: '120px' }}
+                  >
+                    Usar este lote
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </div>
 

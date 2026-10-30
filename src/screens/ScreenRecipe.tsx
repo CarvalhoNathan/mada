@@ -72,7 +72,7 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
         <span className="os-step-separator" aria-hidden="true">→</span>
         <div className="os-step-pill pending">
           <span className="os-step-badge">3</span>
-          <span className="os-step-text">Pesagem na Balança</span>
+          <span className="os-step-text">Dosagem em Béquer</span>
         </div>
       </nav>
 
@@ -228,7 +228,7 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
             className="os-bar-btn os-btn-continue"
             onClick={onConfirmWeighing}
           >
-            <span>Iniciar pesagem na balança</span>
+            <span>Iniciar dosagem no béquer</span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="5" y1="12" x2="19" y2="12" />
               <polyline points="12 5 19 12 12 19" />

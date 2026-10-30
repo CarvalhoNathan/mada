@@ -130,7 +130,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
   const handleAttemptFinish = () => {
     if (!allDosed) {
-      showToast('Preencha a pesagem de todos os 4 componentes antes de concluir.', 'warn');
+      showToast('Preencha a dosagem de todos os 4 componentes antes de concluir.', 'warn');
       return;
     }
 
@@ -161,7 +161,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
   const handleRepesarDoZero = () => {
     if (criticalItem) {
       setDosingValues((prev) => ({ ...prev, [criticalItem.item.item.id]: 0 }));
-      showToast(`Valor de ${criticalItem.item.item.produtoNome} zerado para repesagem.`, 'info');
+      showToast(`Valor de ${criticalItem.item.item.produtoNome} zerado para redosagem.`, 'info');
       setCriticalItem(null);
     }
   };
@@ -233,7 +233,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
           <div className="dosing-step-pill active">
             <span className="dosing-step-dot" aria-hidden="true" />
-            <span>3. Pesagem na Balança</span>
+            <span>3. Dosagem em Béquer (ml)</span>
           </div>
 
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -243,11 +243,11 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
           </div>
         </nav>
 
-        {/* 2. Cabeçalho Operacional e Contexto da Balança (48px) */}
+        {/* 2. Cabeçalho Operacional e Contexto do Béquer (48px) */}
         <header className="dosing-header-card">
           <div className="dosing-title-group">
             <h2 className="dosing-main-title">
-              Pesagem de Componentes
+              Dosagem de Componentes
             </h2>
             <span className="dosing-recipe-pill">
               {receita.nome} • {receita.codigoFormula} • {marca.nome}
@@ -257,7 +257,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
           <div className="dosing-header-right">
             <div className="dosing-scale-indicator">
               <span className="dosing-scale-dot" aria-hidden="true" />
-              <span>Balança Toledo: Conectada</span>
+              <span>Medição: Béquer Graduado (ml)</span>
             </div>
 
             <div className="dosing-total-target-pill">
@@ -439,8 +439,8 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                       : isExactOrWithin
                       ? `✓ ${val === meta ? 'Meta exata atingida' : `Dentro da tolerância (+${diff} ml)`}`
                       : isUnder
-                      ? `Em pesagem (faltam ${meta - val} ml)`
-                      : 'Aguardando pesagem na balança...'}
+                      ? `Em dosagem no béquer (faltam ${meta - val} ml)`
+                      : 'Aguardando dosagem no béquer...'}
                   </span>
                   <span>Tolerância máx: {toleranceMax} ml</span>
                 </div>

@@ -171,7 +171,7 @@ mada/
 
 O projeto conta com ferramentas de verificação estática, formatação e testes automatizados:
 
-- **Testes unitários (`npm run test`):** Executados via Vitest, com 23 testes unitários em 5 arquivos de teste, cobrindo os cálculos e regras de negócio da camada `src/domain/` (`mixture.test.ts`, `tolerance.test.ts`, `fefo.test.ts` e `leftover.test.ts`) e a integridade da camada de repositórios em `src/data/` (`repositories.test.ts`).
+- **Testes unitários (`npm run test`):** Executados via Vitest, com 25 testes unitários em 5 arquivos de teste, cobrindo os cálculos e regras de negócio da camada `src/domain/` (`mixture.test.ts`, `tolerance.test.ts`, `fefo.test.ts` e `leftover.test.ts`) e a integridade da camada de repositórios em `src/data/` (`repositories.test.ts`).
 - **Análise estática (`npm run lint`):** Executa a verificação e padronização de código com ESLint 10 (Flat Config).
 - **Checagem de tipos (`npm run typecheck`):** Validação estrita de tipagem TypeScript via `tsc --noEmit`.
 - **Empacotamento (`npm run build`):** Compilação do bundle de produção com Vite 8.
@@ -193,12 +193,14 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 - [x] Dashboard (Dashboard operacional com alerta de validade FEFO)
 - [x] Vincular OS (Vinculação de cliente, projeto e ambiente por Ordem de Serviço)
 - [x] Receita (Receita com calculadora dinâmica de proporções)
-- [x] Dosagem (Dosagem em grade 2x2 com NumberStepper, teclado numérico e verificação de tolerância)
+- [x] Dosagem (Dosagem em béquer graduado em ml, grade 2x2 com NumberStepper, teclado numérico e verificação de tolerância)
 - [x] Alerta de excesso (Modal crítico com valores reais, cálculo de custo e bloqueio)
 - [x] Devolução (Devolução de sobras com cálculo de saldo e emissão de etiqueta QR)
-- [x] Leitura de QR Code pela câmera do tablet (com atalhos de simulação para teste sem câmera)
+- [x] Leitura de QR Code pela câmera frontal do tablet na parede (com espelhamento e atalhos rápidos)
+- [x] Tempo de vida útil da mistura (*pot life* de 20 minutos com cronômetro visual e autodescarte de refugo)
+- [x] Gestão de estoque e Lista de Solicitação de Compras de insumos químicos
 - [x] Camada de repositórios com alternância de fonte de dados (`VITE_DATA_SOURCE=mock`)
-- [x] Persistência local das movimentações (`localStorage`)
+- [x] Persistência local das movimentações e pot life (`localStorage`)
 - [x] Testes unitários para a camada de domínio matemático (`src/domain/`) e repositórios (`src/data/`)
 
 **Próximos passos**
@@ -206,12 +208,11 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 - [ ] Painel do gestor (planejado; existem apenas os componentes KpiCard e DataTable)
 - [ ] Leitura de QR Code no Safari/iPadOS (fallback para navegadores sem `BarcodeDetector`)
 - [ ] Integração com o Supabase da empresa
-- [ ] Recebimento de lotes e validades no estoque
+- [ ] Recebimento formal de NF e novos lotes no estoque
 - [ ] Cadastro/importação de ordens de serviço
 - [ ] Perfis de acesso e trilha de auditoria
 - [ ] Relatórios exportáveis (CSV/PDF)
-- [ ] Operação offline com sincronização
-- [ ] Tempo de vida útil da mistura (_pot life_)
+- [ ] Operação offline com sincronização em lote
 
 ## 📚 Documentação
 

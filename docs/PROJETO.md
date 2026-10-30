@@ -250,16 +250,17 @@ Legenda: `[x]` = implementado no MVP (com dados simulados); `[~]` = parcial ou s
 - **RNF06 - Segurança e Privacidade:** PIN armazenado com hash, bloqueio após tentativas incorretas, comunicação por HTTPS, regras de segurança por linha (RLS) e consentimento para o uso de fotos dos operadores (LGPD).
 - **RNF07 - Integração Segura:** Acesso aos dados da empresa em modo somente leitura, com novas entidades em schema separado.
 
-### 6.1 Regras de Negócio em Validação
+### 6.1 Regras de Negócio Validadas (Reunião 28/10)
 
-Pontos que dependem de confirmação com a empresa e os pintores. A definição afeta o modelo de dados e as telas.
+Definições consolidadas com o gestor Fábio em 28/10/2026:
 
-| Tema              | Pergunta                                                                                                                                                                               | Status   |
-| :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------- |
-| Sobra de mistura  | A mistura já catalisada pode voltar ao estoque, ou só o produto puro da lata aberta? A sobra de mistura deve ser reutilizada em outra peça dentro do tempo de vida útil ou descartada? | Pendente |
-| Unidade de medida | A pesagem é feita por peso (g) ou por volume (ml)? Se for por peso, qual a densidade de cada produto?                                                                                  | Pendente |
-| Receitas          | Quantos componentes cada tipo de receita possui (acabamentos, fundos, seladores)?                                                                                                      | Pendente |
-| Dados de lote     | Onde e como são registrados hoje o lote e a validade dos produtos? Quem cadastra as OS?                                                                                                | Pendente |
+| Tema | Pergunta & Resolução | Status |
+| :--- | :--- | :--- |
+| **Sobra de mistura (*Pot Life*)** | A mistura catalisada tem vida útil estrita de **20 minutos**. Após esse prazo, o produto endurece e deve ser **obrigatoriamente descartado**. Apenas o produto puro remanescente na lata aberta retorna ao estoque como sobra. | **Definido** |
+| **Unidade de medida** | A dosagem é realizada por **volume em mililitros (ml) com béquer graduado**, e não por balança de pesagem física. | **Definido** |
+| **Ergonomia do Tablet** | O tablet fica fixado à parede da cabine; o leitor de QR Code deve operar obrigatoriamente pela **câmera frontal**. | **Definido** |
+| **Receitas & Componentes** | Padrão quádruplo Sayerlack (Base, Catalisador, Diluidor, Retardador), com suporte a receitas simplificadas (2 componentes). | **Definido** |
+| **Dados de lote e compras** | Necessidade de controle de validade próxima e lista de solicitação de compras para insumos abaixo do nível mínimo. | **Em implantação** |
 
 ---
 

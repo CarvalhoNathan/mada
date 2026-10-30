@@ -132,7 +132,19 @@ export interface Movimentacao {
 // Tipos de Interface de Usuário e Compatibilidade
 // ============================================================================
 
-export type ScreenId = 'auth' | 'dashboard' | 'os' | 'recipe' | 'dosing' | 'return';
+export type ScreenId = 'auth' | 'dashboard' | 'os' | 'recipe' | 'dosing' | 'return' | 'inventory';
+
+export interface ItemSolicitacaoCompra {
+  id: string;
+  produtoId: number;
+  produtoNome: string;
+  codigoProduto: string;
+  quantidadeSugerida: string;
+  motivo: 'estoque_critico' | 'validade_vencida' | 'demanda_os';
+  urgencia: 'alta' | 'media';
+  solicitadoEm: string;
+  solicitadoPor: string;
+}
 
 // Aliases para compatibilidade com os componentes existentes
 export type Operator = Operador;

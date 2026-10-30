@@ -61,7 +61,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
         <span className="os-step-separator" aria-hidden="true">→</span>
         <div className="os-step-pill pending">
           <span className="os-step-badge">3</span>
-          <span className="os-step-text">Pesagem na Balança</span>
+          <span className="os-step-text">Dosagem em Béquer</span>
         </div>
       </nav>
 
@@ -213,7 +213,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
-              <span>Vinculado à balança da cabine na etapa de pesagem.</span>
+              <span>Vinculado à bancada de dosagem e preparação química.</span>
             </div>
           </div>
         </div>
