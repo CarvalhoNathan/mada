@@ -376,16 +376,94 @@ body {
    TELA 1: Identificação & PIN (Login do Operador Minimalista Apple HIG)
    Resolução fixa 1280x800 sem rolagem. Zero ruído cognitivo.
    ========================================================================== */
+.auth-screen-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--bg);
+  overflow: hidden;
+}
+
+.auth-station-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px;
+  min-height: 68px;
+  background-color: var(--card);
+  border-bottom: 1.5px solid var(--border);
+  flex-shrink: 0;
+}
+
+.auth-station-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.auth-station-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.auth-station-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.auth-station-subtitle {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.auth-station-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  border: 1.5px solid var(--border);
+  background-color: var(--bg);
+}
+
+.auth-status-pill.is-online {
+  color: var(--ok);
+  border-color: var(--ok-border);
+  background-color: var(--ok-soft);
+}
+
+.auth-status-pill.is-offline {
+  color: var(--danger);
+  border-color: var(--danger-border);
+  background-color: var(--danger-soft);
+}
+
 .auth-layout-minimal {
   display: grid;
-  grid-template-columns: 420px 420px;
-  gap: 64px;
-  align-items: start; /* Nivelamento perfeito do topo */
+  grid-template-columns: 460px 430px;
+  gap: 56px;
+  align-items: center;
   justify-content: center;
-  align-content: center; /* Centraliza o bloco na altura disponível */
-  height: 100%;
+  align-content: center;
+  flex: 1;
+  width: 100%;
   max-width: 1180px;
   margin: 0 auto;
+  padding: 16px 32px;
   box-sizing: border-box;
 }
 
@@ -397,64 +475,81 @@ body {
   width: 100%;
 }
 
+.auth-column-header {
+  margin-bottom: 20px;
+}
+
 .auth-title-minimal {
-  font-size: 32px;
-  font-weight: 600;
-  color: var(--text); /* #F5F7FA */
-  margin: 0 0 20px 0; /* Nivelado no topo */
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 6px 0;
   letter-spacing: -0.02em;
   line-height: 1.15;
+}
+
+.auth-subtitle-minimal {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
 }
 
 .auth-operators-vertical {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--touch-gap);
   width: 100%;
 }
 
 .operator-card-apple {
   display: flex;
   align-items: center;
-  gap: 20px;
-  min-height: 92px; /* py-5 / h-[92px] ergonômico para luvas */
-  padding: 20px 24px; /* py-5 generoso */
+  gap: 18px;
+  min-height: 92px;
+  padding: 18px 22px;
   width: 100%;
-  background-color: var(--card); /* #1B232C */
-  border: 1.5px solid var(--border); /* #2C3947 */
-  border-radius: var(--radius-card); /* 16px */
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: transform var(--transition-press), background-color var(--transition-normal), border-color var(--transition-normal);
   user-select: none;
   outline: none;
   box-sizing: border-box;
+  text-align: left;
+  font-family: inherit;
 }
 
 .operator-card-apple:hover {
   background-color: var(--card-hover);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.operator-card-apple:focus-visible {
+  box-shadow: var(--focus-ring);
 }
 
 .operator-card-apple:active {
-  transform: scale(0.985);
+  transform: scale(0.98);
   filter: brightness(0.92);
 }
 
 .operator-card-apple.is-active {
-  border: 2px solid var(--primary); /* #2563EB */
-  background-color: rgba(37, 99, 235, 0.12); /* Preenchimento suave */
+  border: 2px solid var(--primary);
+  background-color: var(--primary-soft);
 }
 
 .operator-avatar-circle {
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  background-color: #243040;
-  color: var(--text); /* #F5F7FA */
+  background-color: var(--card-hover);
+  color: var(--text);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   flex-shrink: 0;
   border: 1.5px solid var(--border);
@@ -463,9 +558,9 @@ body {
 
 .operator-card-apple.is-active .operator-avatar-circle {
   background-color: var(--primary);
-  color: #ffffff;
+  color: var(--text);
   border-color: var(--primary);
-  box-shadow: 0 0 14px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 0 14px rgba(43, 127, 255, 0.35);
 }
 
 .operator-info-apple {
@@ -473,12 +568,13 @@ body {
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+  flex: 1;
 }
 
 .operator-name-apple {
   font-size: 22px;
-  font-weight: 600;
-  color: var(--text); /* #F5F7FA */
+  font-weight: 700;
+  color: var(--text);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -486,41 +582,69 @@ body {
 }
 
 .operator-role-apple {
-  font-size: 16px;
-  font-weight: 400;
-  color: var(--text-muted); /* #AAB4BF */
-  line-height: 1.2;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.operator-select-indicator {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background-color: var(--bg);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.operator-select-indicator.is-selected {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--text);
+}
+
 .auth-help-link-subtle {
-  margin-top: 24px;
+  margin-top: 16px;
   align-self: flex-start;
-  background: none;
-  border: none;
-  padding: 10px 14px;
-  margin-left: -14px;
-  border-radius: var(--radius-sm);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-muted); /* #AAB4BF */
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--touch-min);
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  padding: 0 20px;
+  border-radius: var(--radius-button);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-muted);
   cursor: pointer;
-  text-decoration: none; /* Sem sublinhado fixo */
+  text-decoration: none;
   transition: all 0.15s ease;
   user-select: none;
+  font-family: inherit;
 }
 
 .auth-help-link-subtle:hover {
   color: var(--text);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--card-hover);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.auth-help-link-subtle:focus-visible {
+  box-shadow: var(--focus-ring);
 }
 
 .auth-help-link-subtle:active {
   color: var(--text);
-  background-color: rgba(255, 255, 255, 0.08);
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 /* Coluna da Direita: Card Envolvente do PIN */
@@ -533,29 +657,53 @@ body {
 
 .auth-pin-card-apple {
   width: 100%;
-  background-color: var(--card); /* #1B232C */
-  border: 1.5px solid var(--border); /* #2C3947 */
-  border-radius: 16px;
-  padding: 24px 28px;
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 22px 28px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-subtle);
 }
 
 .auth-pin-card-header {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   text-align: center;
 }
 
-.auth-pin-title {
-  font-size: 20px;
+.auth-pin-operator-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background-color: var(--primary-soft);
+  border: 1px solid var(--primary-border);
+  color: var(--primary);
+  font-size: var(--fs-small);
   font-weight: 600;
-  color: var(--text); /* #F5F7FA */
+  margin-bottom: 4px;
+}
+
+.auth-pin-title {
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--text);
   margin: 0;
   line-height: 1.2;
+}
+
+.auth-pin-hint {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  margin: 0;
 }
 
 /* Teclado Numérico de 90px / Táteis */
@@ -3636,7 +3784,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #0c0d10;
+  background-color: var(--bg);
   padding: 24px 32px;
   box-sizing: border-box;
 }
@@ -3656,38 +3804,116 @@ body {
 }
 
 .boardui-dash-header {
-  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--touch-gap);
+  margin-bottom: 18px;
+}
+
+.boardui-dash-greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .boardui-dash-title {
-  font-size: 30px;
+  font-size: var(--fs-h1);
   font-weight: 700;
-  color: #ededed;
+  color: var(--text);
   letter-spacing: -0.025em;
   line-height: 1.15;
   margin: 0;
 }
 
+.boardui-dash-subtitle {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.boardui-dash-quick-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--touch-gap);
+  flex-wrap: wrap;
+}
+
+.boardui-nav-action-btn {
+  min-height: var(--touch-min);
+  padding: 0 22px;
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-button);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform var(--transition-press), background-color var(--transition-normal), border-color var(--transition-normal);
+  user-select: none;
+}
+
+.boardui-nav-action-btn svg {
+  color: var(--primary);
+}
+
+.boardui-nav-action-btn:hover {
+  background-color: var(--card-hover);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.boardui-nav-action-btn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.boardui-nav-action-btn:active {
+  transform: scale(0.97);
+}
+
+.boardui-nav-action-btn.is-manager {
+  background-color: var(--primary-soft);
+  border-color: var(--primary-border);
+  color: var(--text);
+}
+
+.boardui-nav-action-btn.is-manager:hover {
+  border-color: var(--primary);
+}
+
 /* 3. Banner de Alerta FEFO (Amber Glass BoardUI) */
 .boardui-fefo-banner {
-  background-color: rgba(245, 158, 11, 0.05);
-  border: 1px solid rgba(245, 158, 11, 0.28);
-  border-radius: 16px;
-  padding: 12px 20px;
+  width: 100%;
+  min-height: 76px;
+  background-color: var(--warn-soft);
+  border: 1.5px solid var(--warn-border);
+  border-radius: var(--radius-card);
+  padding: 14px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   box-sizing: border-box;
   margin-bottom: 22px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: transform var(--transition-press), background-color var(--transition-normal), border-color var(--transition-normal);
   user-select: none;
   flex-shrink: 0;
+  text-align: left;
+  font-family: inherit;
 }
 
 .boardui-fefo-banner:hover {
-  background-color: rgba(245, 158, 11, 0.09);
-  border-color: rgba(245, 158, 11, 0.45);
+  border-color: var(--warn);
+}
+
+.boardui-fefo-banner:focus-visible {
+  box-shadow: var(--focus-ring);
 }
 
 .boardui-fefo-banner:active {
@@ -3702,11 +3928,11 @@ body {
 }
 
 .boardui-fefo-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background-color: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-button);
+  background-color: rgba(245, 158, 11, 0.2);
+  color: var(--warn);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3716,14 +3942,14 @@ body {
 .boardui-fefo-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 
 .boardui-fefo-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #ededed;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
   line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
@@ -3731,28 +3957,26 @@ body {
 }
 
 .boardui-fefo-desc {
-  font-size: 13px;
-  color: #a1a1aa;
-  line-height: 1.3;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  line-height: 1.35;
 }
 
 .boardui-fefo-btn {
-  background-color: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  border-radius: 10px;
-  color: #f59e0b;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 8px 16px;
-  cursor: pointer;
+  background-color: rgba(245, 158, 11, 0.16);
+  border: 1.5px solid var(--warn-border);
+  border-radius: var(--radius-button);
+  color: var(--warn);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  min-height: 48px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   white-space: nowrap;
   transition: all 0.15s ease;
   flex-shrink: 0;
-}
-
-.boardui-fefo-btn:hover {
-  background-color: rgba(245, 158, 11, 0.22);
-  border-color: #f59e0b;
 }
 
 /* 4. Grade dos 3 Cards de Ação Operacional (Estilo BoardUI) */
@@ -3766,9 +3990,9 @@ body {
 
 .boardui-card {
   height: 335px;
-  background-color: #141519;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -3777,15 +4001,20 @@ body {
   cursor: pointer;
   user-select: none;
   outline: none;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  text-align: left;
+  font-family: inherit;
+  transition: transform var(--transition-press), background-color var(--transition-normal), border-color var(--transition-normal);
+  box-shadow: var(--shadow-subtle);
 }
 
 .boardui-card:hover {
-  background-color: #17181d;
-  border-color: rgba(255, 255, 255, 0.16);
+  background-color: var(--card-hover);
+  border-color: rgba(255, 255, 255, 0.18);
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+.boardui-card:focus-visible {
+  box-shadow: var(--focus-ring);
 }
 
 .boardui-card:active {
@@ -3794,14 +4023,12 @@ body {
 
 /* Card Primário: Destaque Azul Elétrico BoardUI */
 .boardui-card.primary-card {
-  border: 1.5px solid rgba(43, 127, 255, 0.45);
-  background: linear-gradient(180deg, rgba(43, 127, 255, 0.06) 0%, rgba(20, 21, 25, 0.98) 100%);
-  box-shadow: 0 0 24px rgba(43, 127, 255, 0.14);
+  border: 2px solid var(--primary-border);
+  background: linear-gradient(180deg, var(--primary-soft) 0%, var(--card) 100%);
 }
 
 .boardui-card.primary-card:hover {
-  border-color: #2b7fff;
-  box-shadow: 0 0 32px rgba(43, 127, 255, 0.28);
+  border-color: var(--primary);
 }
 
 /* Topo do Card: Ícone e Flecha */
@@ -3809,15 +4036,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
 .boardui-card-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ededed;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-button);
+  background-color: var(--card-hover);
+  border: 1.5px solid var(--border);
+  color: var(--text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3825,19 +4053,18 @@ body {
 }
 
 .boardui-card-icon.primary-icon {
-  background-color: #2b7fff;
-  border: none;
-  color: #ffffff;
-  box-shadow: 0 4px 16px rgba(43, 127, 255, 0.4);
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--text);
 }
 
 .boardui-card-arrow {
-  color: #71717a;
+  color: var(--text-muted);
   transition: all 0.15s ease;
 }
 
 .boardui-card:hover .boardui-card-arrow {
-  color: #ededed;
+  color: var(--text);
   transform: translateX(4px);
 }
 
@@ -3847,17 +4074,17 @@ body {
 }
 
 .boardui-card-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #ededed;
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--text);
   margin: 0 0 8px 0;
   letter-spacing: -0.015em;
   line-height: 1.25;
 }
 
 .boardui-card-desc {
-  font-size: 15px;
-  color: #a1a1aa;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
   line-height: 1.45;
   margin: 0;
 }
@@ -3866,42 +4093,43 @@ body {
 .boardui-card-bottom {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  width: 100%;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--border);
 }
 
 .boardui-pill-badge {
   align-self: flex-start;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 9999px;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
   line-height: 1.2;
 }
 
 .boardui-pill-badge.blue-badge {
-  background-color: rgba(43, 127, 255, 0.16);
-  border: 1px solid rgba(43, 127, 255, 0.35);
-  color: #60a5fa;
+  background-color: var(--primary-soft);
+  border: 1.5px solid var(--primary-border);
+  color: var(--text);
 }
 
 .boardui-pill-badge.amber-badge {
-  background-color: rgba(245, 158, 11, 0.14);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #fbbf24;
+  background-color: var(--warn-soft);
+  border: 1.5px solid var(--warn-border);
+  color: var(--warn);
 }
 
 .boardui-pill-badge.green-badge {
-  background-color: rgba(34, 197, 94, 0.14);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #4ade80;
+  background-color: var(--ok-soft);
+  border: 1.5px solid var(--ok-border);
+  color: var(--ok);
 }
 
 .boardui-card-meta {
-  font-size: 13px;
-  color: #71717a;
-  line-height: 1.2;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  line-height: 1.25;
 }
 
 /* Barra Inferior BoardUI (Telas de Fluxo) */
