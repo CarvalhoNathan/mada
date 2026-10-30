@@ -69,9 +69,9 @@ Legenda: `[x]` = tela prototipada e navegável (com dados simulados).
 - [x] **6. Devolução de Sobras & Etiquetagem de Saldo**
   - [x] Registro do volume restante que volta ao almoxarifado (ex: lata de 1L com 400 ml de sobra)
   - [x] Emissão simulada da nova etiqueta com QR Code para identificação do frasco aberto
-- [ ] **7. Painel do Gestor (planejado; existem apenas os componentes KpiCard e DataTable)**
-  - [ ] Indicadores de consumo, taxa de reintegração de sobras e custo previsto vs. realizado (planejado)
-  - [ ] Visão geral das cabines de pintura (**ilustrativa**: telemetria de cabines e balanças **não faz parte do escopo atual**)
+- [x] **7. Painel do Gestor (Visão Administrativa / Desktop)**
+  - [x] Indicadores de consumo total (ml e R$), taxa de reintegração de sobras e custo previsto vs. realizado (`src/screens/ScreenManager.tsx`, `KpiCard.tsx`, `DataTable.tsx`)
+  - [x] Tabela de auditoria por Ordem de Serviço, cliente e ambiente com exportação de relatório em CSV
 
 ---
 
@@ -234,7 +234,7 @@ Legenda: `[x]` = implementado no MVP (com dados simulados); `[~]` = parcial ou s
 - [x] **RF02 - Proporções Exatas:** Apresentar produtos e volumes calculados dinamicamente com base na quantidade final desejada, com receitas de número variável de componentes (`src/domain/mixture.ts`, `src/screens/ScreenRecipe.tsx`).
 - [x] **RF03 - Rastreabilidade de Consumo:** Registrar retirada e baixa por componente vinculando à Ordem de Serviço (Cliente, Projeto e Ambiente) e ao Operador logado (`src/App.tsx`, `src/screens/ScreenDosing.tsx`, `src/data/mock/mockData.ts`).
 - [x] **RF04 - Gestão de Embalagens Parciais (Sobras):** Registrar o retorno do saldo remanescente ao almoxarifado com checklist de integridade e geração de etiqueta de sobra (`src/screens/ScreenReturn.tsx`, `src/domain/leftover.ts`).
-- [~] **RF05 - Previsto vs. Real:** Parcial: comparação entre meta teórica da receita e consumo real apontado na pesagem individual com trava de tolerância (`src/screens/ScreenDosing.tsx`); painel gerencial consolidado de histórico previsto vs. realizado é planejado.
+- [x] **RF05 - Previsto vs. Real:** Comparação entre meta teórica da receita e consumo real apontado na dosagem com trava de tolerância (`src/screens/ScreenDosing.tsx`); painel gerencial consolidado de histórico previsto vs. realizado por OS com exportação CSV (`src/screens/ScreenManager.tsx`).
 - [x] **RF06 - Priorização por Validade:** Indicar a ordem prioritária de retirada de produtos com base no lote e validade (FEFO) (`src/domain/fefo.ts`, `src/screens/ScreenDashboard.tsx`, `src/screens/ModalUseFirst.tsx`).
 - [~] **RF07 - Identificação via QR Code:** Leitura pela câmera do tablet implementada (`getUserMedia` + `BarcodeDetector`, Chrome/Edge/Android), com atalhos de simulação para teste sem câmera; gera etiquetas com QR Code para as sobras. Pendente: fallback para Safari/iPadOS (`src/components/ui/QrScannerModal.tsx`, `src/App.tsx`, `src/screens/ScreenReturn.tsx`).
 - [~] **RF08 - Gestão Multimarca:** Parcial: insumos e receitas associados às marcas correspondentes no modelo de dados (`src/data/mock/mockData.ts`) e exibidos na interface; ajuste automático e troca dinâmica de fórmulas por fabricante em interface é planejada.

@@ -13,6 +13,7 @@ import { ScreenRecipe } from './screens/ScreenRecipe';
 import { ScreenDosing } from './screens/ScreenDosing';
 import { ScreenReturn } from './screens/ScreenReturn';
 import { ScreenInventory } from './screens/ScreenInventory';
+import { ScreenManager } from './screens/ScreenManager';
 
 import { ModalUseFirst } from './screens/ModalUseFirst';
 import { ModalCancelPrep } from './screens/ModalCancelPrep';
@@ -464,6 +465,14 @@ export const App: React.FC = () => {
           solicitacoes={solicitacoesCompras}
           onAdicionarSolicitacao={handleAdicionarSolicitacao}
           onRemoverSolicitacao={handleRemoverSolicitacao}
+        />
+      )}
+
+      {currentScreen === 'manager' && (
+        <ScreenManager
+          operator={selectedOperator}
+          onNavigate={(screen) => setCurrentScreen(screen)}
+          showToast={showToast}
         />
       )}
 

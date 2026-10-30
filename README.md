@@ -41,7 +41,7 @@ O resultado são proporções erradas, latas abertas que voltam ao estoque sem r
 | 🛑  | **Trava anti-erro**                | Alerta quando a quantidade retirada passa da receita, com justificativa obrigatória. |
 | 📅  | **Prioridade por validade (FEFO)** | Mostra qual lata usar primeiro, para reduzir perdas por vencimento.                  |
 | 🏷️  | **QR Code**                        | Identifica latas e ordens de serviço e gera nova etiqueta para as sobras.            |
-| 📊  | **Painel do gestor** _(planejado)_ | Compara consumo previsto e real e acompanha o custo por cliente e ambiente.          |
+| 📊  | **Painel do gestor**               | Compara consumo previsto e real, audita sobras e exporta relatórios de custo em CSV. |
 
 ## 🔄 Como funciona
 
@@ -198,6 +198,7 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 - [x] Devolução (Devolução de sobras com cálculo de saldo e emissão de etiqueta QR)
 - [x] Leitura de QR Code pela câmera frontal do tablet na parede (com espelhamento e atalhos rápidos)
 - [x] Tempo de vida útil da mistura (*pot life* de 20 minutos com cronômetro visual e autodescarte de refugo)
+- [x] Painel do gestor (visão desktop com 4 KPIs executivos, auditoria de OS previsto vs real e exportação CSV)
 - [x] Gestão de estoque e Lista de Solicitação de Compras de insumos químicos
 - [x] Camada de repositórios com alternância de fonte de dados (`VITE_DATA_SOURCE=mock`)
 - [x] Persistência local das movimentações e pot life (`localStorage`)
@@ -205,13 +206,11 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 
 **Próximos passos**
 
-- [ ] Painel do gestor (planejado; existem apenas os componentes KpiCard e DataTable)
-- [ ] Leitura de QR Code no Safari/iPadOS (fallback para navegadores sem `BarcodeDetector`)
-- [ ] Integração com o Supabase da empresa
+- [ ] Leitura de QR Code no Safari/iPadOS (fallback universal para navegadores sem `BarcodeDetector`)
+- [ ] Integração com o Supabase da empresa (assim que liberado o acesso de leitura)
 - [ ] Recebimento formal de NF e novos lotes no estoque
 - [ ] Cadastro/importação de ordens de serviço
 - [ ] Perfis de acesso e trilha de auditoria
-- [ ] Relatórios exportáveis (CSV/PDF)
 - [ ] Operação offline com sincronização em lote
 
 ## 📚 Documentação

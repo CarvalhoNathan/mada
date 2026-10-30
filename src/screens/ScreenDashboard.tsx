@@ -46,26 +46,49 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
         <h2 className="boardui-dash-title" style={{ margin: 0 }}>
           O que vamos fazer, {firstName}?
         </h2>
-        <button
-          type="button"
-          onClick={() => onNavigate('inventory')}
-          style={{
-            background: 'var(--card-hover)',
-            border: '1px solid var(--border)',
-            borderRadius: '12px',
-            padding: '10px 18px',
-            color: 'var(--text)',
-            fontSize: '14px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            transition: 'all 0.15s ease',
-          }}
-        >
-          📦 Estoque & Lista de Compras
-        </button>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => onNavigate('inventory')}
+            style={{
+              background: 'var(--card-hover)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              padding: '10px 16px',
+              color: 'var(--text)',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            📦 Estoque & Compras
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('manager')}
+            style={{
+              background: 'rgba(59, 130, 246, 0.15)',
+              border: '1px solid rgba(59, 130, 246, 0.4)',
+              borderRadius: '12px',
+              padding: '10px 16px',
+              color: '#60A5FA',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            📊 Painel do Gestor
+          </button>
+        </div>
       </div>
 
       {/* 2. Banner de Alerta FEFO "Use Primeiro" (Estilo BoardUI Amber Glass) */}
