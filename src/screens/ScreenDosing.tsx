@@ -240,7 +240,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
           </div>
 
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)' }}>
               OS <strong style={{ color: 'var(--text)' }}>#{os.numero}</strong> • {os.clienteNome}
             </span>
           </div>
@@ -270,9 +270,9 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
             <div
               style={{
-                fontSize: '15px',
+                fontSize: 'var(--fs-small)',
                 fontWeight: 600,
-                color: totalDosed >= vol ? '#4ade80' : 'var(--text-muted)',
+                color: totalDosed >= vol ? 'var(--ok)' : 'var(--text-muted)',
                 padding: '4px 10px',
                 borderRadius: '8px',
                 background: 'rgba(255, 255, 255, 0.04)',
@@ -598,7 +598,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
             size="md"
             onClick={handleAttemptFinish}
             disabled={!allDosed}
-            style={{ minWidth: '280px', height: '56px', fontSize: '17px', fontWeight: 700 }}
+            style={{ minWidth: '280px', minHeight: 'var(--touch-min)', fontSize: '18px', fontWeight: 700 }}
           >
             Concluir dosagem e dar baixa →
           </Button>
