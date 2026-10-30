@@ -1,5 +1,5 @@
 import React from 'react';
-import { RecipeState } from '../types';
+import { RecipeState, Receita } from '../types';
 import { calcularFracoesMistura } from '../domain/mixture';
 import { ordenarLotesFEFO } from '../domain/fefo';
 import {
@@ -10,6 +10,8 @@ import {
 
 interface ScreenRecipeProps {
   recipe: RecipeState;
+  activeRecipe?: Receita;
+  onSelectRecipe?: (receita: Receita) => void;
   onSetTotalVolume: (vol: number) => void;
   onAdjustVolume: (delta: number) => void;
   onConfirmWeighing: () => void;
@@ -21,6 +23,8 @@ const PRESET_VOLUMES = [500, 1000, 1500, 2000];
 
 export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
   recipe,
+  activeRecipe,
+  onSelectRecipe,
   onSetTotalVolume,
   onAdjustVolume,
   onConfirmWeighing,
@@ -29,8 +33,8 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
 }) => {
   const vol = recipe.totalVolume;
 
-  // Receita e marca obtidas dos mocks
-  const receita = MOCK_RECEITAS[0];
+  // Receita ativa selecionada ou padrão
+  const receita = activeRecipe || MOCK_RECEITAS[0];
   const marca = MOCK_MARCAS.find((m) => m.id === receita.marcaId) || { nome: receita.marcaNome };
 
   // Cálculo das frações químicas via função pura de domínio a partir dos itens da receita mockada
@@ -75,6 +79,38 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
           <span className="os-step-text">Dosagem em Béquer</span>
         </div>
       </nav>
+
+      {/* Seletor de Receita Homologada (Acabamento, Verniz ou Fundo Primer) */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
+        {MOCK_RECEITAS.map((r) => {
+          const isSelected = r.id === receita.id;
+          return (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => onSelectRecipe && onSelectRecipe(r)}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '12px',
+                border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
+                background: isSelected ? 'rgba(59, 130, 246, 0.18)' : 'var(--card)',
+                color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: isSelected ? '0 0 12px rgba(59, 130, 246, 0.3)' : 'none',
+              }}
+            >
+              <span>{isSelected ? '✓' : '🧪'}</span>
+              <span>{r.nome}</span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* 2. Cabeçalho da Receita (Apple / Notion) */}
       <div className="recipe-header-card">

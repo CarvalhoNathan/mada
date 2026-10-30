@@ -177,6 +177,17 @@ export const MOCK_PRODUTOS: Produto[] = [
     preco: 95.00,
     prateleiraPadrao: 'Prateleira A-02',
   },
+  {
+    id: 6,
+    marcaId: 1,
+    codigo: '24322',
+    nome: 'Primer Fundo Branco para Pintura',
+    papelPadrao: 'base',
+    unidade: 'ml',
+    densidade: 1.15,
+    preco: 168.99, // R$ 844,99 por galão 5 LT (Ergi Tintas / ERP Mada)
+    prateleiraPadrao: 'Prateleira F-01 (Fundos & Primers)',
+  },
 ];
 
 export const MOCK_LOTES: Lote[] = [
@@ -245,6 +256,17 @@ export const MOCK_LOTES: Lote[] = [
     quantidadeAtual: 1000,
     statusUrgencia: 'normal',
     prateleira: 'Prateleira B-02',
+  },
+  {
+    id: 7,
+    produtoId: 6,
+    produtoNome: 'Primer Fundo Branco para Pintura',
+    codigo: '#OC-2703',
+    validade: '2027-10-07',
+    diasAberto: 0,
+    quantidadeAtual: 5000, // 5 LT conforme compra real de 07/10/2026 no ERP
+    statusUrgencia: 'normal',
+    prateleira: 'Prateleira F-01 (Ergi Tintas)',
   },
 ];
 
@@ -332,6 +354,49 @@ export const MOCK_RECEITAS: Receita[] = [
         proporcao: 0.20,
         densidade: 0.98,
         ordem: 2,
+      },
+    ],
+  },
+  {
+    id: 3,
+    marcaId: 1,
+    marcaNome: 'ERGI TINTAS / SAYERLACK',
+    codigoFormula: 'FORM-PU-PR24322',
+    nome: 'PRIMER FUNDO BRANCO PU 3:1',
+    descricao: 'Fórmula homologada: FORM-PU-PR24322 • Fundo de nivelamento e selagem (Ref ERP: 24322)',
+    itens: [
+      {
+        id: 7,
+        receitaId: 3,
+        produtoId: 6,
+        produtoNome: 'Primer Fundo Branco para Pintura',
+        codigoProduto: '24322',
+        papel: 'base',
+        proporcao: 0.60,
+        densidade: 1.15,
+        ordem: 1,
+      },
+      {
+        id: 8,
+        receitaId: 3,
+        produtoId: 2,
+        produtoNome: '2º Catalisador PU Médio',
+        codigoProduto: 'CT-304',
+        papel: 'catalisador',
+        proporcao: 0.20,
+        densidade: 0.98,
+        ordem: 2,
+      },
+      {
+        id: 9,
+        receitaId: 3,
+        produtoId: 3,
+        produtoNome: '3º Diluidor Poliuretano 8000',
+        codigoProduto: 'DL-800',
+        papel: 'diluidor',
+        proporcao: 0.20,
+        densidade: 0.88,
+        ordem: 3,
       },
     ],
   },

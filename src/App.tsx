@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Operator, PieceLot, RecipeState, ScreenId, Lote, ItemSolicitacaoCompra } from './types';
+import { Operator, PieceLot, RecipeState, ScreenId, Lote, ItemSolicitacaoCompra, Receita } from './types';
 import { AppShell } from './components/ui/AppShell';
 import { StatusBanner } from './components/ui/StatusBanner';
 import { Toast } from './components/ui/Toast';
@@ -78,7 +78,8 @@ export const App: React.FC = () => {
   const [selectedEnvironment, setSelectedEnvironment] = useState(MOCK_ORDENS_SERVICO[0].ambienteNome);
   const [pieceLot, setPieceLot] = useState<PieceLot>(INITIAL_PIECE_LOT);
 
-  // Receita de Mistura
+  // Receita de Mistura Homologada (Dinâmica)
+  const [selectedRecipe, setSelectedRecipe] = useState<Receita>(MOCK_RECEITAS[0]);
   const [recipe, setRecipe] = useState<RecipeState>(INITIAL_RECIPE);
 
   // Modais
@@ -229,7 +230,7 @@ export const App: React.FC = () => {
     dosingValues: Record<number, number>,
     wasteJustification?: string
   ) => {
-    const receita = MOCK_RECEITAS[0];
+    const receita = selectedRecipe;
     const osAtiva = MOCK_ORDENS_SERVICO.find(o => o.clienteNome === clientName) || MOCK_ORDENS_SERVICO[0];
 
     // Registra uma Movimentacao do tipo RETIRADA por componente via MovimentacaoRepository
@@ -383,6 +384,8 @@ export const App: React.FC = () => {
       {currentScreen === 'recipe' && (
         <ScreenRecipe
           recipe={recipe}
+          activeRecipe={selectedRecipe}
+          onSelectRecipe={setSelectedRecipe}
           onSetTotalVolume={handleSetTotalVolume}
           onAdjustVolume={handleAdjustVolume}
           onConfirmWeighing={handleStartDosing}
@@ -394,6 +397,7 @@ export const App: React.FC = () => {
       {currentScreen === 'dosing' && (
         <ScreenDosing
           recipe={recipe}
+          activeRecipe={selectedRecipe}
           operator={selectedOperator}
           activeOS={MOCK_ORDENS_SERVICO.find(o => o.clienteNome === clientName) || MOCK_ORDENS_SERVICO[0]}
           onNavigate={(screen) => setCurrentScreen(screen)}

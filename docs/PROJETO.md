@@ -101,6 +101,18 @@ Durante a imersão e o diálogo direto com Fábio (gestor da Mada Marcenaria), i
 5. **Variação entre Marcas e Fórmulas:** Mudanças de fabricantes alteram as proporções das receitas, gerando desperdício e retrabalho.
 6. **Conhecimento não documentado:** As receitas atuais existem principalmente na experiência dos pintores, o que exige um levantamento junto a eles antes de cadastrá-las no sistema.
 
+### 📸 Evidência Real do Diagnóstico no ERP da Empresa
+
+Durante a reunião técnica com Fábio em outubro/2026, foram extraídas telas do ERP atual da empresa que comprovam documentalmente a raiz do problema:
+
+| Tela 1: Furo de Apontamento de Saídas no Estoque | Tela 2: Compras e Cotações Reais (Ergi Tintas) |
+| :---: | :---: |
+| ![Estoque ERP](erp/erp-estoque-entradas-saidas.jpg) | ![Cotações ERP](erp/erp-cotacoes-compras.jpg) |
+
+**Análise dos Fatos Comprovados nas Telas:**
+- **Entrada Registrada:** O ERP registra a compra recente da ordem `OC2703` (07/10/2026) de **5 LT** de `PRIMER FUNDO BRANCO PARA PINTURA` (Código SKU: `24322.999675925927`) no valor total de **R$ 4.224,95** fornecido por **ERGI TINTAS** (cotação `COT-0624` aprovada para Andre Eiras).
+- **O Furo Operacional:** O card **TOTAL SAÍDAS** registra **`0 UN` e `R$ 0,00`**, com o gráfico histórico de saídas completamente vazio. O insumo químico de alto valor entrou fisicamente na oficina e está sendo consumido na cabine, mas o sistema de gestão não possui nenhum apontamento do consumo por cliente/ambiente, gerando perda de rastreabilidade e impossibilidade de custeio real da marcenaria sob medida.
+
 ---
 
 ## 3. A Solução Proposta

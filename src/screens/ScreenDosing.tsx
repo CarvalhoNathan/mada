@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RecipeState, Operator, OrdemServico } from '../types';
+import { RecipeState, Operator, OrdemServico, Receita } from '../types';
 import { Button } from '../components/ui/Button';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
 import { ModalCriticalExcess } from './ModalCriticalExcess';
@@ -16,6 +16,7 @@ import {
 
 interface ScreenDosingProps {
   recipe: RecipeState;
+  activeRecipe?: Receita;
   operator: Operator;
   activeOS?: OrdemServico;
   onNavigate: (screen: 'recipe' | 'return' | 'dashboard') => void;
@@ -29,6 +30,8 @@ interface ScreenDosingProps {
 
 export const ScreenDosing: React.FC<ScreenDosingProps> = ({
   recipe,
+  activeRecipe,
+  operator,
   activeOS,
   onNavigate,
   onCompleteDosing,
@@ -37,7 +40,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 }) => {
   const vol = recipe.totalVolume;
   const os = activeOS || MOCK_ORDENS_SERVICO[0];
-  const receita = MOCK_RECEITAS[0];
+  const receita = activeRecipe || MOCK_RECEITAS[0];
   const marca = MOCK_MARCAS.find((m) => m.id === receita.marcaId) || { nome: receita.marcaNome };
 
   // Cálculo das frações meta (em ml e g)
@@ -250,7 +253,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
               Dosagem de Componentes
             </h2>
             <span className="dosing-recipe-pill">
-              {receita.nome} • {receita.codigoFormula} • {marca.nome}
+              {receita.nome} • {receita.codigoFormula} • {marca.nome} • Op: {operator.nome}
             </span>
           </div>
 
