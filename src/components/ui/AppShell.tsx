@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronsUpDown } from 'lucide-react';
 import { ScreenId } from '../../types';
 
 export interface OperatorInfo {
@@ -145,8 +146,8 @@ export const AppShell: React.FC<AppShellProps> = ({
                 {getInitials(operator.name)}
               </div>
               <span className="boardui-operator-name">{operator.name}</span>
-              <span className="boardui-operator-chevron" aria-hidden="true">
-                ↕
+              <span className="boardui-operator-chevron" aria-hidden="true" style={{ display: 'flex', alignItems: 'center' }}>
+                <ChevronsUpDown size={14} />
               </span>
             </div>
           )}

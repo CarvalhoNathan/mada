@@ -1,4 +1,16 @@
 import React, { useState } from 'react';
+import {
+  BarChart3,
+  Download,
+  FlaskConical,
+  Target,
+  RotateCcw,
+  Ruler,
+  Lightbulb,
+  CheckCircle2,
+  Check,
+  AlertTriangle,
+} from 'lucide-react';
 import { KpiCard } from '../components/ui/KpiCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Button } from '../components/ui/Button';
@@ -117,7 +129,7 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
     link.click();
     document.body.removeChild(link);
 
-    showToast('✓ Relatório executivo exportado em CSV com sucesso!', 'success');
+    showToast('Relatório executivo exportado em CSV com sucesso!', 'success');
   };
 
   return (
@@ -148,11 +160,10 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '26px',
               border: '1px solid rgba(59, 130, 246, 0.3)',
             }}
           >
-            📊
+            <BarChart3 size={26} strokeWidth={2.4} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -197,7 +208,7 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
               gap: '8px',
             }}
           >
-            📥 Exportar CSV
+            <Download size={16} strokeWidth={2.4} /> Exportar CSV
           </button>
           <button
             type="button"
@@ -233,21 +244,21 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
           unit="Litros"
           changeText={`R$ ${totalCustoReal} em químicos apontados`}
           changeStatus="ok"
-          icon={<span style={{ fontSize: '20px' }}>🧪</span>}
+          icon={<FlaskConical size={22} color="#3B82F6" strokeWidth={2.4} />}
         />
         <KpiCard
           label="Variação Previsto vs Real"
           value={`+${taxaVariacao}%`}
           changeText="Meta SMART: manter abaixo de +5%"
           changeStatus={Number(taxaVariacao) <= 5 ? 'ok' : 'warn'}
-          icon={<span style={{ fontSize: '20px' }}>🎯</span>}
+          icon={<Target size={22} color="#10B981" strokeWidth={2.4} />}
         />
         <KpiCard
           label="Economia com Sobras"
           value="R$ 412,00"
           changeText="7 latas reintegradas com etiqueta QR"
           changeStatus="ok"
-          icon={<span style={{ fontSize: '20px' }}>♻️</span>}
+          icon={<RotateCcw size={22} color="#10B981" strokeWidth={2.4} />}
         />
         <KpiCard
           label="Custo Médio / m² Pintado"
@@ -255,7 +266,7 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
           unit="/ m²"
           changeText="Base: Primer Branco + Laca PU"
           changeStatus="ok"
-          icon={<span style={{ fontSize: '20px' }}>📐</span>}
+          icon={<Ruler size={22} color="#F59E0B" strokeWidth={2.4} />}
         />
       </div>
 
@@ -275,7 +286,20 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <span style={{ fontSize: '24px' }}>💡</span>
+          <div
+            style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: 'rgba(16, 185, 129, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#10B981',
+            }}
+          >
+            <Lightbulb size={22} strokeWidth={2.4} />
+          </div>
           <div>
             <strong style={{ fontSize: '15px', color: '#10B981' }}>
               Integração de Saídas com o ERP Mada (OC2703 / Ergi Tintas)
@@ -286,8 +310,8 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
             </p>
           </div>
         </div>
-        <span style={{ fontSize: '13px', color: '#10B981', fontWeight: 700 }}>
-          ✓ Rastreabilidade 100% Ativa
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#10B981', fontWeight: 700 }}>
+          <CheckCircle2 size={16} strokeWidth={2.4} /> Rastreabilidade 100% Ativa
         </span>
       </div>
 
@@ -341,9 +365,12 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
                 fontWeight: 600,
                 fontSize: '13px',
                 cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
               }}
             >
-              ✓ Conforme (Tolerância &lt;5%)
+              <Check size={14} strokeWidth={2.4} /> Conforme (Tolerância &lt;5%)
             </button>
             <button
               type="button"
@@ -357,9 +384,12 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
                 fontWeight: 600,
                 fontSize: '13px',
                 cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
               }}
             >
-              ⚠️ Alerta de Excesso
+              <AlertTriangle size={14} strokeWidth={2.4} /> Alerta de Excesso
             </button>
           </div>
         </div>
@@ -431,9 +461,20 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
                     background: row.status === 'conforme' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
                     color: row.status === 'conforme' ? '#10B981' : '#EF4444',
                     border: `1px solid ${row.status === 'conforme' ? '#10B981' : '#EF4444'}`,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
                   }}
                 >
-                  {row.status === 'conforme' ? '✓ Conforme' : '⚠️ Excesso'}
+                  {row.status === 'conforme' ? (
+                    <>
+                      <Check size={12} strokeWidth={2.6} /> Conforme
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle size={12} strokeWidth={2.6} /> Excesso
+                    </>
+                  )}
                 </span>
               ),
             },

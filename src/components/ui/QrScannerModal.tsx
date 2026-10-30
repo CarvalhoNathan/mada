@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { X, Camera, RefreshCw, FlipHorizontal, Flashlight } from 'lucide-react';
 import jsQR from 'jsqr';
 
 export interface QrScannerModalProps {
@@ -339,7 +340,6 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               background: 'transparent',
               border: 'none',
               color: '#a1a1aa',
-              fontSize: '20px',
               cursor: 'pointer',
               minWidth: '48px',
               minHeight: '48px',
@@ -349,7 +349,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               borderRadius: '8px',
             }}
           >
-            ✕
+            <X size={20} />
           </button>
         </header>
 
@@ -428,7 +428,21 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   maxWidth: '380px',
                 }}
               >
-                <div style={{ fontSize: '28px', marginBottom: '8px' }}>📸</div>
+                <div
+                  style={{
+                    width: '52px',
+                    height: '52px',
+                    borderRadius: '14px',
+                    background: 'rgba(59, 130, 246, 0.15)',
+                    color: '#60a5fa',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 10px auto',
+                  }}
+                >
+                  <Camera size={26} strokeWidth={2.2} />
+                </div>
                 <strong style={{ color: '#ededed', display: 'block', marginBottom: '4px' }}>
                   Câmera em modo de bancada
                 </strong>
@@ -450,9 +464,13 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                     fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
                   }}
                 >
-                  {isRetrying ? 'Tentando conectar...' : '🔄 Tentar ligar câmera'}
+                  <RefreshCw size={14} className={isRetrying ? 'spin' : ''} />
+                  {isRetrying ? 'Tentando conectar...' : 'Tentar ligar câmera'}
                 </button>
               </div>
             )}
@@ -483,10 +501,10 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '5px',
+                  gap: '6px',
                 }}
               >
-                🔄 {cameraFacing === 'user' ? 'Frontal (Parede)' : 'Traseira'}
+                <FlipHorizontal size={14} strokeWidth={2.4} /> {cameraFacing === 'user' ? 'Frontal (Parede)' : 'Traseira'}
               </button>
 
               {hasTorch && cameraActive && cameraFacing === 'environment' && (
@@ -502,9 +520,12 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                     fontSize: '12px',
                     fontWeight: 700,
                     cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
                   }}
                 >
-                  🔦 {torchOn ? 'Ligada' : 'Lanterna'}
+                  <Flashlight size={14} strokeWidth={2.4} /> {torchOn ? 'Ligada' : 'Lanterna'}
                 </button>
               )}
             </div>

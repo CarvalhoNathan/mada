@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertTriangle, MapPin, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Lote } from '../types';
 import { MOCK_LOTES } from '../data/mock/mockData';
@@ -27,8 +28,8 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
     <div className="ds-modal-backdrop" role="dialog" aria-modal="true">
       <div className="ds-modal-card ds-modal-standard" style={{ maxWidth: '720px' }}>
         <header className="ds-modal-header" style={{ background: 'var(--card-hover)', borderBottom: '1px solid var(--border)' }}>
-          <div className="ds-modal-header-icon" style={{ background: 'var(--warn-soft)', color: 'var(--warn)' }}>
-            ⚠️
+          <div className="ds-modal-header-icon" style={{ background: 'var(--warn-soft)', color: 'var(--warn)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <AlertTriangle size={22} strokeWidth={2.4} />
           </div>
           <div className="ds-modal-header-titles">
             <h2 className="ds-modal-title" style={{ color: 'var(--warn)' }}>
@@ -43,8 +44,9 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
             className="ds-modal-close-btn"
             onClick={onClose}
             aria-label="Fechar janela"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            ✕
+            <X size={20} />
           </button>
         </header>
 
@@ -99,7 +101,9 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
                       </span>
                     </div>
                     <div style={{ fontSize: '14px', color: 'var(--text-muted)', display: 'flex', gap: '14px' }}>
-                      <span>📍 {lote.prateleira}</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <MapPin size={13} strokeWidth={2.4} color="var(--primary)" /> {lote.prateleira}
+                      </span>
                       <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Saldo: {lote.quantidadeAtual} ml restantes</span>
                     </div>
                   </div>

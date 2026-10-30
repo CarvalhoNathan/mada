@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AlertTriangle, Trash2, Printer } from 'lucide-react';
 import { Operator } from '../types';
 import { Button } from '../components/ui/Button';
 import { calcularSaldoDevolucao } from '../domain/leftover';
@@ -75,7 +76,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
       });
     }
 
-    showToast(`🖨️ Etiqueta de sobra impressa! ${returnVolume}ml devolvidos ao estoque.`, 'success');
+    showToast(`Etiqueta de sobra impressa! ${returnVolume}ml devolvidos ao estoque.`, 'success');
     setTimeout(() => {
       onNavigate('dashboard');
     }, 1000);
@@ -85,7 +86,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
     if (onDiscardWaste) {
       await onDiscardWaste(returnVolume, produto.id);
     }
-    showToast(`🗑 Sobra de ${returnVolume}ml descartada como refugo químico.`, 'danger');
+    showToast(`Sobra de ${returnVolume}ml descartada como refugo químico.`, 'danger');
     setTimeout(() => {
       onNavigate('dashboard');
     }, 800);
@@ -171,8 +172,8 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
           {/* Coluna Direita: Etiqueta Térmica & Refugo */}
           <div className="return-right-col">
             <div className="thermal-sticker-card">
-              <div className="sticker-badge-urgent">
-                ⚠️ PRIORIDADE DE USO IMEDIATO (USAR PRIMEIRO)
+              <div className="sticker-badge-urgent" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <AlertTriangle size={14} strokeWidth={2.4} /> PRIORIDADE DE USO IMEDIATO (USAR PRIMEIRO)
               </div>
 
               <div className="sticker-header">
@@ -215,7 +216,9 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                 style={{ width: '100%', fontSize: '19px', padding: '0 16px' }}
                 title="Segure por 1,5s para confirmar descarte como refugo"
               >
-                🗑 Descartar sobra como refugo
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <Trash2 size={18} strokeWidth={2.4} /> Descartar sobra como refugo
+                </span>
               </Button>
             </div>
           </div>
@@ -237,7 +240,9 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
             disabled={!allChecked}
             style={{ minWidth: '280px' }}
           >
-            🖨️ Confirmar sobra e imprimir etiqueta →
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <Printer size={18} strokeWidth={2.4} /> Confirmar sobra e imprimir etiqueta →
+            </span>
           </Button>
         </div>
       </footer>

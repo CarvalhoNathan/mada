@@ -1,4 +1,17 @@
 import React, { useState } from 'react';
+import {
+  Boxes,
+  Package,
+  ShoppingCart,
+  AlertCircle,
+  RotateCcw,
+  MapPin,
+  Scale,
+  Check,
+  Plus,
+  ClipboardCopy,
+  Trash2,
+} from 'lucide-react';
 import { Lote, Operador, ScreenId, ItemSolicitacaoCompra } from '../types';
 import { Button } from '../components/ui/Button';
 import { formatarStatusValidade } from '../domain/fefo';
@@ -50,7 +63,7 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
       solicitadoPor: operator.nome,
     });
 
-    showToast(`✓ ${lote.produtoNome} adicionado à lista de compras!`, 'success');
+    showToast(`${lote.produtoNome} adicionado à lista de compras!`, 'success');
   };
 
   const handleCopiarListaCompras = () => {
@@ -60,7 +73,7 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
     }
 
     const texto = [
-      `📋 SOLICITAÇÃO DE COMPRAS — MADA MARCENARIA (CABINE DE PINTURA)`,
+      `SOLICITAÇÃO DE COMPRAS — MADA MARCENARIA (CABINE DE PINTURA)`,
       `Data: ${new Date().toLocaleDateString('pt-BR')} • Solicitante: ${operator.nome}`,
       `----------------------------------------------------`,
       ...solicitacoes.map(
@@ -73,7 +86,7 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
 
     if (navigator.clipboard) {
       navigator.clipboard.writeText(texto);
-      showToast('✓ Lista copiada para a área de transferência! Cole no WhatsApp de Compras.', 'success');
+      showToast('Lista copiada para a área de transferência! Cole no WhatsApp de Compras.', 'success');
     } else {
       showToast('Lista gerada com sucesso!', 'info');
     }
@@ -105,10 +118,9 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '22px',
             }}
           >
-            📦
+            <Boxes size={22} strokeWidth={2.4} />
           </div>
           <div>
             <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>
@@ -134,9 +146,12 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
               fontWeight: 700,
               fontSize: '14px',
               cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
             }}
           >
-            📦 Estoque Físico ({lotes.length})
+            <Package size={16} strokeWidth={2.4} /> Estoque Físico ({lotes.length})
           </button>
           <button
             type="button"
@@ -155,7 +170,7 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
               gap: '6px',
             }}
           >
-            🛒 Lista de Compras
+            <ShoppingCart size={16} strokeWidth={2.4} /> Lista de Compras
             {solicitacoes.length > 0 && (
               <span
                 style={{
@@ -207,9 +222,12 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
                 fontWeight: 600,
                 fontSize: '13px',
                 cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
               }}
             >
-              ⚠️ Estoque Baixo / Validade Próxima
+              <AlertCircle size={14} strokeWidth={2.4} /> Estoque Baixo / Validade Próxima
             </button>
             <button
               type="button"
@@ -223,9 +241,12 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
                 fontWeight: 600,
                 fontSize: '13px',
                 cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
               }}
             >
-              ♻️ Latas de Sobras
+              <RotateCcw size={14} strokeWidth={2.4} /> Latas de Sobras
             </button>
           </div>
 
@@ -287,9 +308,11 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
                     </div>
 
                     <div style={{ display: 'flex', gap: '18px', fontSize: '14px', color: 'var(--text-muted)' }}>
-                      <span>📍 Localização: {lote.prateleira || 'Almoxarifado'}</span>
-                      <span>
-                        📊 Saldo:{' '}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <MapPin size={14} color="var(--primary)" strokeWidth={2.4} /> Localização: {lote.prateleira || 'Almoxarifado'}
+                      </span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Scale size={14} color="var(--primary)" strokeWidth={2.4} /> Saldo:{' '}
                         <strong style={{ color: isBaixo ? '#EF4444' : 'var(--primary)', fontWeight: 700 }}>
                           {lote.quantidadeAtual.toLocaleString('pt-BR')} ml
                         </strong>
@@ -318,7 +341,15 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
                         gap: '6px',
                       }}
                     >
-                      {naListaCompras ? '✓ Na Lista de Compras' : '+ Pedir Reposição'}
+                      {naListaCompras ? (
+                        <>
+                          <Check size={15} strokeWidth={2.6} /> Na Lista de Compras
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={15} strokeWidth={2.6} /> Pedir Reposição
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -360,13 +391,27 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
                 opacity: solicitacoes.length === 0 ? 0.5 : 1,
               }}
             >
-              📋 Copiar Lista (WhatsApp / E-mail)
+              <ClipboardCopy size={16} strokeWidth={2.4} /> Copiar Lista (WhatsApp / E-mail)
             </button>
           </div>
 
           {solicitacoes.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: '36px', marginBottom: '8px' }}>🛒</div>
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '16px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 12px auto',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                <ShoppingCart size={28} strokeWidth={2} />
+              </div>
               <p style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Nenhum insumo em solicitação de compra no momento.</p>
               <p style={{ margin: '4px 0 0', fontSize: '14px' }}>
                 Acesse a aba de Estoque Físico e clique em "+ Pedir Reposição" nos itens necessários.
@@ -434,13 +479,16 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
                       background: 'transparent',
                       border: 'none',
                       color: 'var(--danger)',
-                      fontSize: '18px',
                       cursor: 'pointer',
-                      padding: '6px 12px',
+                      padding: '8px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '8px',
                     }}
                     title="Remover da lista"
                   >
-                    ✕
+                    <Trash2 size={18} strokeWidth={2.4} />
                   </button>
                 </div>
               ))}

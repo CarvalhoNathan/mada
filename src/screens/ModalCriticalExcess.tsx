@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AlertOctagon, Calculator, Trash2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { operadorRepository } from '../data';
 
@@ -119,12 +120,10 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '22px',
-                fontWeight: 800,
                 boxShadow: '0 0 16px rgba(239, 68, 68, 0.6)',
               }}
             >
-              ⚡
+              <AlertOctagon size={24} strokeWidth={2.4} />
             </div>
             <div>
               <h2
@@ -414,7 +413,9 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                   borderRadius: '12px',
                 }}
               >
-                ⚖️ Recalcular proporções
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <Calculator size={18} strokeWidth={2.4} /> Recalcular proporções
+                </span>
               </Button>
             )}
           </div>
@@ -440,7 +441,9 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                 : 'Segure por 1,5s para registrar desperdício'
             }
           >
-            🗑 Confirmar desperdício e registrar na OS
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <Trash2 size={18} strokeWidth={2.4} /> Confirmar desperdício e registrar na OS
+            </span>
           </Button>
         </footer>
       </div>

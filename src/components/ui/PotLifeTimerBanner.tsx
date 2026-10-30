@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AlertOctagon, AlertTriangle, Clock, Check, Trash2 } from 'lucide-react';
 
 export interface PotLifeState {
   startTime: number; // timestamp em ms
@@ -82,22 +83,26 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
     >
       {/* Esquerda: Informação e Status */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-        <div
-          style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '12px',
-            background: isExpired ? '#EF4444' : isUrgent ? '#F59E0B' : '#10B981',
-            color: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '22px',
-            fontWeight: 800,
-          }}
-        >
-          {isExpired ? '🚨' : isUrgent ? '⚠️' : '⏱️'}
-        </div>
+          <div
+            style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '12px',
+              background: isExpired ? '#EF4444' : isUrgent ? '#F59E0B' : '#10B981',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {isExpired ? (
+              <AlertOctagon size={24} strokeWidth={2.4} />
+            ) : isUrgent ? (
+              <AlertTriangle size={24} strokeWidth={2.4} />
+            ) : (
+              <Clock size={24} strokeWidth={2.4} />
+            )}
+          </div>
 
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -193,10 +198,10 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '8px',
             }}
           >
-            ✓ Aplicação Concluída
+            <Check size={16} strokeWidth={2.6} /> Aplicação Concluída
           </button>
         ) : (
           <button
@@ -214,10 +219,10 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '8px',
             }}
           >
-            🗑 Descartar Refugo ({potLife.volumeTotal}ml)
+            <Trash2 size={16} strokeWidth={2.4} /> Descartar Refugo ({potLife.volumeTotal}ml)
           </button>
         )}
       </div>

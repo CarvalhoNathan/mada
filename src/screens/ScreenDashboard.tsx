@@ -1,4 +1,5 @@
 import React from 'react';
+import { Boxes, BarChart3 } from 'lucide-react';
 import { Operator, Lote, ScreenId } from '../types';
 import { MOCK_LOTES } from '../data';
 import { ordenarLotesFEFO } from '../domain/fefo';
@@ -61,11 +62,11 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '8px',
               transition: 'all 0.15s ease',
             }}
           >
-            📦 Estoque & Compras
+            <Boxes size={16} strokeWidth={2.4} color="#60A5FA" /> Estoque & Compras
           </button>
 
           <button
@@ -82,11 +83,11 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '8px',
               transition: 'all 0.15s ease',
             }}
           >
-            📊 Painel do Gestor
+            <BarChart3 size={16} strokeWidth={2.4} color="#60A5FA" /> Painel do Gestor
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 export interface NumberStepperProps {
   value: number;
@@ -100,7 +101,9 @@ export const NumberStepper: React.FC<NumberStepperProps> = ({
       {/* Alerta de tolerância excedida */}
       {isOverTolerance && (
         <div className="ds-stepper-warning-banner" role="alert">
-          <span className="ds-stepper-warning-icon">⚠</span>
+          <span className="ds-stepper-warning-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <AlertTriangle size={16} />
+          </span>
           <span className="ds-stepper-warning-text">
             <strong>+{difference} {unit}</strong> acima do padrão homologado ({standardValue} {unit})
           </span>

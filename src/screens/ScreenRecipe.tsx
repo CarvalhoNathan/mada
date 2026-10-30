@@ -1,4 +1,5 @@
 import React from 'react';
+import { FlaskConical, Check, AlertTriangle } from 'lucide-react';
 import { RecipeState, Receita } from '../types';
 import { calcularFracoesMistura } from '../domain/mixture';
 import { ordenarLotesFEFO } from '../domain/fefo';
@@ -105,7 +106,7 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
                 boxShadow: isSelected ? '0 0 12px rgba(59, 130, 246, 0.3)' : 'none',
               }}
             >
-              <span>{isSelected ? '✓' : '🧪'}</span>
+              <span>{isSelected ? <Check size={16} strokeWidth={2.6} /> : <FlaskConical size={16} strokeWidth={2.2} />}</span>
               <span>{r.nome}</span>
             </button>
           );
@@ -212,14 +213,18 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
               <div className="recipe-chem-fefo-box">
                 {isUrgente && loteAtivo ? (
                   <div className="recipe-fefo-urgent">
-                    <span className="recipe-fefo-icon" aria-hidden="true">⚠️</span>
+                    <span className="recipe-fefo-icon" aria-hidden="true" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                      <AlertTriangle size={14} strokeWidth={2.4} />
+                    </span>
                     <span className="recipe-fefo-text">
                       Lata aberta #{cleanLoteCode} • {loteAtivo.prateleira || 'B-01'}
                     </span>
                   </div>
                 ) : (
                   <div className="recipe-fefo-normal">
-                    <span className="recipe-fefo-icon" aria-hidden="true">✓</span>
+                    <span className="recipe-fefo-icon" aria-hidden="true" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                      <Check size={14} strokeWidth={2.6} />
+                    </span>
                     <span className="recipe-fefo-text">
                       Lote #{cleanLoteCode} • {loteAtivo?.prateleira || 'Estoque'}
                     </span>

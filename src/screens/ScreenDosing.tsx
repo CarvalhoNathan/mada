@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AlertTriangle, Check } from 'lucide-react';
 import { RecipeState, Operator, OrdemServico, Receita } from '../types';
 import { Button } from '../components/ui/Button';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
@@ -436,14 +437,20 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                       : 'status-default'
                   }`}
                 >
-                  <span>
-                    {isExceeded
-                      ? `⚠️ +${diff} ml acima do limite seguro (+5%)`
-                      : isExactOrWithin
-                      ? `✓ ${val === meta ? 'Meta exata atingida' : `Dentro da tolerância (+${diff} ml)`}`
-                      : isUnder
-                      ? `Em dosagem no béquer (faltam ${meta - val} ml)`
-                      : 'Aguardando dosagem no béquer...'}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    {isExceeded ? (
+                      <>
+                        <AlertTriangle size={14} strokeWidth={2.4} /> +{diff} ml acima do limite seguro (+5%)
+                      </>
+                    ) : isExactOrWithin ? (
+                      <>
+                        <Check size={14} strokeWidth={2.6} /> {val === meta ? 'Meta exata atingida' : `Dentro da tolerância (+${diff} ml)`}
+                      </>
+                    ) : isUnder ? (
+                      `Em dosagem no béquer (faltam ${meta - val} ml)`
+                    ) : (
+                      'Aguardando dosagem no béquer...'
+                    )}
                   </span>
                   <span>Tolerância máx: {toleranceMax} ml</span>
                 </div>
