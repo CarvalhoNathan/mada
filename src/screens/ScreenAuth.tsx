@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { Check, HelpCircle, ShieldCheck, Wifi, WifiOff } from 'lucide-react';
 import { Operator } from '../types';
 import { PIN_ERRO_SIMULADO } from '../data';
 import { PinInput } from '../components/ui/PinInput';
@@ -114,85 +115,120 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   }, [isSuccess, handleDigit, handleBackspace, handleClear, handleSubmit]);
 
   const selectedName = selectedOperator.nome || selectedOperator.name || 'Operador';
+  const selectedRole = selectedOperator.papel || selectedOperator.role || 'Operador de Pintura';
 
   return (
-    <div className="auth-layout-minimal">
-      {/* Coluna da Esquerda: Seleção do Pintor */}
-      <section className="auth-left-column" aria-label="Seleção de Operador">
-        <h2 className="auth-title-minimal">Quem está pintando?</h2>
-
-        <div className="auth-operators-vertical" role="radiogroup" aria-label="Operadores disponíveis">
-          {operators.map((op) => {
-            const opName = op.nome || op.name || '';
-            const opRole = op.papel || op.role || 'Operador de Pintura';
-            const isSelected = op.id ? op.id === selectedOperator.id : opName === selectedName;
-
-            return (
-              <div
-                key={op.id || opName}
-                role="radio"
-                aria-checked={isSelected}
-                tabIndex={0}
-                className={`operator-card-apple ${isSelected ? 'is-active' : ''}`}
-                onClick={() => {
-                  onSelectOperator(op);
-                  handleClear();
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onSelectOperator(op);
-                    handleClear();
-                  }
-                }}
-              >
-                <div className="operator-avatar-circle" aria-hidden="true">
-                  {getInitials(opName)}
-                </div>
-                <div className="operator-info-apple">
-                  <span className="operator-name-apple">{opName}</span>
-                  <span className="operator-role-apple">{opRole}</span>
-                </div>
-              </div>
-            );
-          })}
+    <div className="auth-screen-shell">
+      {/* Barra Superior de Identificação da Estação Industrial */}
+      <header className="auth-station-bar" aria-label="Identificação da estação">
+        <div className="auth-station-brand">
+          <div className="boardui-brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 2v7.31L4.14 20a2 2 0 0 0 1.72 3h12.28a2 2 0 0 0 1.72-3L14 9.31V2" />
+              <path d="M8.5 2h7" />
+              <path d="M7 16h10" />
+            </svg>
+          </div>
+          <div className="auth-station-titles">
+            <span className="auth-station-title">Mada Marcenaria • Cabine de Pintura</span>
+            <span className="auth-station-subtitle">Terminal de Dosagem Homologada & Controle FEFO</span>
+          </div>
         </div>
 
-        <button
-          type="button"
-          className="auth-help-link-subtle"
-          onClick={() => {
-            showToast('Solicite assistência ao encarregado para recuperar ou redefinir seu PIN.', 'info');
-          }}
-        >
-          Esqueceu o PIN ou precisa de ajuda?
-        </button>
-      </section>
+        <div className="auth-station-status">
+          <div className={`auth-status-pill ${isOffline ? 'is-offline' : 'is-online'}`}>
+            {isOffline ? <WifiOff size={18} aria-hidden="true" /> : <Wifi size={18} aria-hidden="true" />}
+            <span>{isOffline ? 'Terminal Offline' : 'Balança & Estoque Online'}</span>
+          </div>
+        </div>
+      </header>
 
-      {/* Coluna da Direita: Teclado Numérico & PIN estilo Apple */}
-      <section className="auth-right-column" aria-label="Autenticação com PIN">
-        <div className="auth-pin-card-apple">
-          <div className="auth-pin-card-header">
-            <h3 className="auth-pin-title">PIN de {selectedName}</h3>
+      <div className="auth-layout-minimal">
+        {/* Coluna da Esquerda: Seleção do Pintor */}
+        <section className="auth-left-column" aria-label="Seleção de Operador">
+          <div className="auth-column-header">
+            <h1 className="auth-title-minimal">Quem está pintando?</h1>
+            <p className="auth-subtitle-minimal">
+              Toque no seu nome e digite o PIN de 4 dígitos para liberar a cabine.
+            </p>
           </div>
 
-          <PinInput
-            length={4}
-            value={pinEntered}
-            hasError={hasError}
-            isSuccess={isSuccess}
-            errorMessage="PIN incorreto"
-          />
+          <div className="auth-operators-vertical" role="radiogroup" aria-label="Operadores disponíveis">
+            {operators.map((op) => {
+              const opName = op.nome || op.name || '';
+              const opRole = op.papel || op.role || 'Operador de Pintura';
+              const isSelected = op.id ? op.id === selectedOperator.id : opName === selectedName;
 
-          <NumericKeypad
-            onDigit={handleDigit}
-            onBackspace={handleBackspace}
-            onClear={handleClear}
-            disabled={isOffline}
-          />
-        </div>
-      </section>
+              return (
+                <button
+                  key={op.id || opName}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  className={`operator-card-apple ${isSelected ? 'is-active' : ''}`}
+                  onClick={() => {
+                    onSelectOperator(op);
+                    handleClear();
+                  }}
+                >
+                  <div className="operator-avatar-circle" aria-hidden="true">
+                    {getInitials(opName)}
+                  </div>
+                  <div className="operator-info-apple">
+                    <span className="operator-name-apple">{opName}</span>
+                    <span className="operator-role-apple">{opRole}</span>
+                  </div>
+                  <div className={`operator-select-indicator ${isSelected ? 'is-selected' : ''}`} aria-hidden="true">
+                    {isSelected && <Check size={20} strokeWidth={3} />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            className="auth-help-link-subtle"
+            onClick={() => {
+              showToast('Solicite assistência ao supervisor Fábio para redefinir seu PIN (Demo: 1234).', 'info');
+            }}
+          >
+            <HelpCircle size={20} aria-hidden="true" />
+            <span>Esqueceu o PIN ou precisa de ajuda?</span>
+          </button>
+        </section>
+
+        {/* Coluna da Direita: Teclado Numérico & PIN estilo Apple */}
+        <section className="auth-right-column" aria-label="Autenticação com PIN">
+          <div className="auth-pin-card-apple">
+            <div className="auth-pin-card-header">
+              <div className="auth-pin-operator-chip">
+                <ShieldCheck size={18} aria-hidden="true" />
+                <span>{selectedRole}</span>
+              </div>
+              <h2 className="auth-pin-title">PIN de {selectedName}</h2>
+              <p className="auth-pin-hint">Digite os 4 dígitos para iniciar o turno</p>
+            </div>
+
+            <PinInput
+              length={4}
+              value={pinEntered}
+              hasError={hasError}
+              isSuccess={isSuccess}
+              errorMessage="PIN incorreto. Tente novamente."
+            />
+
+            <NumericKeypad
+              onDigit={handleDigit}
+              onBackspace={handleBackspace}
+              onClear={handleClear}
+              disabled={isOffline}
+            />
+          </div>
+        </section>
+      </div>
     </div>
   );
 };
+
 
