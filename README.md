@@ -203,10 +203,10 @@ npm run build       # Compila a aplicação para produção (pasta dist/)
 - [x] Camada de repositórios com alternância de fonte de dados (`VITE_DATA_SOURCE=mock`)
 - [x] Persistência local das movimentações e pot life (`localStorage`)
 - [x] Testes unitários para a camada de domínio matemático (`src/domain/`) e repositórios (`src/data/`)
+- [x] Leitura de QR Code universal com fallback para Safari/iPadOS (dual-engine: `BarcodeDetector` nativo + decodificador canvas `jsQR`)
 
 **Próximos passos**
 
-- [ ] Leitura de QR Code no Safari/iPadOS (fallback universal para navegadores sem `BarcodeDetector`)
 - [ ] Integração com o Supabase da empresa (assim que liberado o acesso de leitura)
 - [ ] Recebimento formal de NF e novos lotes no estoque
 - [ ] Cadastro/importação de ordens de serviço

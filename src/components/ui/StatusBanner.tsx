@@ -1,4 +1,5 @@
 import React from 'react';
+import { Info, AlertTriangle, AlertOctagon } from 'lucide-react';
 
 export type StatusBannerVariant = 'info' | 'warn' | 'danger';
 
@@ -22,9 +23,9 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({
   icon,
 }) => {
   const defaultIcons = {
-    info: 'ℹ',
-    warn: '⚠',
-    danger: '⚡',
+    info: <Info size={20} strokeWidth={2.4} />,
+    warn: <AlertTriangle size={20} strokeWidth={2.4} />,
+    danger: <AlertOctagon size={20} strokeWidth={2.4} />,
   };
 
   return (

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import jsQR from 'jsqr';
 
 export interface QrScannerModalProps {
   isOpen: boolean;
@@ -30,6 +31,9 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const scanTimerRef = useRef<number | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isScanningRef = useRef<boolean>(false);
   const [cameraActive, setCameraActive] = useState<boolean>(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [hasTorch, setHasTorch] = useState<boolean>(false);
@@ -37,8 +41,18 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
   const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user');
 
-  // Fecha e limpa o stream de vídeo
+  // Para o loop contínuo de escaneamento de QR Code
+  const stopScanning = useCallback(() => {
+    isScanningRef.current = false;
+    if (scanTimerRef.current !== null) {
+      clearInterval(scanTimerRef.current);
+      scanTimerRef.current = null;
+    }
+  }, []);
+
+  // Fecha e limpa o stream de vídeo e scanners
   const stopCamera = useCallback(() => {
+    stopScanning();
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -48,7 +62,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
     }
     setCameraActive(false);
     setTorchOn(false);
-  }, []);
+  }, [stopScanning]);
 
   const handleDetected = useCallback((code: string) => {
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
@@ -62,6 +76,87 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
     onScanSuccess(code);
     onClose();
   }, [onScanSuccess, onClose, stopCamera]);
+
+  // Loop de detecção duplo: BarcodeDetector nativo (se suportado) + fallback universal jsQR (Safari / iPadOS)
+  const startDetectionLoop = useCallback(() => {
+    stopScanning();
+    isScanningRef.current = true;
+
+    // 1. Tenta inicializar BarcodeDetector nativo se o browser suportar (Chrome, Edge, etc.)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const win = window as any;
+    const hasBarcodeDetector = typeof win !== 'undefined' && 'BarcodeDetector' in win;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let nativeDetector: any = null;
+
+    if (hasBarcodeDetector) {
+      try {
+        nativeDetector = new win.BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13'] });
+      } catch (detectorErr) {
+        console.warn('BarcodeDetector nativo indisponível, usando jsQR universal:', detectorErr);
+      }
+    }
+
+    // 2. Prepara canvas off-screen para captura de frames com jsQR
+    if (!canvasRef.current && typeof document !== 'undefined') {
+      canvasRef.current = document.createElement('canvas');
+    }
+
+    scanTimerRef.current = window.setInterval(async () => {
+      if (!isScanningRef.current) return;
+      const video = videoRef.current;
+      if (!video || video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+        return;
+      }
+
+      // Tentativa A: Detector nativo de hardware
+      if (nativeDetector) {
+        try {
+          const barcodes = await nativeDetector.detect(video);
+          if (barcodes.length > 0 && barcodes[0].rawValue) {
+            stopScanning();
+            handleDetected(barcodes[0].rawValue);
+            return;
+          }
+        } catch {
+          // Em caso de falha pontual no detector nativo, o frame passa para o jsQR abaixo
+        }
+      }
+
+      // Tentativa B: Fallback universal de decodificação de imagem via jsQR (Safari/iPadOS/Firefox)
+      const canvas = canvasRef.current;
+      if (canvas) {
+        try {
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          if (ctx) {
+            // Downscale controlado para 480px máximo para leitura instantânea sem engasgar tablets
+            const targetWidth = Math.min(480, video.videoWidth);
+            const scale = targetWidth / video.videoWidth;
+            const targetHeight = Math.round(video.videoHeight * scale);
+
+            if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+              canvas.width = targetWidth;
+              canvas.height = targetHeight;
+            }
+
+            ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
+            const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+            const qrCode = jsQR(imageData.data, targetWidth, targetHeight, {
+              inversionAttempts: 'attemptBoth',
+            });
+
+            if (qrCode && qrCode.data) {
+              stopScanning();
+              handleDetected(qrCode.data);
+              return;
+            }
+          }
+        } catch {
+          // Frame com erro descartado silenciosamente para o próximo ciclo
+        }
+      }
+    }, 240);
+  }, [handleDetected, stopScanning]);
 
   // Inicia a câmera com fallback progressivo
   const startCamera = useCallback(async () => {
@@ -119,25 +214,8 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         setHasTorch(true);
       }
 
-      // BarcodeDetector nativo se suportado
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const win = window as any;
-      if ('BarcodeDetector' in win) {
-        const barcodeDetector = new win.BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13'] });
-        const scanTimer = window.setInterval(async () => {
-          if (videoRef.current && videoRef.current.readyState >= 2) {
-            try {
-              const barcodes = await barcodeDetector.detect(videoRef.current);
-              if (barcodes.length > 0 && barcodes[0].rawValue) {
-                clearInterval(scanTimer);
-                handleDetected(barcodes[0].rawValue);
-              }
-            } catch {
-              // frame ignorado
-            }
-          }
-        }, 350);
-      }
+      // Inicia o motor de escaneamento contínuo (BarcodeDetector nativo + Fallback jsQR para iPadOS/Safari)
+      startDetectionLoop();
     } catch (err: unknown) {
       let msg = 'Não foi possível acessar a câmera.';
       if (err instanceof Error) {
@@ -154,7 +232,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
     } finally {
       setIsRetrying(false);
     }
-  }, [handleDetected, cameraFacing]);
+  }, [startDetectionLoop, cameraFacing]);
 
   // Garante que o stream seja montado ao abrir ou alternar câmera
   useEffect(() => {
@@ -260,10 +338,15 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             style={{
               background: 'transparent',
               border: 'none',
-              color: '#71717a',
-              fontSize: '18px',
+              color: '#a1a1aa',
+              fontSize: '20px',
               cursor: 'pointer',
-              padding: '6px',
+              minWidth: '48px',
+              minHeight: '48px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '8px',
             }}
           >
             ✕
@@ -427,11 +510,28 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             </div>
           </div>
 
+          {/* Indicador de Status do Scanner */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+            <span
+              style={{
+                display: 'inline-block',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: cameraActive ? 'var(--ok)' : 'var(--warn)',
+                boxShadow: cameraActive ? '0 0 8px var(--ok)' : 'none',
+              }}
+            />
+            <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)' }}>
+              {cameraActive ? 'Sensor de leitura ativo (Universal iPad/Android)' : 'Aguardando câmera...'}
+            </span>
+          </div>
+
           {/* Atalhos Rápidos de Simulação */}
           <div style={{ width: '100%', marginTop: '16px' }}>
             <span
               style={{
-                fontSize: '12px',
+                fontSize: '13px',
                 fontWeight: 700,
                 color: '#71717a',
                 textTransform: 'uppercase',
@@ -442,7 +542,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             >
               Etiquetas de Teste Rápido (Clique para ler):
             </span>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {QUICK_SCAN_OPTIONS.map((opt) => (
                 <button
                   key={opt.code}
@@ -451,26 +551,26 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 12px',
+                    gap: '10px',
+                    padding: '12px 14px',
                     background: '#1a1b20',
                     border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '10px',
+                    borderRadius: '12px',
                     color: '#ededed',
-                    fontSize: '13px',
+                    fontSize: 'var(--fs-small)',
                     fontWeight: 600,
                     textAlign: 'left',
                     cursor: 'pointer',
-                    minHeight: '48px',
+                    minHeight: '56px',
                     transition: 'all 0.15s ease',
                   }}
                 >
                   <span
                     style={{
-                      padding: '2px 6px',
-                      borderRadius: '4px',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
                       background: 'rgba(43, 127, 255, 0.15)',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       fontWeight: 800,
                       color: '#60a5fa',
                     }}
@@ -503,13 +603,13 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               onClose();
             }}
             style={{
-              height: '42px',
-              padding: '0 20px',
-              borderRadius: '10px',
+              minHeight: 'var(--touch-min)',
+              padding: '0 28px',
+              borderRadius: '12px',
               backgroundColor: '#202127',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
               color: '#ededed',
-              fontSize: '14px',
+              fontSize: 'var(--fs-small)',
               fontWeight: 600,
               cursor: 'pointer',
             }}

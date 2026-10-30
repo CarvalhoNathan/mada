@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { AlertOctagon, Info, X } from 'lucide-react';
 
 export type ModalVariant = 'standard' | 'critical';
 
@@ -64,8 +65,8 @@ export const Modal: React.FC<ModalProps> = ({
       <div className={`ds-modal-card ds-modal-${variant}`}>
         {/* Cabeçalho */}
         <header className="ds-modal-header">
-          <div className="ds-modal-header-icon" aria-hidden="true">
-            {variant === 'critical' ? '⚡' : 'ℹ'}
+          <div className="ds-modal-header-icon" aria-hidden="true" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {variant === 'critical' ? <AlertOctagon size={24} /> : <Info size={24} />}
           </div>
           <div className="ds-modal-header-titles">
             <h2 className="ds-modal-title">{title}</h2>
@@ -77,8 +78,9 @@ export const Modal: React.FC<ModalProps> = ({
               className="ds-modal-close-btn"
               onClick={onClose}
               aria-label="Fechar janela"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              ✕
+              <X size={20} />
             </button>
           )}
         </header>

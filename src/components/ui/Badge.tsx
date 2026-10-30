@@ -1,4 +1,5 @@
 import React from 'react';
+import { Check, AlertTriangle, X, Info } from 'lucide-react';
 
 export type BadgeVariant = 'ok' | 'warn' | 'danger' | 'info';
 
@@ -21,10 +22,10 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   const defaultIcons = {
-    ok: '✓',
-    warn: '⚠',
-    danger: '✕',
-    info: 'ℹ',
+    ok: <Check size={13} strokeWidth={2.8} />,
+    warn: <AlertTriangle size={13} strokeWidth={2.8} />,
+    danger: <X size={13} strokeWidth={2.8} />,
+    info: <Info size={13} strokeWidth={2.8} />,
   };
 
   return (
