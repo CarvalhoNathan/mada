@@ -1,6 +1,24 @@
 {
   "version": 1,
   "skills": {
+    "code-simplification": {
+      "source": "addyosmani/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/code-simplification/SKILL.md",
+      "computedHash": "e4c1f0c12274be9981e1301bfbb9b3112b63e2209413071728b132c9b4ee2f5b"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "106acf230014cbb43ca34e6410371321b56ca742f9ee0442e8ec05bf02eb0384"
+    },
+    "security-and-hardening": {
+      "source": "addyosmani/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/security-and-hardening/SKILL.md",
+      "computedHash": "dbab1f4697ece5cab24a90911ae052320d8f8b191324df7f836aa42344699b89"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
@@ -42,6 +60,24 @@
       "sourceType": "github",
       "skillPath": "skills/verification-before-completion/SKILL.md",
       "computedHash": "b529822bdac4b197b180fe12225cff86b930b65910435103c10622df7f041651"
+    },
+    "vite": {
+      "source": "antfu/skills",
+      "sourceType": "github",
+      "skillPath": "skills/vite/SKILL.md",
+      "computedHash": "8a05956b65faa8131826da179f2d09afe73931971466d5640d95388b4182cda5"
+    },
+    "vitest": {
+      "source": "antfu/skills",
+      "sourceType": "github",
+      "skillPath": "skills/vitest/SKILL.md",
+      "computedHash": "b26b7f8d10e860e944e0334c003207771707c4906514cb96c971faae13fba875"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
     },
     "webapp-testing": {
       "source": "anthropics/skills",
