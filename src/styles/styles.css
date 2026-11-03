@@ -314,12 +314,12 @@ body {
 }
 
 .screen-content-area {
-  flex: 1;
+  flex: 1 0 auto;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: visible;
   display: flex;
   flex-direction: column;
-  padding-bottom: 84px; /* Espaço para a barra inferior fixa */
+  padding-bottom: 96px; /* Espaço garantido para a barra inferior fixa */
 }
 
 /* Barra Inferior Fixa do AppShell (Voltar à esquerda, Ação à direita) */
@@ -328,14 +328,20 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 76px;
-  background-color: var(--card);
+  min-height: 76px;
+  height: auto;
+  background-color: rgba(18, 19, 22, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-top: 1.5px solid var(--border);
-  padding: 0 32px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+  padding: 12px clamp(16px, 3vw, 32px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 40;
+  flex-wrap: wrap;
+  gap: 12px;
+  z-index: 60;
 }
 
 .ds-bottom-bar-left {
@@ -1154,15 +1160,17 @@ body {
 
 /* ==========================================================================
    Tela 3: Vincular O.S. & Peça (Padrão Industrial Minimalista Apple HIG / Notion)
-   Resolução fixa 1280x800 sem rolagem. Zero ruído cognitivo.
    ========================================================================== */
 .os-screen-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
+  height: auto;
+  flex: 1 0 auto;
   width: 100%;
   box-sizing: border-box;
-  justify-content: space-between;
+  justify-content: flex-start;
+  padding-bottom: 96px; /* Espaço para a barra inferior fixa */
 }
 
 /* 1. Stepper de Progresso Industrial (Compacto) */
@@ -1170,14 +1178,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
   background-color: rgba(255, 255, 255, 0.03);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-pill);
-  padding: 4px 20px;
-  height: 44px;
+  padding: 6px 20px;
+  min-height: 44px;
+  height: auto;
   box-sizing: border-box;
   width: fit-content;
+  max-width: 100%;
   margin: 0 auto 14px auto;
 }
 
@@ -1240,8 +1251,7 @@ body {
   grid-template-columns: 1.15fr 1fr;
   gap: 20px;
   width: 100%;
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;
 }
 
 .os-col-left,
@@ -1249,7 +1259,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  min-height: 0;
 }
 
 .os-card-surface {
@@ -1566,15 +1575,27 @@ body {
   flex-shrink: 0;
 }
 
-/* 3. Barra Inferior Padronizada */
+/* 3. Barra Inferior Padronizada Fixa (Voltar / Cancelar preparação / Avançar) */
 .os-bottom-bar-minimal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   width: 100%;
-  height: 56px;
-  min-height: 56px;
-  margin-top: 12px;
+  min-height: 76px;
+  height: auto;
+  padding: 12px clamp(16px, 3vw, 32px);
+  background-color: rgba(18, 19, 22, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1.5px solid var(--border);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
   box-sizing: border-box;
 }
 
@@ -1582,6 +1603,7 @@ body {
 .os-bottom-right {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -1722,15 +1744,17 @@ body {
 
 /* ==========================================================================
    TELA 4: Receita & Calculadora (Padrão Industrial Minimalista Apple HIG / Notion)
-   Resolução fixa 1280x800 sem rolagem. Zero ruído cognitivo.
    ========================================================================== */
 .recipe-screen-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
+  height: auto;
+  flex: 1 0 auto;
   width: 100%;
   box-sizing: border-box;
-  justify-content: space-between;
+  justify-content: flex-start;
+  padding-bottom: 96px; /* Espaço para a barra inferior fixa */
 }
 
 /* 2. Cabeçalho da Receita (Apple / Notion) */
@@ -1742,6 +1766,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   box-sizing: border-box;
   margin-bottom: 12px;
 }
@@ -1922,8 +1948,7 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;
 }
 
 .recipe-chem-card {
@@ -2061,12 +2086,14 @@ body {
 .dosing-step-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   background-color: var(--card);
   border: 1.5px solid var(--border);
   border-radius: 12px;
-  padding: 4px 12px;
-  height: 44px;
+  padding: 6px 12px;
+  min-height: 44px;
+  height: auto;
   box-sizing: border-box;
   flex-shrink: 0;
 }
@@ -2116,11 +2143,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
   background-color: var(--card);
   border: 1.5px solid var(--border);
   border-radius: 14px;
   padding: 10px 18px;
-  height: 48px;
+  min-height: 48px;
+  height: auto;
   box-sizing: border-box;
   flex-shrink: 0;
 }
@@ -2200,10 +2230,9 @@ body {
 .dosing-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-auto-rows: minmax(185px, 1fr);
   gap: 12px;
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;
 }
 
 .dosing-card {
@@ -3895,6 +3924,7 @@ body {
 /* 2. Área Central e Container do Dashboard BoardUI */
 .boardui-content-canvas {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
@@ -3905,10 +3935,9 @@ body {
 }
 
 .boardui-content-inner {
-  flex: 1;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
@@ -3917,7 +3946,9 @@ body {
 .boardui-dash-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
+  height: auto;
+  flex: 1 0 auto;
   box-sizing: border-box;
 }
 
@@ -4101,13 +4132,15 @@ body {
 .boardui-cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: auto;
   gap: 20px;
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;
 }
 
 .boardui-card {
-  height: 335px;
+  min-height: 320px;
+  height: auto;
+  gap: 18px;
   background-color: var(--card);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-card);
@@ -4351,25 +4384,36 @@ body {
     gap: 8px;
   }
 
+  .boardui-fefo-title {
+    white-space: normal;
+  }
+
   .boardui-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-auto-rows: auto;
+    flex: 0 0 auto;
     gap: 16px;
   }
 
   .boardui-card {
     height: auto;
-    min-height: 250px;
+    min-height: 0;
     gap: 18px;
+  }
+
+  .boardui-card-body {
+    margin: 0;
   }
 
   .os-layout-minimal {
     grid-template-columns: 1fr;
+    flex: 0 0 auto;
     height: auto;
-    overflow: visible;
   }
 
   .recipe-chemicals-grid {
     grid-template-columns: repeat(2, 1fr);
+    flex: 0 0 auto;
     height: auto;
   }
 
@@ -4419,15 +4463,29 @@ body {
 
   .boardui-cards-grid {
     grid-template-columns: 1fr;
+    flex: 0 0 auto;
   }
 
   .boardui-card {
-    min-height: 210px;
+    min-height: 0;
+    height: auto;
+    padding: 20px 22px;
+    gap: 16px;
   }
 
   .dosing-grid {
     grid-template-columns: 1fr;
-    overflow: visible;
+    grid-auto-rows: auto;
+    flex: 0 0 auto;
+  }
+
+  .os-bar-btn {
+    padding: 0 16px;
+    font-size: 16px;
+  }
+
+  .os-btn-continue {
+    min-width: 0;
   }
 }
 
@@ -4451,6 +4509,12 @@ body {
 
   .recipe-presets-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .os-screen-container,
+  .recipe-screen-container,
+  .screen-content-area {
+    padding-bottom: 140px;
   }
 }
 

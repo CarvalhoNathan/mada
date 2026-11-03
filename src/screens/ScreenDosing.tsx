@@ -195,14 +195,13 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
       <main
         className="screen-content-area"
         style={{
-          padding: '12px 24px 74px 24px',
+          padding: '12px 24px 96px 24px',
           boxSizing: 'border-box',
-          height: '100%',
+          minHeight: '100%',
+          height: 'auto',
           display: 'flex',
           flexDirection: 'column',
           gap: '10px',
-          overflowX: 'hidden',
-          overflowY: 'auto',
         }}
       >
         {/* 1. Stepper Unificado Compacto (44px) */}
