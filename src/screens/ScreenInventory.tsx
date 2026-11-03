@@ -11,10 +11,12 @@ import {
   Plus,
   ClipboardCopy,
   Trash2,
+  X,
 } from 'lucide-react';
 import { Lote, Operador, ScreenId, ItemSolicitacaoCompra } from '../types';
 import { Button } from '../components/ui/Button';
 import { formatarStatusValidade } from '../domain/fefo';
+import { MOCK_PRODUTOS } from '../data';
 
 interface ScreenInventoryProps {
   lotes: Lote[];
@@ -24,7 +26,10 @@ interface ScreenInventoryProps {
   solicitacoes: ItemSolicitacaoCompra[];
   onAdicionarSolicitacao: (item: Omit<ItemSolicitacaoCompra, 'id' | 'solicitadoEm'>) => void;
   onRemoverSolicitacao: (id: string) => void;
+  onReceberNovoLote?: (novoLote: Omit<Lote, 'id'>) => Promise<void>;
 }
+
+const VOLUMES_ENTRADA = [900, 1000, 3600, 5000];
 
 export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
   lotes,
@@ -34,9 +39,39 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
   solicitacoes,
   onAdicionarSolicitacao,
   onRemoverSolicitacao,
+  onReceberNovoLote,
 }) => {
   const [filtro, setFiltro] = useState<'todos' | 'criticos' | 'sobras'>('todos');
   const [abaAtiva, setAbaAtiva] = useState<'estoque' | 'compras'>('estoque');
+
+  // Estado do Modal de Entrada de Nova Lata / Nota Fiscal
+  const [isNewBatchModalOpen, setIsNewBatchModalOpen] = useState(false);
+  const [selectedProdutoId, setSelectedProdutoId] = useState<number>(MOCK_PRODUTOS[0].id);
+  const [volumeEntrada, setVolumeEntrada] = useState<number>(3600);
+  const codigoLoteEntrada = `#SY-${8410 + lotes.length}`;
+
+  const handleConfirmarEntradaLote = async () => {
+    const prod = MOCK_PRODUTOS.find((p) => p.id === selectedProdutoId) || MOCK_PRODUTOS[0];
+    const validadeDate = new Date();
+    validadeDate.setMonth(validadeDate.getMonth() + 6);
+    const validadeStr = validadeDate.toISOString().split('T')[0];
+
+    if (onReceberNovoLote) {
+      await onReceberNovoLote({
+        produtoId: prod.id,
+        produtoNome: prod.nome.replace(/^[0-9]+[º°]?\s*/, ''),
+        codigo: codigoLoteEntrada,
+        validade: validadeStr,
+        diasAberto: 0,
+        quantidadeAtual: volumeEntrada,
+        statusUrgencia: 'normal',
+        prateleira: prod.prateleiraPadrao,
+      });
+    }
+
+    setIsNewBatchModalOpen(false);
+    showToast(`✓ Entrada registrada: ${prod.nome} (${volumeEntrada.toLocaleString('pt-BR')} ml) no estoque!`, 'success');
+  };
 
   // Filtra lotes
   const lotesFiltrados = lotes.filter((l) => {
@@ -100,92 +135,124 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '16px',
           marginBottom: '20px',
           background: 'var(--card)',
-          border: '1px solid var(--border)',
+          border: '1.5px solid var(--border)',
           borderRadius: '16px',
-          padding: '16px 24px',
+          padding: '18px 24px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div
             style={{
-              width: '44px',
-              height: '44px',
+              width: '48px',
+              height: '48px',
               borderRadius: '12px',
               background: 'rgba(59, 130, 246, 0.15)',
               color: '#3B82F6',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
-            <Boxes size={22} strokeWidth={2.4} />
+            <Boxes size={24} strokeWidth={2.4} />
           </div>
           <div>
-            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: 'var(--text)' }}>
+            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: 'var(--text)' }}>
               Gestão de Estoque & Solicitação de Compras
             </h2>
-            <p style={{ margin: '2px 0 0', fontSize: '14px', color: 'var(--text-muted)' }}>
+            <p style={{ margin: '2px 0 0', fontSize: '16px', color: 'var(--text-muted)' }}>
               Controle de frascos químicos, prioridade FEFO por validade e reposição de insumos.
             </p>
           </div>
         </div>
 
-        {/* Abas Alternáveis */}
-        <div style={{ display: 'flex', gap: '8px', background: 'var(--card-hover)', padding: '4px', borderRadius: '10px' }}>
+        {/* Ações e Abas Alternáveis */}
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           <button
             type="button"
-            onClick={() => setAbaAtiva('estoque')}
+            onClick={() => setIsNewBatchModalOpen(true)}
             style={{
-              padding: '8px 18px',
-              borderRadius: '8px',
-              border: 'none',
-              background: abaAtiva === 'estoque' ? 'var(--primary)' : 'transparent',
-              color: abaAtiva === 'estoque' ? '#fff' : 'var(--text-muted)',
+              minHeight: '52px',
+              padding: '0 18px',
+              borderRadius: '12px',
+              border: '1.5px solid var(--primary)',
+              background: 'var(--primary-soft)',
+              color: 'var(--text)',
               fontWeight: 700,
-              fontSize: '14px',
+              fontSize: '16px',
               cursor: 'pointer',
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '8px',
+              fontFamily: 'inherit',
             }}
           >
-            <Package size={16} strokeWidth={2.4} /> Estoque Físico ({lotes.length})
+            <Plus size={18} strokeWidth={2.6} color="var(--primary)" />
+            <span>Receber Nova Lata / NF</span>
           </button>
-          <button
-            type="button"
-            onClick={() => setAbaAtiva('compras')}
-            style={{
-              padding: '8px 18px',
-              borderRadius: '8px',
-              border: 'none',
-              background: abaAtiva === 'compras' ? '#10B981' : 'transparent',
-              color: abaAtiva === 'compras' ? '#fff' : 'var(--text-muted)',
-              fontWeight: 700,
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <ShoppingCart size={16} strokeWidth={2.4} /> Lista de Compras
-            {solicitacoes.length > 0 && (
-              <span
-                style={{
-                  background: '#EF4444',
-                  color: '#fff',
-                  borderRadius: '12px',
-                  padding: '1px 7px',
-                  fontSize: '11px',
-                  fontWeight: 800,
-                }}
-              >
-                {solicitacoes.length}
-              </span>
-            )}
-          </button>
+
+          <div style={{ display: 'flex', gap: '8px', background: 'var(--card-hover)', padding: '5px', borderRadius: '12px' }}>
+            <button
+              type="button"
+              onClick={() => setAbaAtiva('estoque')}
+              style={{
+                minHeight: '46px',
+                padding: '8px 18px',
+                borderRadius: '10px',
+                border: 'none',
+                background: abaAtiva === 'estoque' ? 'var(--primary)' : 'transparent',
+                color: abaAtiva === 'estoque' ? '#fff' : 'var(--text-muted)',
+                fontWeight: 700,
+                fontSize: '16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontFamily: 'inherit',
+              }}
+            >
+              <Package size={18} strokeWidth={2.4} /> Estoque Físico ({lotes.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setAbaAtiva('compras')}
+              style={{
+                minHeight: '46px',
+                padding: '8px 18px',
+                borderRadius: '10px',
+                border: 'none',
+                background: abaAtiva === 'compras' ? '#10B981' : 'transparent',
+                color: abaAtiva === 'compras' ? '#fff' : 'var(--text-muted)',
+                fontWeight: 700,
+                fontSize: '16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontFamily: 'inherit',
+              }}
+            >
+              <ShoppingCart size={18} strokeWidth={2.4} /> Lista de Compras
+              {solicitacoes.length > 0 && (
+                <span
+                  style={{
+                    background: '#EF4444',
+                    color: '#fff',
+                    borderRadius: '12px',
+                    padding: '2px 8px',
+                    fontSize: '14px',
+                    fontWeight: 800,
+                  }}
+                >
+                  {solicitacoes.length}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -494,6 +561,114 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Modal Tátil de Recebimento de Nova Lata / Nota Fiscal */}
+      {isNewBatchModalOpen && (
+        <div
+          className="ds-modal-overlay active"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Receber Nova Lata no Estoque"
+        >
+          <div className="ds-modal-card" style={{ maxWidth: '680px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+              <div>
+                <h3 className="ds-modal-title" style={{ fontSize: '22px', margin: 0 }}>
+                  Dar Entrada em Nova Lata / Galão
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '16px', color: 'var(--text-muted)' }}>
+                  Selecione o insumo químico homologado e o volume do recipiente lacrado.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsNewBatchModalOpen(false)}
+                className="os-bar-btn os-btn-back"
+                style={{ minHeight: '52px', padding: '0 16px' }}
+                aria-label="Fechar modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-muted)' }}>
+                1. Produto Químico Homologado:
+              </span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
+                {MOCK_PRODUTOS.map((prod) => {
+                  const isSel = prod.id === selectedProdutoId;
+                  return (
+                    <button
+                      key={prod.id}
+                      type="button"
+                      onClick={() => setSelectedProdutoId(prod.id)}
+                      style={{
+                        minHeight: '64px',
+                        padding: '12px 16px',
+                        borderRadius: '12px',
+                        border: isSel ? '2px solid var(--primary)' : '1.5px solid var(--border)',
+                        background: isSel ? 'var(--primary-soft)' : 'var(--bg)',
+                        color: 'var(--text)',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        gap: '2px',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      <strong style={{ fontSize: '16px' }}>{prod.nome.replace(/^[0-9]+[º°]?\s*/, '')}</strong>
+                      <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                        Ref: {prod.codigo} • {prod.prateleiraPadrao}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-muted)', marginTop: '4px' }}>
+                2. Volume do Galão / Lata Lacrada:
+              </span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                {VOLUMES_ENTRADA.map((volOpt) => {
+                  const isVolSel = volOpt === volumeEntrada;
+                  return (
+                    <button
+                      key={volOpt}
+                      type="button"
+                      onClick={() => setVolumeEntrada(volOpt)}
+                      style={{
+                        minHeight: '56px',
+                        borderRadius: '12px',
+                        border: isVolSel ? '2px solid var(--primary)' : '1.5px solid var(--border)',
+                        background: isVolSel ? 'var(--primary-soft)' : 'var(--bg)',
+                        color: 'var(--text)',
+                        fontSize: '17px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      {volOpt.toLocaleString('pt-BR')} ml
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="ds-modal-actions">
+              <Button variant="secondary" size="md" onClick={() => setIsNewBatchModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button variant="primary" size="md" onClick={handleConfirmarEntradaLote}>
+                ✓ Confirmar Entrada ({codigoLoteEntrada})
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 

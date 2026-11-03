@@ -1,6 +1,7 @@
-import React from 'react';
-import { Ambiente, PieceLot } from '../types';
-import { MOCK_AMBIENTES } from '../data/mock/mockData';
+import React, { useState } from 'react';
+import { Check, X, FileSpreadsheet } from 'lucide-react';
+import { Ambiente, OrdemServico, PieceLot } from '../types';
+import { MOCK_AMBIENTES, MOCK_ORDENS_SERVICO } from '../data/mock/mockData';
 
 interface ScreenOSProps {
   selectedOS: string;
@@ -11,6 +12,7 @@ interface ScreenOSProps {
   pieceLot: PieceLot;
   onChangePieceLot: () => void;
   onChangeOS: () => void;
+  onSelectOS?: (os: OrdemServico) => void;
   onScanOS: () => void;
   onNavigate: (screen: 'dashboard' | 'recipe') => void;
   onOpenCancelPrep: () => void;
@@ -26,12 +28,22 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
   pieceLot,
   onChangePieceLot,
   onChangeOS,
+  onSelectOS,
   onScanOS,
   onNavigate,
   onOpenCancelPrep,
   ambientes,
 }) => {
+  const [isOsModalOpen, setIsOsModalOpen] = useState(false);
   const listaAmbientes = (ambientes || MOCK_AMBIENTES).map(a => ({ name: a.nome, code: a.codigoOS }));
+
+  const handleEnvironmentClick = (envName: string) => {
+    onSelectEnvironment(envName);
+    const matchingOS = MOCK_ORDENS_SERVICO.find((o) => o.ambienteNome === envName);
+    if (matchingOS && onSelectOS) {
+      onSelectOS(matchingOS);
+    }
+  };
 
   return (
     <div className="os-screen-container">
@@ -102,15 +114,21 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
               <button
                 type="button"
                 className="os-action-btn os-btn-secondary"
-                onClick={onChangeOS}
-                title="Alternar entre Ordens de Serviço cadastradas"
+                onClick={() => {
+                  if (onSelectOS) {
+                    setIsOsModalOpen(true);
+                  } else {
+                    onChangeOS();
+                  }
+                }}
+                title="Selecionar Ordem de Serviço na fila"
                 aria-label="Alternar Ordem de Serviço"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="1 4 1 10 7 10" />
                   <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
                 </svg>
-                <span>Alternar O.S.</span>
+                <span>Selecionar O.S. ({MOCK_ORDENS_SERVICO.length})</span>
               </button>
             </div>
           </div>
@@ -132,7 +150,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                     role="radio"
                     aria-checked={isSelected}
                     className={`os-env-chip ${isSelected ? 'is-selected' : ''}`}
-                    onClick={() => onSelectEnvironment(env.name)}
+                    onClick={() => handleEnvironmentClick(env.name)}
                   >
                     <div className="os-env-chip-header">
                       <span className="os-env-name">{env.name}</span>
@@ -252,6 +270,118 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
           </button>
         </div>
       </footer>
+
+      {/* Modal Tátil Seletor de Ordem de Serviço */}
+      {isOsModalOpen && (
+        <div
+          className="ds-modal-overlay active"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Selecionar Ordem de Serviço"
+        >
+          <div className="ds-modal-card" style={{ maxWidth: '720px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '14px',
+                    background: 'var(--primary-soft)',
+                    border: '1.5px solid var(--primary-border)',
+                    color: 'var(--primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <FileSpreadsheet size={24} strokeWidth={2.2} />
+                </div>
+                <div>
+                  <h3 className="ds-modal-title" style={{ fontSize: '22px', margin: 0 }}>
+                    Selecionar Ordem de Serviço na Fila
+                  </h3>
+                  <p style={{ margin: '2px 0 0', fontSize: '16px', color: 'var(--text-muted)' }}>
+                    Toque na O.S. para vincular automaticamente cliente, ambiente e lote de peças.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsOsModalOpen(false)}
+                className="os-bar-btn os-btn-back"
+                style={{ minHeight: '52px', padding: '0 16px' }}
+                aria-label="Fechar seletor de O.S."
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '55vh', overflowY: 'auto' }}>
+              {MOCK_ORDENS_SERVICO.map((ordem) => {
+                const isCurrent = ordem.numero === selectedOS;
+                return (
+                  <button
+                    key={ordem.id}
+                    type="button"
+                    onClick={() => {
+                      if (onSelectOS) {
+                        onSelectOS(ordem);
+                      }
+                      setIsOsModalOpen(false);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '16px',
+                      width: '100%',
+                      minHeight: '84px',
+                      padding: '16px 20px',
+                      borderRadius: '16px',
+                      border: isCurrent ? '2px solid var(--primary)' : '1.5px solid var(--border)',
+                      background: isCurrent ? 'var(--primary-soft)' : 'var(--bg)',
+                      color: 'var(--text)',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontFamily: 'inherit',
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                        <span className="os-number-tag">{ordem.numero}</span>
+                        <strong style={{ fontSize: '18px', color: 'var(--text)' }}>
+                          {ordem.ambienteNome} — {ordem.clienteNome}
+                        </strong>
+                      </div>
+                      <span style={{ fontSize: '16px', color: 'var(--text-muted)' }}>
+                        {ordem.pecaLote.titulo} • {ordem.pecaLote.quantidade} • Estimado: <strong style={{ color: 'var(--text)' }}>{ordem.pecaLote.volumeEstimado}</strong>
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '50%',
+                        border: isCurrent ? '2px solid var(--primary)' : '2px solid var(--border)',
+                        background: isCurrent ? 'var(--primary)' : 'var(--card)',
+                        color: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {isCurrent && <Check size={18} strokeWidth={2.8} />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

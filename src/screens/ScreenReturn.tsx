@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Trash2, Printer } from 'lucide-react';
-import { Operator } from '../types';
+import { AlertTriangle, Trash2, Printer, Check, Package } from 'lucide-react';
+import { Lote, Operator, OrdemServico } from '../types';
 import { Button } from '../components/ui/Button';
 import { calcularSaldoDevolucao } from '../domain/leftover';
 import {
@@ -12,6 +12,8 @@ import {
 
 interface ScreenReturnProps {
   operator: Operator;
+  lotes?: Lote[];
+  activeOS?: OrdemServico;
   onNavigate: (screen: 'dashboard') => void;
   showToast: (msg: string, type?: 'info' | 'success' | 'warn' | 'danger') => void;
   onConfirmReturn?: (dados: {
@@ -26,18 +28,22 @@ interface ScreenReturnProps {
 
 export const ScreenReturn: React.FC<ScreenReturnProps> = ({
   operator,
+  lotes,
+  activeOS,
   onNavigate,
   showToast,
   onConfirmReturn,
   onDiscardWaste,
 }) => {
+  const lotesDisponiveis = lotes && lotes.length > 0 ? lotes : MOCK_LOTES;
+  const [selectedLoteId, setSelectedLoteId] = useState<number>(lotesDisponiveis[0]?.id || 1);
   const [returnVolume, setReturnVolume] = useState(400);
   const maxVolume = 1000;
 
-  // Produto, lote e Ordem de Serviço lidos a partir dos mocks
-  const loteOriginal = MOCK_LOTES[0];
+  // Produto, lote e Ordem de Serviço selecionados dinamicamente
+  const loteOriginal = lotesDisponiveis.find((l) => l.id === selectedLoteId) || lotesDisponiveis[0] || MOCK_LOTES[0];
   const produto = MOCK_PRODUTOS.find((p) => p.id === loteOriginal.produtoId) || MOCK_PRODUTOS[4];
-  const ordemServico = MOCK_ORDENS_SERVICO[0];
+  const ordemServico = activeOS || MOCK_ORDENS_SERVICO[0];
   const loteGerado = `${loteOriginal.codigo}-SOBRA-01`;
   const codigoEtiqueta = `#SOBRA-${loteOriginal.codigo.replace('#', '')}`;
   const dataFormatada = new Date().toLocaleDateString('pt-BR');
@@ -95,10 +101,71 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
   return (
     <>
       <div className="screen-content-area">
-        <div className="section-header-compact">
-          <div className="section-tag">03 / DEVOLUÇÃO AO ESTOQUE</div>
-          <h2 className="section-title">Devolução de Sobras & Etiqueta</h2>
-          <p className="section-desc">Pese a sobra na lata para gerar a etiqueta com QR Code e devolver ao estoque.</p>
+        <div className="section-header-compact" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <div className="section-tag">03 / DEVOLUÇÃO AO ESTOQUE</div>
+            <h2 className="section-title">Devolução de Sobras & Etiqueta</h2>
+            <p className="section-desc">Selecione a lata utilizada, informe o saldo restante e gere a etiqueta térmica com QR Code.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="os-bar-btn os-btn-back"
+            style={{ minHeight: '52px', padding: '0 18px', fontSize: '16px' }}
+            title="Imprimir somente a etiqueta térmica Zebra"
+          >
+            <Printer size={18} strokeWidth={2.2} />
+            <span>Testar Impressão Térmica</span>
+          </button>
+        </div>
+
+        {/* Seletor Tátil de Lata / Insumo Químico em Giro */}
+        <div
+          role="radiogroup"
+          aria-label="Selecione a lata para devolução"
+          style={{
+            display: 'flex',
+            gap: '10px',
+            overflowX: 'auto',
+            paddingBottom: '6px',
+            marginBottom: '12px',
+          }}
+        >
+          {lotesDisponiveis.slice(0, 6).map((loteItem) => {
+            const isSelected = loteItem.id === loteOriginal.id;
+            return (
+              <button
+                key={loteItem.id}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                onClick={() => {
+                  setSelectedLoteId(loteItem.id);
+                  setReturnVolume(Math.min(maxVolume, Math.max(100, Math.round(loteItem.quantidadeAtual / 2 / 50) * 50)));
+                }}
+                style={{
+                  minHeight: '54px',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  border: isSelected ? '2px solid var(--primary)' : '1.5px solid var(--border)',
+                  background: isSelected ? 'var(--primary-soft)' : 'var(--card)',
+                  color: isSelected ? 'var(--text)' : 'var(--text-muted)',
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {isSelected ? <Check size={16} strokeWidth={2.8} color="var(--primary)" /> : <Package size={16} strokeWidth={2.2} />}
+                <span>{loteItem.produtoNome}</span>
+                <span style={{ opacity: 0.75, fontSize: '14px' }}>({loteItem.codigo})</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="return-layout">

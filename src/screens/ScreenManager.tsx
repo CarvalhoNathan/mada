@@ -14,12 +14,16 @@ import {
 import { KpiCard } from '../components/ui/KpiCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Button } from '../components/ui/Button';
-import { ScreenId, Operador } from '../types';
+import { ScreenId, Operador, Movimentacao, Lote } from '../types';
+import { MOCK_OPERADORES, MOCK_ORDENS_SERVICO, MOCK_LOTES } from '../data';
 
 interface ScreenManagerProps {
   onNavigate: (screen: ScreenId) => void;
   operator: Operador;
   showToast: (msg: string, type?: 'info' | 'success' | 'warn' | 'danger') => void;
+  movimentacoes?: Movimentacao[];
+  lotes?: Lote[];
+  onResetDemoData?: () => Promise<void>;
 }
 
 interface RowOSConsumo {
@@ -34,6 +38,7 @@ interface RowOSConsumo {
   custoTotal: number;
   status: 'conforme' | 'alerta';
   data: string;
+  isLive?: boolean;
 }
 
 const HISTORICO_CONSUMO_MOCK: RowOSConsumo[] = [
@@ -95,17 +100,59 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
   onNavigate,
   operator,
   showToast,
+  movimentacoes = [],
+  lotes = [],
+  onResetDemoData,
 }) => {
   const [filtroStatus, setFiltroStatus] = useState<'todos' | 'conforme' | 'alerta'>('todos');
 
-  // Cálculos consolidados
-  const totalRealLitros = (HISTORICO_CONSUMO_MOCK.reduce((acc, r) => acc + r.realMl, 0) / 1000).toFixed(1);
-  const totalCustoReal = HISTORICO_CONSUMO_MOCK.reduce((acc, r) => acc + r.custoTotal, 0).toFixed(2);
-  const totalPrevistoMl = HISTORICO_CONSUMO_MOCK.reduce((acc, r) => acc + r.previstoMl, 0);
-  const totalRealMl = HISTORICO_CONSUMO_MOCK.reduce((acc, r) => acc + r.realMl, 0);
-  const taxaVariacao = (((totalRealMl - totalPrevistoMl) / totalPrevistoMl) * 100).toFixed(1);
+  // Converte movimentações reais registradas na sessão em linhas de auditoria no topo
+  const todosLotes = lotes.length > 0 ? lotes : MOCK_LOTES;
+  const linhasAoVivo: RowOSConsumo[] = movimentacoes.map((mov, idx) => {
+    const osRef = MOCK_ORDENS_SERVICO.find((o) => o.id === mov.ordemServicoId) || MOCK_ORDENS_SERVICO[0];
+    const opRef = MOCK_OPERADORES.find((o) => o.id === mov.operadorId) || operator;
+    const loteRef = todosLotes.find((l) => l.id === mov.loteId);
+    const isDescarte = mov.tipo === 'DESCARTE';
+    const isDevolucao = mov.tipo === 'DEVOLUCAO';
+    const hasJustification = Boolean(mov.justificativa && !isDevolucao);
+    const previsto = isDevolucao ? mov.quantidade : isDescarte ? 0 : mov.quantidade;
+    const custoMl = 0.16;
 
-  const dadosFiltrados = HISTORICO_CONSUMO_MOCK.filter((r) => {
+    return {
+      id: `live-${mov.id || idx}-${mov.registradaEm}`,
+      os: `${osRef.numero} • AO VIVO`,
+      cliente: osRef.clienteNome,
+      ambiente: osRef.ambienteNome,
+      operador: opRef.nome,
+      acabamento: isDevolucao
+        ? `↺ DEVOLUÇÃO SOBRA: ${loteRef?.produtoNome || 'Insumo Químico'}`
+        : isDescarte
+        ? `⚠ REFUGO: ${mov.justificativa || 'Descarte químico'}`
+        : `${loteRef?.produtoNome || 'Componente Dosado'} (${loteRef?.codigo || 'FEFO'})`,
+      previstoMl: previsto,
+      realMl: mov.quantidade,
+      custoTotal: Number((mov.quantidade * custoMl).toFixed(2)),
+      status: isDescarte || hasJustification ? 'alerta' : 'conforme',
+      data: new Date(mov.registradaEm).toLocaleDateString('pt-BR'),
+      isLive: true,
+    };
+  });
+
+  const historicoCombinado = [...linhasAoVivo, ...HISTORICO_CONSUMO_MOCK];
+
+  // Cálculos consolidados dinâmicos
+  const totalRealLitros = (historicoCombinado.reduce((acc, r) => acc + r.realMl, 0) / 1000).toFixed(1);
+  const totalCustoReal = historicoCombinado.reduce((acc, r) => acc + r.custoTotal, 0).toFixed(2);
+  const totalPrevistoMl = historicoCombinado.reduce((acc, r) => acc + r.previstoMl, 0);
+  const totalRealMl = historicoCombinado.reduce((acc, r) => acc + r.realMl, 0);
+  const taxaVariacao = totalPrevistoMl > 0
+    ? (((totalRealMl - totalPrevistoMl) / totalPrevistoMl) * 100).toFixed(1)
+    : '0.0';
+
+  const totalLatasSobra = 7 + movimentacoes.filter((m) => m.tipo === 'DEVOLUCAO').length;
+  const economiaSobras = (412 + movimentacoes.filter((m) => m.tipo === 'DEVOLUCAO').reduce((acc, m) => acc + m.quantidade * 0.14, 0)).toFixed(2).replace('.', ',');
+
+  const dadosFiltrados = historicoCombinado.filter((r) => {
     if (filtroStatus === 'conforme') return r.status === 'conforme';
     if (filtroStatus === 'alerta') return r.status === 'alerta';
     return true;
@@ -190,38 +237,66 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          {onResetDemoData && (
+            <button
+              type="button"
+              onClick={onResetDemoData}
+              style={{
+                minHeight: '52px',
+                padding: '0 18px',
+                background: 'var(--bg)',
+                color: 'var(--text-muted)',
+                border: '1.5px solid var(--border)',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontFamily: 'inherit',
+              }}
+              title="Restaurar saldos e histórico padrão de demonstração"
+            >
+              <RotateCcw size={18} strokeWidth={2.2} /> Restaurar Demo
+            </button>
+          )}
           <button
             type="button"
             onClick={handleExportarRelatorio}
             style={{
-              padding: '10px 18px',
+              minHeight: '52px',
+              padding: '0 20px',
               background: 'var(--card-hover)',
               color: 'var(--text)',
-              border: '1px solid var(--border)',
-              borderRadius: '10px',
-              fontSize: '14px',
+              border: '1.5px solid var(--border)',
+              borderRadius: '12px',
+              fontSize: '16px',
               fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              fontFamily: 'inherit',
             }}
           >
-            <Download size={16} strokeWidth={2.4} /> Exportar CSV
+            <Download size={18} strokeWidth={2.4} /> Exportar CSV
           </button>
           <button
             type="button"
             onClick={() => onNavigate('dashboard')}
             style={{
-              padding: '10px 18px',
+              minHeight: '52px',
+              padding: '0 20px',
               background: 'var(--primary)',
               color: '#fff',
               border: 'none',
-              borderRadius: '10px',
-              fontSize: '14px',
+              borderRadius: '12px',
+              fontSize: '16px',
               fontWeight: 700,
               cursor: 'pointer',
+              fontFamily: 'inherit',
             }}
           >
             Ir para Operação Tablet →
@@ -248,15 +323,15 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
         />
         <KpiCard
           label="Variação Previsto vs Real"
-          value={`+${taxaVariacao}%`}
+          value={`${Number(taxaVariacao) >= 0 ? '+' : ''}${taxaVariacao}%`}
           changeText="Meta SMART: manter abaixo de +5%"
           changeStatus={Number(taxaVariacao) <= 5 ? 'ok' : 'warn'}
           icon={<Target size={22} color="#10B981" strokeWidth={2.4} />}
         />
         <KpiCard
           label="Economia com Sobras"
-          value="R$ 412,00"
-          changeText="7 latas reintegradas com etiqueta QR"
+          value={`R$ ${economiaSobras}`}
+          changeText={`${totalLatasSobra} latas reintegradas com etiqueta QR`}
           changeStatus="ok"
           icon={<RotateCcw size={22} color="#10B981" strokeWidth={2.4} />}
         />
@@ -341,17 +416,18 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
               type="button"
               onClick={() => setFiltroStatus('todos')}
               style={{
-                padding: '6px 14px',
-                borderRadius: '8px',
+                minHeight: '44px',
+                padding: '6px 16px',
+                borderRadius: '10px',
                 border: '1px solid var(--border)',
                 background: filtroStatus === 'todos' ? 'var(--card-hover)' : 'transparent',
                 color: filtroStatus === 'todos' ? 'var(--text)' : 'var(--text-muted)',
                 fontWeight: 600,
-                fontSize: '13px',
+                fontSize: '15px',
                 cursor: 'pointer',
               }}
             >
-              Todos ({HISTORICO_CONSUMO_MOCK.length})
+              Todos ({historicoCombinado.length})
             </button>
             <button
               type="button"

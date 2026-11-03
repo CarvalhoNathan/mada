@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Operator, PieceLot, RecipeState, ScreenId, Lote, ItemSolicitacaoCompra, Receita } from './types';
+import { Operator, PieceLot, RecipeState, ScreenId, Lote, ItemSolicitacaoCompra, Receita, Movimentacao, OrdemServico } from './types';
 import { AppShell } from './components/ui/AppShell';
 import { StatusBanner } from './components/ui/StatusBanner';
 import { Toast } from './components/ui/Toast';
@@ -55,11 +55,12 @@ export const App: React.FC = () => {
   const [operators, setOperators] = useState<Operator[]>(MOCK_OPERADORES);
   const [selectedOperator, setSelectedOperator] = useState<Operator>(MOCK_OPERADORES[0]);
 
-  // Lotes persistidos
+  // Lotes e movimentações persistidos
   const [lotes, setLotes] = useState<Lote[]>([]);
+  const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
-  // Carregar operadores e lotes do repositório
+  // Carregar operadores, lotes e movimentações do repositório
   useEffect(() => {
     operadorRepository.listar().then((list) => {
       if (list.length > 0) {
@@ -71,13 +72,27 @@ export const App: React.FC = () => {
     loteRepository.listar().then((list) => {
       setLotes(list.length > 0 ? list : MOCK_LOTES);
     });
+
+    movimentacaoRepository.listar().then((list) => {
+      setMovimentacoes(list);
+    });
   }, []);
 
   // Dados da OS e Lote
+  const [selectedOSNumber, setSelectedOSNumber] = useState(MOCK_ORDENS_SERVICO[0].numero);
   const [clientName, setClientName] = useState(MOCK_ORDENS_SERVICO[0].clienteNome);
   const [projectName, setProjectName] = useState(MOCK_ORDENS_SERVICO[0].projetoNome);
   const [selectedEnvironment, setSelectedEnvironment] = useState(MOCK_ORDENS_SERVICO[0].ambienteNome);
   const [pieceLot, setPieceLot] = useState<PieceLot>(INITIAL_PIECE_LOT);
+
+  const handleSelectOS = (os: OrdemServico) => {
+    setSelectedOSNumber(os.numero);
+    setClientName(os.clienteNome);
+    setProjectName(os.projetoNome);
+    setSelectedEnvironment(os.ambienteNome);
+    setPieceLot(os.pecaLote);
+    showToast(`✓ ${os.numero} (${os.ambienteNome}) vinculada à preparação!`, 'success');
+  };
 
   // Receita de Mistura Homologada (Dinâmica)
   const [selectedRecipe, setSelectedRecipe] = useState<Receita>(MOCK_RECEITAS[0]);
@@ -120,6 +135,8 @@ export const App: React.FC = () => {
         justificativa: `Descarte obrigatório por cura/endurecimento (>20 min pot life esgotado)`,
         registradaEm: new Date().toISOString(),
       });
+      const movsAtualizadas = await movimentacaoRepository.listar();
+      setMovimentacoes(movsAtualizadas);
       setPotLife(null);
       localStorage.removeItem('mada_active_pot_life');
       showToast(`Refugo químico de ${potLife.volumeTotal}ml registrado no tambor de descarte.`, 'warn');
@@ -262,6 +279,8 @@ export const App: React.FC = () => {
 
     const lotesAtualizados = await loteRepository.listar();
     setLotes(lotesAtualizados);
+    const movsAtualizadas = await movimentacaoRepository.listar();
+    setMovimentacoes(movsAtualizadas);
 
     // Inicia o cronômetro estrito de 20 minutos (Pot Life)
     const newPotLife: PotLifeState = {
@@ -354,28 +373,26 @@ export const App: React.FC = () => {
 
       {currentScreen === 'os' && (
         <ScreenOS
-          selectedOS="OS #8841"
+          selectedOS={selectedOSNumber}
           clientName={clientName}
           projectName={projectName}
           selectedEnvironment={selectedEnvironment}
           onSelectEnvironment={setSelectedEnvironment}
           pieceLot={pieceLot}
           onChangePieceLot={() => {
-            setPieceLot(prev =>
-              prev.titulo.includes('Superiores')
-                ? MOCK_ORDENS_SERVICO[1].pecaLote
-                : MOCK_ORDENS_SERVICO[0].pecaLote
-            );
+            const currentIdx = MOCK_ORDENS_SERVICO.findIndex(o => o.pecaLote.titulo === pieceLot.titulo);
+            const nextIdx = (currentIdx + 1) % MOCK_ORDENS_SERVICO.length;
+            setPieceLot(MOCK_ORDENS_SERVICO[nextIdx].pecaLote);
             showToast('Lote de peças alternado.', 'info');
           }}
           onChangeOS={() => {
             osRepository.listar().then((ordens) => {
-              const alternada = ordens.find(o => o.clienteNome !== clientName) || ordens[0];
-              setClientName(alternada.clienteNome);
-              setProjectName(alternada.projetoNome);
-              showToast('Ordem de Serviço alternada.', 'info');
+              const currentIdx = ordens.findIndex(o => o.numero === selectedOSNumber);
+              const alternada = ordens[(currentIdx + 1) % ordens.length] || ordens[0];
+              handleSelectOS(alternada);
             });
           }}
+          onSelectOS={handleSelectOS}
           onScanOS={handleOpenQR}
           onNavigate={(screen) => setCurrentScreen(screen)}
           onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
@@ -400,7 +417,7 @@ export const App: React.FC = () => {
           recipe={recipe}
           activeRecipe={selectedRecipe}
           operator={selectedOperator}
-          activeOS={MOCK_ORDENS_SERVICO.find(o => o.clienteNome === clientName) || MOCK_ORDENS_SERVICO[0]}
+          activeOS={MOCK_ORDENS_SERVICO.find(o => o.numero === selectedOSNumber) || MOCK_ORDENS_SERVICO[0]}
           onNavigate={(screen) => setCurrentScreen(screen)}
           onCompleteDosing={handleCompleteDosing}
           onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
@@ -411,6 +428,8 @@ export const App: React.FC = () => {
       {currentScreen === 'return' && (
         <ScreenReturn
           operator={selectedOperator}
+          lotes={lotes}
+          activeOS={MOCK_ORDENS_SERVICO.find(o => o.numero === selectedOSNumber) || MOCK_ORDENS_SERVICO[0]}
           onNavigate={(screen) => setCurrentScreen(screen)}
           showToast={showToast}
           onConfirmReturn={async (dados) => {
@@ -420,7 +439,7 @@ export const App: React.FC = () => {
               loteId: 1,
               operadorId: selectedOperator.id,
               quantidade: dados.volume,
-              justificativa: `Devolução formal ao estoque: ${dados.volume}ml`,
+              justificativa: `Devolução formal ao estoque: ${dados.volume}ml (${dados.produtoNome})`,
               registradaEm: new Date().toISOString(),
             });
 
@@ -442,6 +461,8 @@ export const App: React.FC = () => {
 
             const lotesAtualizados = await loteRepository.listar();
             setLotes(lotesAtualizados);
+            const movsAtualizadas = await movimentacaoRepository.listar();
+            setMovimentacoes(movsAtualizadas);
           }}
           onDiscardWaste={async (volume) => {
             await movimentacaoRepository.registrar({
@@ -452,6 +473,8 @@ export const App: React.FC = () => {
               justificativa: `Descarte de refugo químico (${volume}ml)`,
               registradaEm: new Date().toISOString(),
             });
+            const movsAtualizadas = await movimentacaoRepository.listar();
+            setMovimentacoes(movsAtualizadas);
           }}
         />
       )}
@@ -465,6 +488,11 @@ export const App: React.FC = () => {
           solicitacoes={solicitacoesCompras}
           onAdicionarSolicitacao={handleAdicionarSolicitacao}
           onRemoverSolicitacao={handleRemoverSolicitacao}
+          onReceberNovoLote={async (novoLote) => {
+            await loteRepository.adicionarSobra(novoLote);
+            const lotesAtualizados = await loteRepository.listar();
+            setLotes(lotesAtualizados);
+          }}
         />
       )}
 
@@ -473,6 +501,17 @@ export const App: React.FC = () => {
           operator={selectedOperator}
           onNavigate={(screen) => setCurrentScreen(screen)}
           showToast={showToast}
+          movimentacoes={movimentacoes}
+          lotes={lotes}
+          onResetDemoData={async () => {
+            await loteRepository.resetar();
+            await movimentacaoRepository.resetar();
+            const lotesReset = await loteRepository.listar();
+            const movsReset = await movimentacaoRepository.listar();
+            setLotes(lotesReset);
+            setMovimentacoes(movsReset);
+            showToast('✓ Saldos de estoque e histórico restaurados para o estado inicial!', 'success');
+          }}
         />
       )}
 
