@@ -26,6 +26,7 @@ interface ScreenDosingProps {
     dosingValues: Record<number, number>,
     wasteJustification?: string
   ) => void;
+  onSetTotalVolume?: (vol: number) => void;
   onOpenCancelPrep: () => void;
   showToast: (msg: string, type?: 'info' | 'success' | 'warn' | 'danger') => void;
 }
@@ -37,6 +38,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
   activeOS,
   onNavigate,
   onCompleteDosing,
+  onSetTotalVolume,
   onOpenCancelPrep,
   showToast,
 }) => {
@@ -169,6 +171,23 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
       showToast(`Valor de ${criticalItem.item.item.produtoNome} zerado para redosagem.`, 'info');
       setCriticalItem(null);
     }
+  };
+
+  const handleRecalcularProporcoes = () => {
+    if (!criticalItem) return;
+    const proporcaoItem = criticalItem.item.item.proporcao;
+    if (proporcaoItem <= 0) return;
+
+    const novoVolumeTotal = Math.min(5000, Math.round(criticalItem.valReal / proporcaoItem));
+    if (onSetTotalVolume) {
+      onSetTotalVolume(novoVolumeTotal);
+    }
+
+    setCriticalItem(null);
+    showToast(
+      `✓ Mistura recalculada para ${novoVolumeTotal.toLocaleString('pt-BR')} ml! Complete os demais itens na nova meta.`,
+      'success'
+    );
   };
 
   const handleConfirmDesperdicio = (reason: string) => {
@@ -586,6 +605,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
           isOpen={true}
           onClose={() => setCriticalItem(null)}
           onRepesarDoZero={handleRepesarDoZero}
+          onRecalcularReceita={handleRecalcularProporcoes}
           onConfirmDesperdicio={handleConfirmDesperdicio}
           componentName={criticalItem.item.item.produtoNome}
           targetVolume={criticalItem.item.metaMl}

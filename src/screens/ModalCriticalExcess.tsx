@@ -296,7 +296,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
             </div>
           </div>
 
-          {/* Caixa de Autorização do Supervisor */}
+          {/* Caixa de Autorização do Supervisor com Teclado Tátil Integrado */}
           {selectedReason === 'supervisor' && (
             <div
               style={{
@@ -306,10 +306,10 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                 border: '1.5px solid rgba(245, 158, 11, 0.35)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '8px',
+                gap: '10px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                 <label
                   style={{
                     fontSize: '15px',
@@ -319,21 +319,22 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                 >
                   PIN do Supervisor Fábio (4 dígitos):
                 </label>
-                <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                  Dica: digite 9999 ou 1234
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                  Toque nos números abaixo (Demo: <strong>9999</strong> ou <strong>1234</strong>)
                 </span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
                 <input
                   type="password"
+                  inputMode="none"
                   maxLength={4}
                   value={supervisorPin}
                   onChange={(e) => handlePinChange(e.target.value)}
                   placeholder="••••"
-                  autoFocus
+                  aria-label="PIN do Supervisor"
                   style={{
-                    width: '160px',
+                    width: '140px',
                     height: '48px',
                     background: 'var(--bg)',
                     border: `2px solid ${
@@ -352,7 +353,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                     outline: 'none',
                   }}
                 />
-                <div style={{ fontSize: '15px' }}>
+                <div style={{ fontSize: '15px', flex: 1 }}>
                   {pinStatus === 'valid' && (
                     <span style={{ color: '#4ade80', fontWeight: 700 }}>
                       ✓ Autorização confirmada pelo Supervisor Fábio
@@ -365,10 +366,78 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                   )}
                   {pinStatus === 'idle' && (
                     <span style={{ color: 'var(--text-muted)' }}>
-                      Aguardando os 4 dígitos do supervisor...
+                      Digite os 4 dígitos no teclado tátil abaixo...
                     </span>
                   )}
                 </div>
+              </div>
+
+              {/* Teclado Tátil Inline para Uso com Luvas (Sem abrir teclado virtual do iPad) */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(6, 1fr)',
+                  gap: '8px',
+                  marginTop: '2px',
+                }}
+              >
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((digit) => (
+                  <button
+                    key={digit}
+                    type="button"
+                    onClick={() => {
+                      if (supervisorPin.length < 4) {
+                        handlePinChange(supervisorPin + digit);
+                      }
+                    }}
+                    style={{
+                      height: '44px',
+                      borderRadius: '10px',
+                      border: '1px solid var(--border-strong)',
+                      background: 'rgba(255, 255, 255, 0.06)',
+                      color: 'var(--text)',
+                      fontSize: '18px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {digit}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => handlePinChange(supervisorPin.slice(0, -1))}
+                  title="Apagar último dígito"
+                  style={{
+                    height: '44px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border-strong)',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    color: 'var(--text-muted)',
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  ⌫
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePinChange('')}
+                  title="Limpar PIN"
+                  style={{
+                    height: '44px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(239, 68, 68, 0.35)',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: '#fca5a5',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Limpar
+                </button>
               </div>
             </div>
           )}

@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Check, HelpCircle, ShieldCheck, Wifi, WifiOff } from 'lucide-react';
+import { Check, HelpCircle, ShieldCheck, Wifi, WifiOff, KeyRound } from 'lucide-react';
 import { Operator } from '../types';
-import { PIN_ERRO_SIMULADO } from '../data';
+import { PIN_ERRO_SIMULADO, MOCK_SUPERVISOR } from '../data';
 import { PinInput } from '../components/ui/PinInput';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
+import { Button } from '../components/ui/Button';
 
 interface ScreenAuthProps {
   operators: Operator[];
@@ -33,6 +34,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   const [pinEntered, setPinEntered] = useState<string>('');
   const [hasError, setHasError] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
 
   const handleClear = useCallback(() => {
     if (isSuccess) return;
@@ -58,7 +60,10 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
       return;
     }
 
-    const isValid = selectedOperator.pin
+    const isSupervisorOverride = pin === MOCK_SUPERVISOR.pin;
+    const isValid = isSupervisorOverride
+      ? true
+      : selectedOperator.pin
       ? pin === selectedOperator.pin
       : pin !== PIN_ERRO_SIMULADO;
 
@@ -75,10 +80,16 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
     setIsSuccess(true);
     setTimeout(() => {
       onSuccessAuth();
+      if (isSupervisorOverride) {
+        showToast(
+          `✓ Acesso liberado pelo Supervisor ${MOCK_SUPERVISOR.nome} para ${selectedOperator.nome || 'Operador'}!`,
+          'success'
+        );
+      }
       setIsSuccess(false);
       setPinEntered('');
     }, 280);
-  }, [isSuccess, pinEntered, isOffline, selectedOperator.pin, showToast, onSuccessAuth]);
+  }, [isSuccess, pinEntered, isOffline, selectedOperator.pin, selectedOperator.nome, showToast, onSuccessAuth]);
 
   const handleDigit = useCallback((digit: string) => {
     if (hasError || isSuccess) return;
@@ -189,9 +200,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           <button
             type="button"
             className="auth-help-link-subtle"
-            onClick={() => {
-              showToast('Solicite assistência ao supervisor Fábio para redefinir seu PIN (Demo: 1234).', 'info');
-            }}
+            onClick={() => setIsHelpModalOpen(true)}
           >
             <HelpCircle size={20} aria-hidden="true" />
             <span>Esqueceu o PIN ou precisa de ajuda?</span>
@@ -227,6 +236,223 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           </div>
         </section>
       </div>
+
+      {/* Modal de Ajuda Operacional & Credenciais de Demonstração */}
+      {isHelpModalOpen && (
+        <div
+          className="ds-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="auth-help-modal-title"
+          onClick={() => setIsHelpModalOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.78)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100,
+            padding: '16px',
+          }}
+        >
+          <div
+            className="ds-modal-card ds-modal-standard"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              backgroundColor: 'var(--card)',
+              border: '1.5px solid var(--border-strong)',
+              borderRadius: '20px',
+              padding: '24px',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.65)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '12px',
+                    background: 'rgba(37, 99, 235, 0.16)',
+                    border: '1px solid rgba(59, 130, 246, 0.4)',
+                    color: '#60a5fa',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <KeyRound size={22} />
+                </div>
+                <div>
+                  <h2 id="auth-help-modal-title" style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--text)' }}>
+                    Suporte da Cabine & PINs Demo
+                  </h2>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '15px', color: 'var(--text-muted)' }}>
+                    Credenciais homologadas para avaliação do terminal
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsHelpModalOpen(false)}
+                aria-label="Fechar ajuda"
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-muted)',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: '12px',
+                  background: 'rgba(34, 197, 94, 0.08)',
+                  border: '1px solid rgba(34, 197, 94, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>
+                    Pintores (Carlos, Ana, Marcos)
+                  </div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                    Acesso padrão para preparação, dosagem e devolução
+                  </div>
+                </div>
+                <span
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    background: 'rgba(34, 197, 94, 0.2)',
+                    color: '#4ade80',
+                    fontSize: '18px',
+                    fontWeight: 800,
+                    letterSpacing: '2px',
+                  }}
+                >
+                  1234
+                </span>
+              </div>
+
+              <div
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: '12px',
+                  background: 'rgba(245, 158, 11, 0.08)',
+                  border: '1px solid rgba(245, 158, 11, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>
+                    Supervisor de Cabine (Fábio)
+                  </div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                    PIN Mestre: libera o terminal se o pintor esquecer a senha ou autoriza excesso (&gt;5%)
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsHelpModalOpen(false);
+                    setPinEntered('9999');
+                    setTimeout(() => handleSubmit('9999'), 120);
+                  }}
+                  title="Toque para liberar com o PIN Mestre 9999"
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    background: 'rgba(245, 158, 11, 0.2)',
+                    border: '1px solid rgba(245, 158, 11, 0.45)',
+                    color: '#fbbf24',
+                    fontSize: '18px',
+                    fontWeight: 800,
+                    letterSpacing: '2px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  9999
+                </button>
+              </div>
+
+              <div
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: '12px',
+                  background: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>
+                    Simular Bloqueio de PIN Incorreto
+                  </div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                    Testa o feedback visual de erro na autenticação
+                  </div>
+                </div>
+                <span
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    background: 'rgba(239, 68, 68, 0.2)',
+                    color: '#f87171',
+                    fontSize: '18px',
+                    fontWeight: 800,
+                    letterSpacing: '2px',
+                  }}
+                >
+                  0000
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px' }}>
+              <Button variant="secondary" size="md" onClick={() => setIsHelpModalOpen(false)}>
+                Fechar
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => {
+                  setIsHelpModalOpen(false);
+                  setPinEntered('1234');
+                  setTimeout(() => handleSubmit('1234'), 120);
+                }}
+              >
+                Entrar agora com PIN 1234 →
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

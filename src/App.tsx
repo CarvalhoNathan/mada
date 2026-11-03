@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { Operator, PieceLot, RecipeState, ScreenId, Lote, ItemSolicitacaoCompra, Receita, Movimentacao, OrdemServico } from './types';
 import { AppShell } from './components/ui/AppShell';
 import { StatusBanner } from './components/ui/StatusBanner';
 import { Toast } from './components/ui/Toast';
-import { QrScannerModal } from './components/ui/QrScannerModal';
 import { PotLifeTimerBanner, PotLifeState } from './components/ui/PotLifeTimerBanner';
 
 import { ScreenAuth } from './screens/ScreenAuth';
@@ -12,11 +11,19 @@ import { ScreenOS } from './screens/ScreenOS';
 import { ScreenRecipe } from './screens/ScreenRecipe';
 import { ScreenDosing } from './screens/ScreenDosing';
 import { ScreenReturn } from './screens/ScreenReturn';
-import { ScreenInventory } from './screens/ScreenInventory';
-import { ScreenManager } from './screens/ScreenManager';
 
 import { ModalUseFirst } from './screens/ModalUseFirst';
 import { ModalCancelPrep } from './screens/ModalCancelPrep';
+
+const ScreenInventory = lazy(() =>
+  import('./screens/ScreenInventory').then((m) => ({ default: m.ScreenInventory }))
+);
+const ScreenManager = lazy(() =>
+  import('./screens/ScreenManager').then((m) => ({ default: m.ScreenManager }))
+);
+const QrScannerModal = lazy(() =>
+  import('./components/ui/QrScannerModal').then((m) => ({ default: m.QrScannerModal }))
+);
 
 import {
   operadorRepository,
@@ -298,7 +305,26 @@ export const App: React.FC = () => {
   };
 
   const handleSelectBatch = (batchCode: string) => {
-    showToast(`✓ Lote prioritário ${batchCode} vinculado a esta ordem de serviço!`, 'success');
+    const loteSelecionado = lotes.find((l) => l.codigo === batchCode);
+    const nomeLower = (loteSelecionado?.produtoNome || '').toLowerCase();
+
+    let receitaVinculada = MOCK_RECEITAS[0];
+    if (batchCode.includes('8821') || nomeLower.includes('verniz')) {
+      receitaVinculada = MOCK_RECEITAS[1] || MOCK_RECEITAS[0];
+    } else if (batchCode.includes('2703') || nomeLower.includes('primer')) {
+      receitaVinculada = MOCK_RECEITAS[2] || MOCK_RECEITAS[0];
+    } else if (loteSelecionado) {
+      const porProduto = MOCK_RECEITAS.find((r) =>
+        r.itens.some((it) => it.produtoId === loteSelecionado.produtoId)
+      );
+      if (porProduto) receitaVinculada = porProduto;
+    }
+
+    setSelectedRecipe(receitaVinculada);
+    showToast(
+      `✓ Lote prioritário ${batchCode} vinculado à receita ${receitaVinculada.nome}!`,
+      'success'
+    );
     setCurrentScreen('recipe');
   };
 
@@ -420,6 +446,7 @@ export const App: React.FC = () => {
           activeOS={MOCK_ORDENS_SERVICO.find(o => o.numero === selectedOSNumber) || MOCK_ORDENS_SERVICO[0]}
           onNavigate={(screen) => setCurrentScreen(screen)}
           onCompleteDosing={handleCompleteDosing}
+          onSetTotalVolume={handleSetTotalVolume}
           onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
           showToast={showToast}
         />
@@ -480,39 +507,43 @@ export const App: React.FC = () => {
       )}
 
       {currentScreen === 'inventory' && (
-        <ScreenInventory
-          lotes={lotes}
-          operator={selectedOperator}
-          onNavigate={(screen) => setCurrentScreen(screen)}
-          showToast={showToast}
-          solicitacoes={solicitacoesCompras}
-          onAdicionarSolicitacao={handleAdicionarSolicitacao}
-          onRemoverSolicitacao={handleRemoverSolicitacao}
-          onReceberNovoLote={async (novoLote) => {
-            await loteRepository.adicionarSobra(novoLote);
-            const lotesAtualizados = await loteRepository.listar();
-            setLotes(lotesAtualizados);
-          }}
-        />
+        <Suspense fallback={<div style={{ padding: '24px', color: 'var(--text-muted)' }}>Carregando estoque...</div>}>
+          <ScreenInventory
+            lotes={lotes}
+            operator={selectedOperator}
+            onNavigate={(screen) => setCurrentScreen(screen)}
+            showToast={showToast}
+            solicitacoes={solicitacoesCompras}
+            onAdicionarSolicitacao={handleAdicionarSolicitacao}
+            onRemoverSolicitacao={handleRemoverSolicitacao}
+            onReceberNovoLote={async (novoLote) => {
+              await loteRepository.adicionarSobra(novoLote);
+              const lotesAtualizados = await loteRepository.listar();
+              setLotes(lotesAtualizados);
+            }}
+          />
+        </Suspense>
       )}
 
       {currentScreen === 'manager' && (
-        <ScreenManager
-          operator={selectedOperator}
-          onNavigate={(screen) => setCurrentScreen(screen)}
-          showToast={showToast}
-          movimentacoes={movimentacoes}
-          lotes={lotes}
-          onResetDemoData={async () => {
-            await loteRepository.resetar();
-            await movimentacaoRepository.resetar();
-            const lotesReset = await loteRepository.listar();
-            const movsReset = await movimentacaoRepository.listar();
-            setLotes(lotesReset);
-            setMovimentacoes(movsReset);
-            showToast('✓ Saldos de estoque e histórico restaurados para o estado inicial!', 'success');
-          }}
-        />
+        <Suspense fallback={<div style={{ padding: '24px', color: 'var(--text-muted)' }}>Carregando painel do gestor...</div>}>
+          <ScreenManager
+            operator={selectedOperator}
+            onNavigate={(screen) => setCurrentScreen(screen)}
+            showToast={showToast}
+            movimentacoes={movimentacoes}
+            lotes={lotes}
+            onResetDemoData={async () => {
+              await loteRepository.resetar();
+              await movimentacaoRepository.resetar();
+              const lotesReset = await loteRepository.listar();
+              const movsReset = await movimentacaoRepository.listar();
+              setLotes(lotesReset);
+              setMovimentacoes(movsReset);
+              showToast('✓ Saldos de estoque e histórico restaurados para o estado inicial!', 'success');
+            }}
+          />
+        </Suspense>
       )}
 
       {/* Modal de Latas que vencem primeiro ("Use Primeiro") */}
@@ -524,11 +555,15 @@ export const App: React.FC = () => {
       />
 
       {/* Modal Scanner Real de QR Code (WebRTC / Câmera) */}
-      <QrScannerModal
-        isOpen={isQrModalOpen}
-        onClose={() => setIsQrModalOpen(false)}
-        onScanSuccess={handleQrScanSuccess}
-      />
+      {isQrModalOpen && (
+        <Suspense fallback={null}>
+          <QrScannerModal
+            isOpen={isQrModalOpen}
+            onClose={() => setIsQrModalOpen(false)}
+            onScanSuccess={handleQrScanSuccess}
+          />
+        </Suspense>
+      )}
 
       {/* Modal de Cancelar Preparação */}
       <ModalCancelPrep
