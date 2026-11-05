@@ -38,17 +38,24 @@ Historicamente, as proporções de mistura vivem guardadas na cabeça dos operad
 - **Custo cego:** impossibilidade de apurar quanto de química foi efetivamente investido em cada ambiente do cliente.
 - **Perda de misturas catalisadas:** a mistura PU endurece irreversivelmente em 20 minutos (*pot life*), podendo danificar pistolas e estragar a peça final.
 
+### 💸 A Matemática da Inação: O Custo de Não Mudar
+Em uma marcenaria sob medida com 2 a 3 cabines de pintura consumindo em média R$ 15.000 a R$ 20.000 mensais em químicos nobres (bases PU, catalisadores alifáticos e vernizes especiais), uma ineficiência tácita de 15% a 20% significa **jogar fora de R$ 27.000 a R$ 48.000 por ano** diretamente no ralo:
+- Latas abertas que vencem esquecidas no fundo das prateleiras;
+- Excesso de catalisador ou solvente dosados "no olhômetro";
+- Misturas descartadas na cabine por estouro do tempo de cura (*pot life*);
+- Horas de retrabalho em peças prontas por defeitos de secagem e brilho.
+
 ---
 
 ## 🎯 Impacto de Negócio & Metas de Retorno (ROI)
 
-Projetado especificamente para transformar a cabine de pintura em uma operação de alta previsibilidade e desperdício zero:
+Projetado especificamente para estancar essa hemorragia financeira e transformar a cabine de pintura em uma operação de alta previsibilidade e desperdício zero:
 
 | Meta de Impacto | O que representa na prática da fábrica |
 | :--- | :--- |
 | **−20% de Desperdício Químico** | Redução imediata de perda de matéria-prima nobre através de receitas recalculadas milimetricamente e reaproveitamento de sobras. |
 | **100% de Rastreabilidade na OS** | Rateio financeiro exato: a marcenaria passa a saber o centavo real de química gasto por **Cliente ➔ Projeto ➔ Ambiente**. |
-| **Zero Perda por Validade (FEFO)** | Algoritmo *First Expire, First Out* que obriga o consumo de latas já abertas e lotes próximos do vencimento antes da violação de novos frascos. |
+| **Zero Perda por Validade (FEFO)** | Algoritmo *First Expire, First Out* que obriga o consumo de latas já abertas e lotes críticos antes da violação de novos frascos. |
 | **Proteção de Peças & Ferramental** | Monitor de cura de 20 min (*pot life*) que impede a aplicação de laca em fase de gelificação e evita entupimento de pistolas. |
 | **Fim da Dependência de Memória** | Padronização integral do catálogo técnico (padrão Sayerlack / Sayersystem e homologados), acessível a qualquer operador. |
 
@@ -56,18 +63,21 @@ Projetado especificamente para transformar a cabine de pintura em uma operação
 
 ## ✨ A Solução: Engenharia de Detalhes Pensada para Chão de Fábrica
 
-Não se trata de um sistema corporativo adaptado, mas de uma interface **projetada milimetricamente para a realidade agressiva de uma oficina de pintura**:
+> 🏭 **Filosofia de Chão de Fábrica (Fricção Zero):**  
+> *"Não construímos um software de escritório com ar-condicionado para tentar empurrar à força na fábrica. Cada botão tátil de 90px, a inversão da câmera para suporte de parede e a graduação em béquer (ml) nasceram da observação real do chão de fábrica: para o operador em pé, usando luvas nitrílicas sujas de solvente, registrar tudo em 3 toques rápidos, sem burocracia."*
 
-| Funcionalidade | Atenção ao Detalhe Operacional | O que resolve |
+Não se trata de um sistema corporativo adaptado, mas de uma interface **projetada com mecanismos proprietários para a realidade agressiva de uma cabine de pintura**:
+
+| Mecanismo Proprietário | Atenção ao Detalhe Operacional | O que resolve no Chão de Fábrica |
 | :--- | :--- | :--- |
-| 📱 **Interface Tablet-First** | Teclas táteis de 90px, espaçamento generoso e ausência de gestos finos (swipe/pinça). | Operação em pé, ágil mesmo com luvas nitrílicas sujas de tinta e solvente. |
-| 🧪 **Receitas & Fórmulas Dinâmicas** | Cálculo dinâmico das 4 frações (Base + Catálise + Diluidor + Retardador) pelo volume final desejado. | Acaba com a dependência de receitas guardadas "de cabeça" e previne misturas incorretas. |
-| 🛑 **Trava Anti-Erro Crítico** | Bloqueio visual impeditivo se a retirada passar de +5% ou 200ml do gabarito da receita. | Erros graves são barrados antes de acontecer, exigindo autorização com PIN supervisor. |
-| ⏱️ **Monitor de Pot Life (20 min)** | Cronômetro regressivo em tempo real com avisos sonoros/visuais e autodescarte orientado. | Protege contra cura do PU na pistola e rateia o custo do refugo descartado na OS. |
-| 📅 **Prioridade FEFO ("Use Primeiro")** | Indicação visual no Dashboard e na seleção de lotes da lata mais antiga que deve ser usada. | Reduz drasticamente perdas de produtos caros vencendo esquecidos na prateleira. |
-| 🏷️ **Scanner QR Dual-Engine** | Câmera frontal com espelhamento nativo (para tablet fixado na parede) e mira laser animada. | Identificação instantânea de ordens de serviço e frascos sem precisar manusear o tablet. |
-| ♻️ **Devolução com Etiqueta de Saldo** | Cálculo automático do volume restante na lata e emissão imediata de nova etiqueta com QR Code. | Latas abertas voltam ao almoxarifado devidamente quantificadas e rastreadas. |
-| 📊 **Painel Gerencial & Auditoria** | Gráfico interativo tátil (*Scrub Chart*), KPIs em R$ e exportação de histórico em CSV. | Gestão executiva com total visibilidade do consumo previsto vs. realizado por obra. |
+| 📱 **Interface Tablet-First Industrial** | Teclas táteis de 90px, espaçamento generoso e ausência de gestos finos (swipe/pinça). | Operação em pé, ágil mesmo com luvas nitrílicas grossas e dedos sujos de tinta e solvente. |
+| 🧪 **Motor Dinâmico de 4 Frações PU** | Cálculo instantâneo das 4 frações (Base + Catálise + Diluidor + Retardador) pelo volume desejado. | Acaba com a dependência de receitas guardadas "de cabeça" e previne misturas incorretas. |
+| 🛑 **Trava Ativa Anti-Erro (+5% / +200ml)** | Bloqueio visual impeditivo se a retirada passar de +5% ou 200ml do gabarito da receita. | Erros críticos são barrados antes de acontecer, exigindo autorização com PIN supervisor. |
+| ⏱️ **Monitor Regressivo de Pot Life (20 min)** | Cronômetro regressivo em tempo real com avisos sonoros/visuais e autodescarte orientado. | Protege contra a cura irreversível do PU na pistola e rateia o custo do refugo na OS. |
+| 📅 **Protocolo FEFO ("Use Primeiro")** | Indicação visual no Dashboard e na seleção de lotes da lata mais antiga que deve ser consumida. | Reduz drasticamente perdas de produtos caros vencendo esquecidos na prateleira. |
+| 🏷️ **Scanner Óptico Dual-Engine** | Câmera frontal com espelhamento nativo (para tablet em parede) e retículo laser animado. | Identificação instantânea de ordens de serviço e frascos sem precisar manusear o tablet. |
+| ♻️ **Etiquetagem e Saldo de Sobras** | Cálculo automático do volume restante na lata e emissão imediata de nova etiqueta com QR Code. | Latas abertas voltam ao almoxarifado devidamente quantificadas e rastreadas. |
+| 📊 **Painel Executivo & Auditoria Scrub** | Gráfico interativo tátil (*Scrub Chart*), KPIs em R$ e exportação de histórico em CSV. | Gestão executiva com total visibilidade do consumo previsto vs. realizado por obra. |
 
 ---
 
