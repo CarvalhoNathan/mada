@@ -1,0 +1,590 @@
+/* ==========================================================================
+   TELA 5: Dosagem Guiada / Balança em Tempo Real
+   ========================================================================== */
+.dosing-step-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 6px 12px;
+  min-height: 44px;
+  height: auto;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.dosing-step-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.dosing-step-pill.completed {
+  background-color: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  cursor: pointer;
+}
+
+.dosing-step-pill.completed:hover {
+  background-color: rgba(34, 197, 94, 0.2);
+}
+
+.dosing-step-pill.active {
+  background-color: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
+  font-weight: 700;
+}
+
+.dosing-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.8);
+}
+
+.dosing-step-separator {
+  color: var(--text-muted);
+  font-size: 16px;
+  user-select: none;
+}
+
+.dosing-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 18px;
+  min-height: 48px;
+  height: auto;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.dosing-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dosing-main-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dosing-recipe-pill {
+  font-size: 15px;
+  font-weight: 600;
+  color: #93c5fd;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  padding: 2px 10px;
+  border-radius: 6px;
+}
+
+.dosing-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dosing-scale-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background-color: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  font-size: 15px;
+  font-weight: 600;
+  color: #4ade80;
+}
+
+.dosing-scale-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+  animation: pulseScaleDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseScaleDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.dosing-total-target-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid var(--border);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dosing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: minmax(185px, 1fr);
+  gap: 12px;
+  flex: 1 0 auto;
+}
+
+.dosing-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  border-top: 3px solid var(--border);
+}
+
+.dosing-card.is-catalyst {
+  border-top-color: var(--warn);
+}
+
+.dosing-card.is-within {
+  border-color: var(--ok-border);
+  border-top-color: var(--ok);
+}
+
+.dosing-card.is-under {
+  border-color: var(--warn-border);
+}
+
+.dosing-card.is-exceeded {
+  border-color: var(--danger);
+  border-top-color: var(--danger);
+}
+
+.dosing-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dosing-card-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.dosing-step-badge {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: var(--radius-badge);
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+.dosing-card.is-within .dosing-step-badge {
+  background-color: var(--ok-soft);
+  border-color: var(--ok-border);
+  color: #4ade80;
+}
+
+.dosing-card.is-exceeded .dosing-step-badge {
+  background-color: var(--danger-soft);
+  border-color: var(--danger-border);
+  color: #f87171;
+}
+
+.dosing-chem-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.dosing-chem-code {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dosing-target-box {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.dosing-target-pill {
+  padding: 3px 10px;
+  border-radius: var(--radius-badge);
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  display: inline-block;
+}
+
+.dosing-target-weight {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+.dosing-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 4px 0;
+}
+
+.dosing-control-btn {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: var(--radius-button);
+  border: 1px solid var(--border);
+  background-color: var(--card-hover);
+  color: var(--text);
+  font-size: 28px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.dosing-control-btn:hover:not(:disabled) {
+  background-color: #282a32;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dosing-control-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.dosing-control-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.dosing-value-display {
+  flex: 1;
+  max-width: 240px;
+  height: 56px;
+  background-color: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-button);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  padding: 2px 8px;
+}
+
+.dosing-value-display:hover {
+  border-color: var(--primary);
+  background-color: rgba(43, 127, 255, 0.08);
+}
+
+.dosing-card.is-within .dosing-value-display {
+  border-color: var(--ok-border);
+  background-color: rgba(34, 197, 94, 0.06);
+}
+
+.dosing-card.is-exceeded .dosing-value-display {
+  border-color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.dosing-val-num-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.dosing-val-num {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.dosing-card.is-within .dosing-val-num {
+  color: #4ade80;
+}
+
+.dosing-card.is-exceeded .dosing-val-num {
+  color: #f87171;
+}
+
+.dosing-val-unit {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.dosing-val-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.dosing-shortcuts-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.dosing-shortcut-chip {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: var(--radius-button);
+  background: var(--card-hover);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.dosing-shortcut-chip:hover {
+  background: #282a32;
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dosing-shortcut-chip.chip-target {
+  background: var(--primary-soft);
+  border-color: var(--primary-border);
+  color: #93c5fd;
+}
+
+.dosing-shortcut-chip.chip-target:hover {
+  background: rgba(37, 99, 235, 0.2);
+  color: #bfdbfe;
+}
+
+.dosing-status-bar {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 1.2;
+}
+
+.dosing-status-bar.status-default {
+  background-color: rgba(255, 255, 255, 0.03);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.dosing-status-bar.status-under {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--warn);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.dosing-status-bar.status-within {
+  background-color: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.dosing-status-bar.status-exceeded {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* ==========================================================================
+   TELA 5: Modal Crítico de Alerta de Excesso
+   ========================================================================== */
+.modal-critical-card {
+  background: var(--card);
+  border-radius: var(--radius-card);
+  max-width: 640px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: var(--shadow-modal);
+  border: 2px solid var(--danger);
+  animation: popUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-critical-header {
+  background: var(--danger-soft);
+  border-bottom: 2px solid var(--danger);
+  color: var(--danger);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.modal-critical-header h3 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.modal-critical-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Número Grande em Destaque (56px) + Frase Única */
+.critical-number-box {
+  background: var(--bg);
+  border: 2px solid var(--danger-border);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  text-align: center;
+}
+
+.critical-number-val {
+  font-size: var(--fs-number);
+  font-weight: 700;
+  color: var(--danger);
+  line-height: 1;
+}
+
+.critical-number-desc {
+  font-size: 18px;
+  color: var(--text);
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* Justificativas em ChoiceChips (Nenhuma pré-selecionada) */
+.justification-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.just-chip-btn {
+  min-height: 56px;
+  padding: 10px 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--bg);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition-fast);
+}
+
+.just-chip-btn:active {
+  transform: scale(0.97);
+  filter: brightness(0.9);
+}
+
+.just-chip-btn.selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--text);
+}
+
+/* Campo de PIN do Supervisor (Exibido somente quando motivo = autorização) */
+.supervisor-pin-box {
+  display: none;
+  background: var(--bg);
+  border: 1.5px solid var(--warn);
+  border-radius: var(--radius-card);
+  padding: 14px 18px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.supervisor-pin-box.visible {
+  display: flex;
+}
+
+.supervisor-pin-input {
+  height: 52px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 12px;
+  outline: none;
+}
+
+.supervisor-pin-input:focus {
+  border-color: var(--primary);
+}
+
+/* Ações Estruturadas do Modal Crítico */
+.critical-actions-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.critical-waste-separator {
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

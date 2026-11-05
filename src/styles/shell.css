@@ -1,0 +1,1896 @@
+/* ==========================================================================
+   Mada Marcenaria — Gerenciador de Químicos & Receitas
+   Design System Industrial Tablet (1280x800)
+   ========================================================================== */
+
+/* tokens.css e design-system.css já são importados em global.css (antes deste arquivo).
+   As fontes variáveis Geist Sans e Geist Mono são carregadas localmente via @fontsource-variable em main.tsx. */
+
+:root {
+  /* Mapeamento de variáveis legadas para os tokens oficiais */
+  --bg-app: var(--bg);
+  --bg-card: var(--card);
+  --bg-card-alt: var(--card-hover);
+  --header-bg: #0b0f14;
+  --header-border: var(--border);
+  
+  --primary-light: var(--primary-soft);
+  --brand-brown: #2b2522;
+
+  --success: var(--ok);
+  --success-bg: var(--ok-soft);
+  --success-border: var(--ok-border);
+  
+  --warning: var(--warn);
+  --warning-bg: var(--warn-soft);
+  --warning-border: var(--warn-border);
+
+  --text-primary: var(--text);
+  --text-secondary: var(--text-muted);
+  --text-white: #ffffff;
+
+  /* Bordas e Sombras (Sem auto-referência circular!) */
+  --border-light: var(--border);
+  --border-focus: var(--primary);
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: var(--radius-card);
+  --radius-xl: 20px;
+  --radius-pill: 9999px;
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.36);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+
+  /* Transições táteis */
+  --transition-fast: var(--transition-press);
+  --transition-normal: 0.2s ease-out;
+}
+
+/* Reset Básico e Restrição de Rolagem do Tablet */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100dvh;
+  height: 100%;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-family);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   Header Operacional (Top Bar) — AppShell
+   ========================================================================== */
+.top-header {
+  background-color: var(--card);
+  color: var(--text);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 68px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.brand-icon-box {
+  width: 44px;
+  height: 44px;
+  background: var(--primary);
+  border-radius: var(--radius-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+
+.brand-icon-box svg {
+  width: 24px;
+  height: 24px;
+}
+
+.brand-text h1 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.brand-text span {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  display: block;
+  margin-top: 1px;
+}
+
+.header-status-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.status-badge {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  min-height: 44px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--ok);
+  box-shadow: 0 0 8px var(--ok);
+  animation: pulse-dot 2s infinite;
+}
+
+.status-badge.is-offline .status-dot {
+  background-color: var(--danger);
+  box-shadow: 0 0 8px var(--danger);
+  animation: none;
+}
+
+.status-badge.is-offline {
+  border-color: var(--danger-border);
+  background-color: var(--danger-soft);
+  color: var(--danger);
+}
+
+.header-operator-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px 16px 4px 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.header-operator-badge:hover {
+  border-color: var(--primary);
+}
+
+.header-operator-photo {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--primary);
+}
+
+.header-operator-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-operator-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.header-operator-role {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Faixa de Status (StatusBanner) — Sem Wi-Fi / Servidor
+   ========================================================================== */
+.status-banner-offline {
+  display: none;
+  background-color: var(--danger);
+  color: white;
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+  z-index: 45;
+  position: relative;
+  animation: slideDownToast 0.25s ease-out;
+}
+
+.status-banner-offline.visible {
+  display: flex;
+}
+
+/* ==========================================================================
+   Toast de Notificação (Topo, auto-dismiss em 3s, nunca cobre botões)
+   ========================================================================== */
+#appToast {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--card);
+  color: var(--text);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 14px 28px;
+  font-size: 18px;
+  font-weight: 600;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+#appToast.toast-success {
+  border-color: var(--ok);
+  background-color: #0b2214;
+  color: var(--ok);
+}
+
+#appToast.toast-warn {
+  border-color: var(--warn);
+  background-color: #261a06;
+  color: var(--warn);
+}
+
+#appToast.toast-danger {
+  border-color: var(--danger);
+  background-color: #270f0f;
+  color: var(--danger);
+}
+
+@keyframes slideDownToast {
+  from { opacity: 0; transform: translate(-50%, -20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ==========================================================================
+   Container Principal do Tablet (Responsivo 768px a 1440px+)
+   ========================================================================== */
+.main-viewport {
+  flex: 1;
+  max-width: 1280px;
+  width: 100%;
+  min-height: calc(100dvh - 68px);
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+}
+
+.screen-view {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  animation: fadeIn 0.2s ease-out forwards;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.screen-view.active {
+  display: flex;
+}
+
+.screen-content-area {
+  flex: 1 0 auto;
+  overflow-x: hidden;
+  overflow-y: visible;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 96px; /* Espaço garantido para a barra inferior fixa */
+}
+
+/* Barra Inferior Fixa do AppShell (Voltar à esquerda, Ação à direita) */
+.ds-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  min-height: 76px;
+  height: auto;
+  background-color: rgba(18, 19, 22, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1.5px solid var(--border);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+  padding: 12px clamp(16px, 3vw, 32px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  z-index: 60;
+}
+
+.ds-bottom-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ds-bottom-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Header de Seção Interna */
+.section-header-compact {
+  margin-bottom: 14px;
+}
+
+.section-tag {
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
+.section-title {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.section-desc {
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+
+/* ==========================================================================
+   Footer Operacional & Barra de Demonstração
+   ========================================================================== */
+.footer-bar {
+  background: white;
+  border-top: 1px solid var(--border-light);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: auto;
+}
+
+.demo-nav-bar {
+  background: #0f172a;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.demo-chip-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.demo-chip-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.demo-chip-btn.active {
+  background: #f59e0b;
+  border-color: #d97706;
+  color: black;
+}
+
+/* ==========================================================================
+   BOARDUI AUTHENTIC DESIGN SYSTEM & SHELL (1280x800)
+   ========================================================================== */
+.boardui-app-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0c0d10;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Sidebar Estilo BoardUI (Mertcan Esmergul / Print 1) */
+.boardui-sidebar {
+  width: 250px;
+  min-width: 250px;
+  height: 100%;
+  background-color: #121316;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 14px;
+  box-sizing: border-box;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.boardui-user-profile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  user-select: none;
+}
+
+.boardui-user-profile:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.boardui-user-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.boardui-user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #24252b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.boardui-user-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ededed;
+  line-height: 1.2;
+}
+
+.boardui-user-chevron {
+  color: #71717a;
+  font-size: 14px;
+}
+
+.boardui-collapse-btn {
+  background: transparent;
+  border: none;
+  color: #71717a;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.boardui-collapse-btn:hover {
+  color: #ededed;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Barra de Busca Rápida (Print 1: Busca rápida ⌘L) */
+.boardui-search-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 7px 12px;
+  color: #71717a;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.boardui-search-input:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #a1a1aa;
+}
+
+.boardui-search-kbd {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #71717a;
+  background-color: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Lista de Navegação BoardUI */
+.boardui-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.boardui-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: #a1a1aa;
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  text-align: left;
+  width: 100%;
+}
+
+.boardui-nav-btn:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #ededed;
+}
+
+/* O clássico azul elétrico do BoardUI (Print 1: Principal [152]) */
+.boardui-nav-btn.active {
+  background-color: #2b7fff;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 0 20px rgba(43, 127, 255, 0.35);
+}
+
+.boardui-nav-btn.active svg {
+  color: #ffffff;
+}
+
+.boardui-nav-badge {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.boardui-sidebar-spacer {
+  flex: 1;
+}
+
+.boardui-sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Conteúdo Principal do Dashboard BoardUI */
+.boardui-main-canvas {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 24px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background-color: #0c0d10;
+  gap: 14px;
+}
+
+/* Banner de Alerta FEFO (Print BoardUI) */
+.boardui-alert-card {
+  background-color: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 16px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.boardui-alert-card:hover {
+  background-color: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+/* Grade Modular 2 Colunas do BoardUI (Print 1) */
+.boardui-widgets-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Card Mestre BoardUI */
+.boardui-widget-card {
+  background-color: #141519;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  transition: all 0.18s ease;
+  overflow: hidden;
+}
+
+.boardui-widget-card:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Checklist de Etapas (Print 1: 3 etapas restantes) */
+.boardui-checklist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.boardui-checklist-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #a1a1aa;
+}
+
+.boardui-checklist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.boardui-checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+
+.boardui-checklist-item.done {
+  color: #71717a;
+  text-decoration: line-through;
+}
+
+.boardui-checklist-item.active {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ededed;
+  font-weight: 600;
+}
+
+.boardui-checklist-item.pending {
+  color: #52525b;
+}
+
+.boardui-check-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.boardui-checklist-item.done .boardui-check-icon {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #a1a1aa;
+}
+
+.boardui-checklist-item.active .boardui-check-icon {
+  border: 2px solid #2b7fff;
+  border-top-color: transparent;
+  animation: spin 1.2s linear infinite;
+}
+
+.boardui-checklist-item.pending .boardui-check-icon {
+  border: 1.5px dashed #52525b;
+}
+
+/* Card de Modelos / Ação Operacional (Print 1: Modelos) */
+.boardui-models-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.boardui-model-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.boardui-model-row:hover:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.boardui-model-row.selected {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.boardui-model-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ededed;
+}
+
+.boardui-radio-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #52525b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.boardui-model-row.selected .boardui-radio-dot {
+  border-color: #2b7fff;
+  background-color: #2b7fff;
+  box-shadow: 0 0 10px rgba(43, 127, 255, 0.6);
+}
+
+.boardui-model-row.selected .boardui-radio-dot:after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+/* Slider com Marcas de Tique (Print 1: Esforço Médio) */
+.boardui-slider-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background-color: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.boardui-slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+  color: #a1a1aa;
+  margin-bottom: 6px;
+}
+
+.boardui-slider-header strong {
+  color: #ededed;
+}
+
+.boardui-slider-ticks-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 26px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 0 8px;
+  position: relative;
+}
+
+.boardui-slider-tick {
+  width: 2px;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 1px;
+}
+
+/* Controles Inferiores Segmentados (Print 1: Dia | Semana | Mês | Ano) */
+.boardui-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+.boardui-segmented-control {
+  display: inline-flex;
+  align-items: center;
+  background-color: #141519;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.boardui-segmented-btn {
+  padding: 4px 14px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: #a1a1aa;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.boardui-segmented-btn.active {
+  background-color: #24252b;
+  color: #ededed;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.boardui-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.boardui-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #a1a1aa;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.boardui-checkbox-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background-color: #2b7fff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   BOARDUI AUTHENTIC TOP HEADER & INDUSTRIAL DASHBOARD (1280x800)
+   Visual quality identical to BoardUI (https://www.boardui.com/)
+   ========================================================================== */
+
+/* 1. Cabeçalho Superior Fixo BoardUI (58px) */
+.boardui-top-header {
+  height: 58px;
+  min-height: 58px;
+  background-color: #0c0d10;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.boardui-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.boardui-brand-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background-color: #2b7fff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(43, 127, 255, 0.4);
+}
+
+.boardui-brand-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.boardui-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.boardui-brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f4f4f6;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.boardui-brand-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: #71717a;
+  line-height: 1.1;
+}
+
+/* Pílula de Busca Rápida BoardUI */
+.boardui-search-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 6px 14px;
+  color: #71717a;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.boardui-search-pill:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #a1a1aa;
+}
+
+.boardui-search-kbd {
+  font-size: 11px;
+  font-weight: 600;
+  color: #71717a;
+  background-color: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-left: 4px;
+}
+
+/* Lado Direito do Cabeçalho: Status Passivo | Divisor | Botões Padronizados (36px, radius 10px) */
+.boardui-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.boardui-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.boardui-status-indicator.offline {
+  color: #f87171;
+}
+
+.boardui-header-divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border);
+  margin: 0 2px;
+}
+
+.boardui-chips-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.boardui-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  height: 26px;
+  border-radius: var(--radius-badge);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.boardui-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.boardui-status-indicator.online .boardui-chip-dot,
+.boardui-chip.online .boardui-chip-dot {
+  background-color: var(--ok);
+}
+
+.boardui-status-indicator.offline .boardui-chip-dot,
+.boardui-chip.offline .boardui-chip-dot {
+  background-color: var(--danger);
+}
+
+.boardui-clean-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 12px;
+  background-color: var(--card-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-button);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.boardui-clean-btn:hover {
+  background-color: #282a32;
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Perfil do Operador BoardUI (Botão Interativo com mesma altura 36px e raio 10px do Limpar tela) */
+.boardui-operator-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 10px 0 5px;
+  border-radius: var(--radius-button);
+  background-color: var(--card-hover);
+  border: 1px solid var(--border);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.boardui-operator-pill:hover {
+  background-color: #282a32;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.boardui-operator-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-badge);
+  background-color: var(--primary-soft);
+  border: 1px solid var(--primary-border);
+  color: #93c5fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.boardui-operator-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.boardui-operator-chevron {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* 2. Área Central e Container do Dashboard BoardUI */
+.boardui-content-canvas {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: var(--bg);
+  padding: clamp(16px, 2.5vw, 24px) clamp(16px, 3vw, 32px);
+  box-sizing: border-box;
+}
+
+.boardui-content-inner {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.boardui-dash-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  height: auto;
+  flex: 1 0 auto;
+  box-sizing: border-box;
+}
+
+.boardui-dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--touch-gap);
+  margin-bottom: 18px;
+}
+
+.boardui-dash-greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.boardui-dash-title {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.boardui-dash-subtitle {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.boardui-dash-quick-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--touch-gap);
+  flex-wrap: wrap;
+}
+
+.boardui-nav-action-btn {
+  min-height: var(--touch-min);
+  padding: 0 22px;
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-button);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform var(--transition-press), background-color var(--transition-normal), border-color var(--transition-normal);
+  user-select: none;
+}
+
+.boardui-nav-action-btn svg {
+  color: var(--primary);
+}
+
+.boardui-nav-action-btn:hover {
+  background-color: var(--card-hover);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.boardui-nav-action-btn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.boardui-nav-action-btn:active {
+  transform: scale(0.97);
+}
+
+.boardui-nav-action-btn.is-manager {
+  background-color: var(--primary-soft);
+  border-color: var(--primary-border);
+  color: var(--text);
+}
+
+.boardui-nav-action-btn.is-manager:hover {
+  border-color: var(--primary);
+}
+
+/* 3. Banner de Alerta FEFO (Amber Glass BoardUI) */
+.boardui-fefo-banner {
+  width: 100%;
+  min-height: 76px;
+  background-color: var(--warn-soft);
+  border: 1.5px solid var(--warn-border);
+  border-radius: var(--radius-card);
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-sizing: border-box;
+  margin-bottom: 22px;
+  cursor: pointer;
+  transition: transform var(--transition-press), background-color var(--transition-normal), border-color var(--transition-normal);
+  user-select: none;
+  flex-shrink: 0;
+  text-align: left;
+  font-family: inherit;
+}
+
+.boardui-fefo-banner:hover {
+  border-color: var(--warn);
+}
+
+.boardui-fefo-banner:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.boardui-fefo-banner:active {
+  transform: scale(0.99);
+}
+
+.boardui-fefo-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.boardui-fefo-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-button);
+  background-color: rgba(245, 158, 11, 0.2);
+  color: var(--warn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.boardui-fefo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.boardui-fefo-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.boardui-fefo-desc {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.boardui-fefo-btn {
+  background-color: rgba(245, 158, 11, 0.16);
+  border: 1.5px solid var(--warn-border);
+  border-radius: var(--radius-button);
+  color: var(--warn);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  min-height: 48px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+/* 4. Grade dos 3 Cards de Ação Operacional (Bento Grid Assimetrico Stageshow: 1 Hero + 2 Satélites) */
+.boardui-cards-grid {
+  display: grid;
+  grid-template-columns: 1.32fr 1fr 1fr;
+  grid-auto-rows: auto;
+  gap: 20px;
+  flex: 1 0 auto;
+}
+
+.boardui-card {
+  min-height: 320px;
+  height: auto;
+  gap: 18px;
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  text-align: left;
+  font-family: inherit;
+  transition: transform var(--transition-press), background-color var(--transition-normal), border-color var(--transition-normal);
+  box-shadow: var(--shadow-subtle);
+}
+
+.boardui-card:hover {
+  background-color: var(--card-hover);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+}
+
+.boardui-card:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.boardui-card:active {
+  transform: scale(0.98);
+}
+
+/* Card Primário: Destaque Azul Elétrico BoardUI */
+.boardui-card.primary-card {
+  border: 2px solid var(--primary-border);
+  background: linear-gradient(180deg, var(--primary-soft) 0%, var(--card) 100%);
+}
+
+.boardui-card.primary-card:hover {
+  border-color: var(--primary);
+}
+
+/* Topo do Card: Ícone e Flecha */
+.boardui-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.boardui-card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-button);
+  background-color: var(--card-hover);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.boardui-card-icon.primary-icon {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--text);
+}
+
+.boardui-card-arrow {
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.boardui-card:hover .boardui-card-arrow {
+  color: var(--text);
+  transform: translateX(4px);
+}
+
+/* Corpo do Card: Título e Descrição */
+.boardui-card-body {
+  margin: auto 0;
+}
+
+.boardui-card-title {
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.boardui-card-desc {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Rodapé do Card: Pílulas e Metadados */
+.boardui-card-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.boardui-pill-badge {
+  align-self: flex-start;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  line-height: 1.2;
+}
+
+.boardui-pill-badge.blue-badge {
+  background-color: var(--primary-soft);
+  border: 1.5px solid var(--primary-border);
+  color: var(--text);
+}
+
+.boardui-pill-badge.amber-badge {
+  background-color: var(--warn-soft);
+  border: 1.5px solid var(--warn-border);
+  color: var(--warn);
+}
+
+.boardui-pill-badge.green-badge {
+  background-color: var(--ok-soft);
+  border: 1.5px solid var(--ok-border);
+  color: var(--ok);
+}
+
+.boardui-card-meta {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+
+/* Barra Inferior BoardUI (Telas de Fluxo) */
+.boardui-bottom-bar {
+  height: 64px;
+  min-height: 64px;
+  background-color: #0c0d10;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.boardui-btn-secondary {
+  height: 44px;
+  padding: 0 20px;
+  background-color: #1a1b20;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #a1a1aa;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.boardui-btn-secondary:hover {
+  background-color: #24252b;
+  color: #ededed;
+}
+
+.boardui-btn-primary {
+  height: 44px;
+  padding: 0 24px;
+  background-color: #2b7fff;
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(43, 127, 255, 0.35);
+  transition: all 0.15s ease;
+}
+
+.boardui-btn-primary:hover:not(:disabled) {
+  background-color: #3b8bff;
+}
+
+.boardui-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Animação e acabamento do Toast BoardUI */
+@keyframes boarduiToastSlideUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 14px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.boardui-toast-pill {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.boardui-toast-pill:hover {
+  transform: translate(-50%, -2px);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 0 1px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE MULTI-TABLET (iPad Pro 13, iPad Mini, Retrato & Paisagem)
+   ========================================================================== */
+
+/* Tablets em Retrato ou Paisagem Compacta (<= 1024px: iPad Mini, iPad Air/Pro Portrait) */
+@media (max-width: 1024px) {
+  .boardui-top-header {
+    height: auto;
+    min-height: 58px;
+    padding: 10px 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .boardui-header-right {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .boardui-fefo-title {
+    white-space: normal;
+  }
+
+  .boardui-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-auto-rows: auto;
+    flex: 0 0 auto;
+    gap: 16px;
+  }
+
+  .boardui-card {
+    height: auto;
+    min-height: 0;
+    gap: 18px;
+  }
+
+  .boardui-card-body {
+    margin: 0;
+  }
+
+  .os-layout-minimal {
+    grid-template-columns: 1fr;
+    flex: 0 0 auto;
+    height: auto;
+  }
+
+  .recipe-chemicals-grid {
+    grid-template-columns: repeat(2, 1fr);
+    flex: 0 0 auto;
+    height: auto;
+  }
+
+  .return-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+/* Tablets Compactos em Retrato (<= 820px: iPad Mini 768x1024) */
+@media (max-width: 820px) {
+  .auth-layout-minimal {
+    grid-template-columns: minmax(260px, 1fr) minmax(280px, 1fr);
+    gap: 20px;
+    padding: 16px 20px;
+  }
+
+  .auth-pin-card-apple {
+    padding: 18px 20px;
+  }
+
+  .operator-card-apple {
+    padding: 14px 16px;
+    min-height: 82px;
+    gap: 14px;
+  }
+
+  .operator-avatar-circle {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+
+  .operator-name-apple {
+    font-size: 19px;
+  }
+
+  .boardui-fefo-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .boardui-fefo-btn {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .boardui-cards-grid {
+    grid-template-columns: 1fr;
+    flex: 0 0 auto;
+  }
+
+  .boardui-card {
+    min-height: 0;
+    height: auto;
+    padding: 20px 22px;
+    gap: 16px;
+  }
+
+  .dosing-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    flex: 0 0 auto;
+  }
+
+  .os-bar-btn {
+    padding: 0 16px;
+    font-size: 16px;
+  }
+
+  .os-btn-continue {
+    min-width: 0;
+  }
+}
+
+/* Telas Estreitas / Mobile Grande (<= 680px: empilhamento vertical completo) */
+@media (max-width: 680px) {
+  .auth-layout-minimal {
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 24px;
+  }
+
+  .auth-station-bar {
+    padding: 12px 16px;
+  }
+
+  .recipe-chemicals-grid,
+  .os-specs-grid,
+  .os-env-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recipe-presets-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .os-screen-container,
+  .recipe-screen-container,
+  .screen-content-area {
+    padding-bottom: 140px;
+  }
+}
+
+
+/* ==========================================================================
+   STAGESHOW KIT MOTION & BENTO ENHANCEMENTS (Count, Mini-Previews, Stamp)
+   ========================================================================== */
+.ss-count {
+  display: inline-flex;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ss-count__char {
+  display: inline-block;
+}
+
+.ss-count__unit {
+  display: inline-block;
+  margin-left: 0.12em;
+}
+
+.ss-count__unit[data-space] {
+  margin-left: 0.28em;
+}
+
+.ss-count__digit {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  line-height: 1;
+  vertical-align: baseline;
+  mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+}
+
+.ss-count__strip {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.3, 0.75, 0.1, 1);
+}
+
+.ss-count__strip > span {
+  display: block;
+  height: 1em;
+  line-height: 1;
+  text-align: left;
+}
+
+.ss-count[data-snap] .ss-count__strip {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-count__strip {
+    transition: none;
+  }
+}
+
+/* Selo Animado de Homologação na Etiqueta Térmica (ScreenReturn) */
+@keyframes stampPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(1.35) rotate(-6deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.96) rotate(-2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-2deg);
+  }
+}
+
+.sticker-homologation-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 2px solid #16a34a;
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  animation: stampPopIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ==========================================================================
+   SISTEMA TIPOGRÁFICO VERCEL GEIST SANS & GEIST MONO
+   - Geist Sans: Títulos geométricos (tracking -0.025em) e leitura humana
+   - Geist Mono: Códigos de OS/lote, badges técnicas, telemetria (ml/g/R$) e etiqueta Zebra
+   ========================================================================== */
+h1,
+h2,
+h3,
+.boardui-dash-title,
+.boardui-card-title,
+.os-client-title,
+.os-piece-title,
+.recipe-main-title,
+.dosing-chem-name,
+.auth-title-minimal {
+  font-family: var(--font-family);
+  letter-spacing: -0.025em;
+}
+
+.os-meta-badge,
+.os-step-badge,
+.dosing-step-badge,
+.os-env-code,
+.recipe-chem-code,
+.dosing-chem-code,
+.dosing-target-weight,
+.recipe-chem-weight,
+.recipe-volume-num,
+.dosing-val-num,
+.os-metric-val,
+.os-spec-highlight,
+.recipe-chem-vol,
+.ds-kpi-value,
+.supervisor-pin-input,
+.boardui-search-kbd,
+.thermal-sticker-card .sticker-code,
+.thermal-sticker-card .sticker-meta-val,
+.ss-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+
+

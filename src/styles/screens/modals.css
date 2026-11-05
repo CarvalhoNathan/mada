@@ -1,0 +1,77 @@
+/* ==========================================================================
+   Modais do Design System (Cancelar Preparação e Detalhes Use Primeiro)
+   ========================================================================== */
+.ds-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.ds-modal-overlay.active {
+  display: flex;
+}
+
+.ds-modal-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 28px 32px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: var(--shadow-modal);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ds-modal-title {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ds-modal-desc {
+  font-size: 18px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.ds-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+/* Modal Use Primeiro (Detalhes de Lotes) */
+.use-first-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+
+.use-first-table th {
+  text-align: left;
+  font-size: 14px;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-bottom: 1.5px solid var(--border);
+}
+
+.use-first-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 16px;
+  color: var(--text);
+}

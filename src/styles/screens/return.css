@@ -1,0 +1,431 @@
+/* ==========================================================================
+   TELA 6: Devolução de Sobras & Etiqueta Térmica
+   ========================================================================== */
+.return-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.bottle-visual-box {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bottle-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 6px 0;
+  position: relative;
+}
+
+.bottle-container {
+  width: 110px;
+  height: 125px;
+  border: 3px solid var(--border);
+  border-radius: 10px 10px 18px 18px;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.bottle-neck {
+  width: 44px;
+  height: 14px;
+  border: 3px solid var(--border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  margin: 0 auto;
+  background: var(--card-hover);
+}
+
+.bottle-liquid {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, #3B82F6, #1D4ED8);
+  transition: height 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* Escala graduada externa e alinhada (sem sumir sobre o líquido) */
+.bottle-scale-marks {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 115px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.bottle-scale-marks span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bottle-scale-marks span::before {
+  content: '—';
+  color: var(--border);
+}
+
+/* NumberStepper de Sobra corrigido com Flexbox e larguras fixas */
+.sobra-stepper-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.btn-stepper-round {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  min-height: 52px;
+  border-radius: 14px;
+  background-color: #1a1b20;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  color: #ededed;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  padding: 0;
+  outline: none;
+}
+
+.btn-stepper-round:hover {
+  background-color: #24252b;
+  border-color: #2b7fff;
+  color: #2b7fff;
+  box-shadow: 0 0 16px rgba(43, 127, 255, 0.35);
+}
+
+.btn-stepper-round:active {
+  transform: scale(0.92);
+  filter: brightness(0.9);
+}
+
+.sobra-value-center {
+  min-width: 210px;
+  height: 54px;
+  background-color: rgba(43, 127, 255, 0.08);
+  border: 1.5px solid rgba(43, 127, 255, 0.4);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: default;
+  box-shadow: 0 0 20px rgba(43, 127, 255, 0.15);
+  user-select: none;
+  transition: all var(--transition-fast);
+}
+
+.sobra-val-num {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2b7fff;
+  line-height: 1;
+}
+
+.sobra-val-unit {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ededed;
+}
+
+/* ChecklistRow (Adaptado para caber estritamente sem rolagem no tablet) */
+.checklist-container {
+  width: 100%;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checklist-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.checklist-row-card {
+  min-height: var(--touch-min);
+  padding: 10px 16px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-card);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.checklist-row-card:active {
+  transform: scale(0.98);
+  filter: brightness(0.9);
+}
+
+.checklist-row-card.checked {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+}
+
+.checklist-checkbox-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: transparent;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.checklist-row-card.checked .checklist-checkbox-box {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: var(--bg);
+}
+
+.checklist-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+/* Coluna Direita: Prévia da Etiqueta Térmica */
+.return-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.thermal-sticker-card {
+  background: #FFFFFF;
+  color: #0F172A;
+  border-radius: 4px 4px 12px 12px;
+  padding: 16px 20px 14px 20px;
+  font-family: var(--font-mono);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Serrilha de corte da impressora térmica (Zebra Tear-off) */
+.thermal-tear-edge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(
+    90deg,
+    #0F172A 0px,
+    #0F172A 6px,
+    #FFFFFF 6px,
+    #FFFFFF 12px
+  );
+  opacity: 0.15;
+}
+
+.sticker-printer-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.sticker-stamp {
+  border: 2px dashed #DC2626;
+  color: #DC2626;
+  font-weight: 800;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  transform: rotate(-2.5deg);
+  background: rgba(220, 38, 38, 0.05);
+}
+
+.sticker-badge-urgent {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #F59E0B;
+  padding: 4px 10px;
+  font-weight: 800;
+  font-size: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.sticker-header {
+  border-bottom: 2px solid #0F172A;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #0F172A;
+}
+
+.sticker-body {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.sticker-details p {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #1E293B;
+  margin: 2px 0;
+}
+
+.sticker-details strong {
+  color: #64748B;
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.sticker-qr-box {
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.sticker-qr-box svg {
+  width: 82px;
+  height: 82px;
+}
+
+.sticker-barcode-row {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #CBD5E1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.barcode-bars {
+  width: 80%;
+  height: 22px;
+  background: repeating-linear-gradient(
+    90deg,
+    #0F172A 0px,
+    #0F172A 2px,
+    transparent 2px,
+    transparent 4px,
+    #0F172A 4px,
+    #0F172A 7px,
+    transparent 7px,
+    transparent 9px,
+    #0F172A 9px,
+    #0F172A 10px,
+    transparent 10px,
+    transparent 13px
+  );
+}
+
+.barcode-number {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: #475569;
+  font-weight: 700;
+}
+
+.sticker-footer-note {
+  margin-top: 8px;
+  font-size: 10px;
+  color: #64748B;
+  text-align: center;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+/* Botão de Refugo com HoldToConfirm */
+.refugo-box {
+  margin-top: 6px;
+}
+
+
+/* ==========================================================================
+   MODO DE IMPRESSÃO DE ETIQUETA TÉRMICA (ZEBRA 100x150mm / 80mm)
+   ========================================================================== */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .thermal-sticker-card,
+  .thermal-sticker-card * {
+    visibility: visible !important;
+  }
+
+  .thermal-sticker-card {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100mm !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: 2px solid #0f172a !important;
+  }
+
+  .boardui-top-header,
+  .ds-bottom-bar,
+  .os-bottom-bar-minimal {
+    display: none !important;
+  }
+}
