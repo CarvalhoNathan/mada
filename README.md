@@ -16,10 +16,24 @@ Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas qu
 
 🔗 **Acesse a Demonstração Online:** [https://carvalhonathan.github.io/mada/](https://carvalhonathan.github.io/mada/)
 
-<!-- [A PREENCHER] Imagem de capa / colagem das telas -->
 ![Visão geral do sistema](docs/screens/hero.png)
 
 </div>
+
+---
+
+## 🚀 Guia Rápido de Teste (Walkthrough em 2 Minutos)
+
+Se você está testando a aplicação diretamente pela **[Demonstração Online no GitHub Pages](https://carvalhonathan.github.io/mada/)**, siga este roteiro passo a passo para experimentar os principais diferenciais técnicos:
+
+1. **Entrada na Cabine:** No login, selecione um operador (ex: *Carlos Silva*) e digite o PIN `1234`.
+2. **Vinculação de OS:** Toque em `NOVA PREPARAÇÃO` e escolha uma Ordem de Serviço ou clique em `SIMULAR LEITURA QR` para carregar o cliente e ambiente automaticamente.
+3. **Cálculo da Mistura:** Selecione o acabamento desejado (ex: *Laca PU Alto Brilho Sayerlack*). Altere o volume total para `1.000 ml` e observe o recálculo dinâmico e proporcional das 4 frações (Base, Catálise PU, Diluidor e Retardador).
+4. **Trava Anti-Erro em Ação:** Na dosagem em béquer, adicione intencionalmente mais de +5% de produto em um componente. O **Modal de Bloqueio Crítico** impedirá o avanço. Digite o PIN de supervisor `9999` para autorizar a justificativa.
+5. **Monitor de Pot Life:** Conclua a preparação e veja o cronômetro regressivo de **20 minutos** entrar em ação no topo da aplicação, alertando sobre o tempo hábil antes da cura irreversível do PU.
+6. **Auditoria Gerencial & Estoque:** Abra o menu lateral no canto superior esquerdo e explore:
+   - **Painel do Gestor:** Gráfico tátil interativo (*Scrub Chart*), KPIs de desperdício em R$ e exportação de histórico em CSV.
+   - **Gestão de Estoque:** Visualização de insumos por FEFO ("Use Primeiro"), registro de novos lotes e lista de compras.
 
 ---
 
@@ -119,6 +133,21 @@ flowchart TB
 - **Dual-Engine de Leitura QR:** Suporte à API nativa `BarcodeDetector` (alta performance em Chrome/Android) com fallback transparente baseado em canvas (`jsQR`) para compatibilidade integral com Safari/iPadOS e desktops.
 - **Ergonomia de Parede:** Câmera padrão configurada como frontal (`facingMode: 'user'`) com espelhamento horizontal no visor, projetada especificamente para tablets afixados em suportes rígidos na parede da cabine de pintura.
 - **Persistência desacoplada:** A camada de repositórios isola a fonte de dados do restante da interface. No estágio atual do MVP, utiliza repositórios em memória sincronizados com o `localStorage` do navegador.
+
+---
+
+## 🛡️ Decisões de Engenharia & UX de Chão de Fábrica
+
+Projetar software para a cabine de pintura de uma marcenaria exige soluções muito diferentes de sistemas corporativos tradicionais:
+
+| Decisão de Projeto | Desafio no Chão de Fábrica | Solução Adotada na Aplicação |
+| :--- | :--- | :--- |
+| **Ergonomia para Luvas & Resíduos** | Operadores trabalham em pé com luvas grossas manchadas de solvente/tinta; cliques milimétricos e gestos de pinça falham com frequência. | **Teclas táteis de 64px a 90px**, teclados numéricos virtuais dedicados em tela, feedback de pulso visual e ausência total de gestos complexos. |
+| **Câmera Frontal com Espelhamento** | O tablet fica chumbado em um suporte de parede ao lado da bancada; a câmera traseira fica obstruída contra a parede. | Câmera com `facingMode: 'user'` e **espelhamento horizontal nativo**, permitindo apresentar a lata ou ficha de OS de frente para o tablet. |
+| **Dual-Engine de Leitura QR Code** | Suporte universal entre tablets Android, iPads de operadores (Safari) e navegadores desktop. | Motor híbrido: `BarcodeDetector` nativo por hardware (alta performance) + decodificador canvas em `jsQR` como fallback transparente para Safari/iOS. |
+| **Volume em Béquer (ml) vs. Balança (g)** | A marcenaria não utiliza balança digital nas cabines de pintura; a mistura é feita por graduação visual em béqueres plásticos. | Padronização canônica de **volume em mililitros (ml)** com visualizador gráfico de nível líquido dinâmico ([`BeakerVisualizer`](src/components/ui/BeakerVisualizer.tsx)). |
+| **Prevenção Ativa vs. Notificação Passiva** | Erros de dosagem custam caro (comprometem a peça pronta do cliente e desperdiçam catalisadores importados). | **Trava impeditiva (+5% / +200ml)**: a interface bloqueia o avanço da dosagem e exige autorização explícita com PIN supervisor. |
+| **Pot Life Irreversível (20 min)** | A resina PU misturada com catalisador entra em processo de cura irreversível; após 20 min endurece e pode danificar a pistola. | Cronômetro regressivo persistente em `localStorage`, alertas progressivos de urgência e rotina para autodescarte consciente de refugo. |
 
 ---
 
