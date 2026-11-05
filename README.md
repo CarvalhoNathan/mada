@@ -283,9 +283,9 @@ Projeto de curricularização acadêmica desenvolvido em parceria com a **Mada M
 
 | Integrante | Atribuições & Papel no Projeto | Contato / Links |
 | :--- | :--- | :--- |
-| **Nathan Carvalho** | **Liderança Técnica & Desenvolvimento Full Stack:** Arquitetura do sistema, engenharia de software, desenvolvimento Front-end & UI/UX *tablet-first*, regras de negócio em TypeScript, testes automatizados e deploy. | [![GitHub](https://img.shields.io/badge/GitHub-carvalhonathan-181717?logo=github)](https://github.com/carvalhonathan) &bull; [![E-mail](https://img.shields.io/badge/E--mail-fariasnathan75%40gmail.com-blue?logo=gmail&logoColor=white)](mailto:fariasnathan75@gmail.com) |
-| **Gabriel** | **Relações com a Empresa Parceira & Documentação:** Contato inicial com a Mada Marcenaria, alinhamento nas reuniões com Fabio e apoio no levantamento e refinamento de documentação. | — |
-| **Andrey** | **Suporte a Reuniões & Documentação:** Levantamento de anotações e atas das reuniões com a empresa parceira e auxílio na documentação acadêmica. | — |
+| **Nathan Carvalho** | **Liderança Técnica & Desenvolvimento Full Stack:** Arquitetura do sistema, engenharia de software, desenvolvimento Front-end & UI/UX *tablet-first*, regras de negócio em TypeScript, testes automatizados e deploy. | [![GitHub](https://img.shields.io/badge/GitHub-carvalhonathan-181717?logo=github)](https://github.com/carvalhonathan) |
+| **Gabriel Cavalcanti Martins** | **Relações com a Empresa Parceira & Documentação:** Contato inicial com a Mada Marcenaria, alinhamento nas reuniões com Fabio e apoio no levantamento e refinamento de documentação. | [![GitHub](https://img.shields.io/badge/GitHub-treedrewlife-181717?logo=github)](https://github.com/treedrewlife) |
+| **Andrey Celestino** | **Suporte a Reuniões & Documentação:** Levantamento de anotações e atas das reuniões com a empresa parceira e auxílio na documentação acadêmica. | [![GitHub](https://img.shields.io/badge/GitHub-DreyCelestino-181717?logo=github)](https://github.com/DreyCelestino) |
 
 > 🪵 Desenvolvido para modernização e gestão de acabamento químico no setor de pintura e laca PU.
 
