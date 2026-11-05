@@ -281,32 +281,6 @@ Acesse no navegador através do endereço: `http://localhost:3000`.
 
 Projeto de curricularização acadêmica desenvolvido para o curso de **Tecnologia em Sistemas para Internet** da **Faculdade de Tecnologia da Baixada Santista Rubens Lara (FATEC Rubens Lara)** em parceria com a **Mada Marcenaria** (São Bernardo do Campo, SP):
 
-<table align="center">
-  <tr>
-    <td align="center" width="220px">
-      <a href="https://github.com/CarvalhoNathan">
-        <img src="https://github.com/CarvalhoNathan.png" width="85px" alt="Nathan Carvalho" style="border-radius: 50%;" /><br />
-        <sub><b>Nathan Carvalho</b></sub>
-      </a><br />
-      <small>Liderança Técnica & Full Stack</small>
-    </td>
-    <td align="center" width="220px">
-      <a href="https://github.com/treedrewlife">
-        <img src="https://github.com/treedrewlife.png" width="85px" alt="Gabriel Cavalcanti Martins" style="border-radius: 50%;" /><br />
-        <sub><b>Gabriel C. Martins</b></sub>
-      </a><br />
-      <small>Relações com Parceiro & Doc</small>
-    </td>
-    <td align="center" width="220px">
-      <a href="https://github.com/DreyCelestino">
-        <img src="https://github.com/DreyCelestino.png" width="85px" alt="Andrey Celestino" style="border-radius: 50%;" /><br />
-        <sub><b>Andrey Celestino</b></sub>
-      </a><br />
-      <small>Atas de Reunião & Apoio Doc</small>
-    </td>
-  </tr>
-</table>
-
 | Integrante | Atribuições & Papel no Projeto | Perfil GitHub |
 | :--- | :--- | :--- |
 | **Nathan Carvalho** | **Liderança Técnica & Desenvolvimento Full Stack:** Arquitetura do sistema, engenharia de software, desenvolvimento Front-end & UI/UX *tablet-first*, regras de negócio em TypeScript, testes automatizados e deploy. | [![GitHub](https://img.shields.io/badge/GitHub-carvalhonathan-181717?logo=github)](https://github.com/carvalhonathan) |
@@ -315,9 +289,9 @@ Projeto de curricularização acadêmica desenvolvido para o curso de **Tecnolog
 
 ---
 
-## 📄 Licença
+## 📄 Licença e Uso
 
-Este projeto é desenvolvido para fins acadêmicos e educacionais sob os termos da **[Licença MIT](LICENSE)**.  
+Projeto acadêmico e profissional em processo de homologação junto à empresa parceira. Todos os direitos reservados. Proibida a reprodução ou uso comercial sem autorização prévia.  
 &copy; 2026 Nathan Carvalho.
 
 ---
