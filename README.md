@@ -38,8 +38,8 @@ Historicamente, as proporções de mistura vivem guardadas na cabeça dos operad
 - **Custo cego:** impossibilidade de apurar quanto de química foi efetivamente investido em cada ambiente do cliente.
 - **Perda de misturas catalisadas:** a mistura PU endurece irreversivelmente em 20 minutos (*pot life*), podendo danificar pistolas e estragar a peça final.
 
-### 💸 A Matemática da Inação: O Custo de Não Mudar
-Em uma marcenaria sob medida com 2 a 3 cabines de pintura consumindo em média R$ 15.000 a R$ 20.000 mensais em químicos nobres (bases PU, catalisadores alifáticos e vernizes especiais), uma ineficiência tácita de 15% a 20% significa **jogar fora de R$ 27.000 a R$ 48.000 por ano** diretamente no ralo:
+### 💸 A Conta do Desperdício: Quanto Custa Continuar no Jeito Antigo?
+Em uma marcenaria sob medida com 2 a 3 cabines de pintura consumindo em média R$ 15.000 a R$ 20.000 mensais em químicos nobres (bases PU, catalisadores alifáticos e vernizes especiais), uma perda invisível de 15% a 20% significa **jogar fora de R$ 27.000 a R$ 48.000 por ano** diretamente no ralo:
 - Latas abertas que vencem esquecidas no fundo das prateleiras;
 - Excesso de catalisador ou solvente dosados "no olhômetro";
 - Misturas descartadas na cabine por estouro do tempo de cura (*pot life*);
@@ -49,7 +49,7 @@ Em uma marcenaria sob medida com 2 a 3 cabines de pintura consumindo em média R
 
 ## 🎯 Impacto de Negócio & Metas de Retorno (ROI)
 
-Projetado especificamente para estancar essa hemorragia financeira e transformar a cabine de pintura em uma operação de alta previsibilidade e desperdício zero:
+Projetado especificamente para estancar esse prejuízo silencioso e transformar a cabine de pintura em uma operação de alta previsibilidade e desperdício zero:
 
 | Meta de Impacto | O que representa na prática da fábrica |
 | :--- | :--- |
@@ -63,12 +63,12 @@ Projetado especificamente para estancar essa hemorragia financeira e transformar
 
 ## ✨ A Solução: Engenharia de Detalhes Pensada para Chão de Fábrica
 
-> 🏭 **Filosofia de Chão de Fábrica (Fricção Zero):**  
-> *"Não construímos um software de escritório com ar-condicionado para tentar empurrar à força na fábrica. Cada botão tátil de 90px, a inversão da câmera para suporte de parede e a graduação em béquer (ml) nasceram da observação real do chão de fábrica: para o operador em pé, usando luvas nitrílicas sujas de solvente, registrar tudo em 3 toques rápidos, sem burocracia."*
+> 🏭 **Feito para a Rotina Real da Fábrica (Zero Burocracia):**  
+> *"Não construímos um software de escritório com ar-condicionado para tentar empurrar à força na fábrica. Cada botão tátil de 90px, a inversão da câmera para suporte de parede e a graduação em béquer (ml) nasceram da observação real do chão de fábrica: para o operador em pé, usando luvas nitrílicas sujas de solvente, registrar tudo em 3 toques rápidos, sem complicação."*
 
-Não se trata de um sistema corporativo adaptado, mas de uma interface **projetada com mecanismos proprietários para a realidade agressiva de uma cabine de pintura**:
+Não se trata de um sistema corporativo adaptado, mas de uma interface **projetada com soluções sob medida para a rotina real de uma cabine de pintura**:
 
-| Mecanismo Proprietário | Atenção ao Detalhe Operacional | O que resolve no Chão de Fábrica |
+| Funcionalidade Prática | Atenção ao Detalhe Operacional | O que resolve no Chão de Fábrica |
 | :--- | :--- | :--- |
 | 📱 **Interface Tablet-First Industrial** | Teclas táteis de 90px, espaçamento generoso e ausência de gestos finos (swipe/pinça). | Operação em pé, ágil mesmo com luvas nitrílicas grossas e dedos sujos de tinta e solvente. |
 | 🧪 **Motor Dinâmico de 4 Frações PU** | Cálculo instantâneo das 4 frações (Base + Catálise + Diluidor + Retardador) pelo volume desejado. | Acaba com a dependência de receitas guardadas "de cabeça" e previne misturas incorretas. |
