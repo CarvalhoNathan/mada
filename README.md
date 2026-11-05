@@ -22,34 +22,52 @@ Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas qu
 
 ---
 
-## 💡 O problema
+## 💡 O Cenário: O Custo Invisível no Setor de Pintura
 
-Em uma marcenaria de alto padrão, o setor de pintura e acabamento utiliza insumos de alto custo (bases PU, catalisadores alifáticos, diluidores, retardadores e vernizes bi-componentes). Historicamente, as receitas e proporções de mistura vivem na cabeça dos pintores.
+Em uma marcenaria de alto padrão, a cabine de pintura e acabamento utiliza os insumos mais nobres e caros da fábrica: bases poliuretano (PU), catalisadores alifáticos, diluidores especiais, retardadores térmicos e vernizes bi-componentes. 
+
+Historicamente, as proporções de mistura vivem guardadas na cabeça dos operadores:
 
 > _"Composição e mistura, eles sabem de cabeça, e isso é um problema. Preferiria ter um tablet com as receitas, sabe? E eles darem baixa no que forem usando, e associar para qual cliente e ambiente, devolve a lata pro estoque com os valores..."_  
 > — **Fabio, gestor da Mada Marcenaria**
 
-As consequências práticas desse modelo tácito são:
-- Proporções incorretas que comprometem a secagem e a cura da laca;
-- Latas abertas retornando à prateleira sem medição de saldo;
-- Produtos caros vencendo no almoxarifado por falta de prioridade;
-- Impossibilidade de apurar o custo real de química por ambiente e cliente;
-- Perda total de misturas catalisadas por expiração do tempo de trabalho (*pot life*).
+### As dores reais do chão de fábrica:
+- **Erros de proporção:** dosagens imprecisas comprometem a secagem, o alastramento e a resistência mecânica da laca.
+- **Sobras abandonadas:** latas abertas voltam para a prateleira sem medição de saldo, gerando perda silenciosa de matéria-prima.
+- **Validade expirada:** produtos caros vencem no estoque porque operadores abrem frascos novos sem consumir os lotes abertos.
+- **Custo cego:** impossibilidade de apurar quanto de química foi efetivamente investido em cada ambiente do cliente.
+- **Perda de misturas catalisadas:** a mistura PU endurece irreversivelmente em 20 minutos (*pot life*), podendo danificar pistolas e estragar a peça final.
 
 ---
 
-## ✨ A solução
+## 🎯 Impacto de Negócio & Metas de Retorno (ROI)
 
-|     | Funcionalidade                     | O que resolve na prática                                                             |
-| :-: | :--------------------------------- | :----------------------------------------------------------------------------------- |
-| 📱  | **Interface Tablet-First**         | Teclas táteis de 90px, alto contraste e uso em pé com luvas e mãos sujas.           |
-| 🧪  | **Receitas & Fórmulas Dinâmicas**  | Informe o volume final desejado e o sistema calcula Base, Catálise, Diluidor e Retardador. |
-| 🛑  | **Trava Anti-Erro Crítico**        | Alerta vermelho impeditivo se a dosagem ultrapassar a tolerância (+5% / +200ml), com PIN de liberação. |
-| ⏱️  | **Controle de Pot Life**           | Cronômetro regressivo de 20 min com alerta sonoro/visual e registro de descarte de refugo químico. |
-| 📅  | **Prioridade por Validade (FEFO)** | Destaca latas abertas e lotes próximos do vencimento ("Use Primeiro").               |
-| 🏷️  | **QR Code Universal**              | Leitura via câmera frontal (tablet em suporte de parede) com retículo laser animado e fallback canvas. |
-| 📦  | **Gestão de Estoque & Compras**    | Entrada ágil de novos lotes e geração de Lista de Solicitação de Compras de insumos. |
-| 📊  | **Painel Gerencial Executivo**     | Gráfico interativo de auditoria (*Scrub Chart*), KPIs de desperdício em R$ e exportação em CSV. |
+Projetado especificamente para transformar a cabine de pintura em uma operação de alta previsibilidade e desperdício zero:
+
+| Meta de Impacto | O que representa na prática da fábrica |
+| :--- | :--- |
+| **−20% de Desperdício Químico** | Redução imediata de perda de matéria-prima nobre através de receitas recalculadas milimetricamente e reaproveitamento de sobras. |
+| **100% de Rastreabilidade na OS** | Rateio financeiro exato: a marcenaria passa a saber o centavo real de química gasto por **Cliente ➔ Projeto ➔ Ambiente**. |
+| **Zero Perda por Validade (FEFO)** | Algoritmo *First Expire, First Out* que obriga o consumo de latas já abertas e lotes próximos do vencimento antes da violação de novos frascos. |
+| **Proteção de Peças & Ferramental** | Monitor de cura de 20 min (*pot life*) que impede a aplicação de laca em fase de gelificação e evita entupimento de pistolas. |
+| **Fim da Dependência de Memória** | Padronização integral do catálogo técnico (padrão Sayerlack / Sayersystem e homologados), acessível a qualquer operador. |
+
+---
+
+## ✨ A Solução: Engenharia de Detalhes Pensada para Chão de Fábrica
+
+Não se trata de um sistema corporativo adaptado, mas de uma interface **projetada milimetricamente para a realidade agressiva de uma oficina de pintura**:
+
+| Funcionalidade | Atenção ao Detalhe Operacional | O que resolve |
+| :--- | :--- | :--- |
+| 📱 **Interface Tablet-First** | Teclas táteis de 90px, espaçamento generoso e ausência de gestos finos (swipe/pinça). | Operação em pé, ágil mesmo com luvas nitrílicas sujas de tinta e solvente. |
+| 🧪 **Receitas & Fórmulas Dinâmicas** | Cálculo dinâmico das 4 frações (Base + Catálise + Diluidor + Retardador) pelo volume final desejado. | Acaba com a dependência de receitas guardadas "de cabeça" e previne misturas incorretas. |
+| 🛑 **Trava Anti-Erro Crítico** | Bloqueio visual impeditivo se a retirada passar de +5% ou 200ml do gabarito da receita. | Erros graves são barrados antes de acontecer, exigindo autorização com PIN supervisor. |
+| ⏱️ **Monitor de Pot Life (20 min)** | Cronômetro regressivo em tempo real com avisos sonoros/visuais e autodescarte orientado. | Protege contra cura do PU na pistola e rateia o custo do refugo descartado na OS. |
+| 📅 **Prioridade FEFO ("Use Primeiro")** | Indicação visual no Dashboard e na seleção de lotes da lata mais antiga que deve ser usada. | Reduz drasticamente perdas de produtos caros vencendo esquecidos na prateleira. |
+| 🏷️ **Scanner QR Dual-Engine** | Câmera frontal com espelhamento nativo (para tablet fixado na parede) e mira laser animada. | Identificação instantânea de ordens de serviço e frascos sem precisar manusear o tablet. |
+| ♻️ **Devolução com Etiqueta de Saldo** | Cálculo automático do volume restante na lata e emissão imediata de nova etiqueta com QR Code. | Latas abertas voltam ao almoxarifado devidamente quantificadas e rastreadas. |
+| 📊 **Painel Gerencial & Auditoria** | Gráfico interativo tátil (*Scrub Chart*), KPIs em R$ e exportação de histórico em CSV. | Gestão executiva com total visibilidade do consumo previsto vs. realizado por obra. |
 
 ---
 
@@ -78,16 +96,6 @@ flowchart LR
 | :---: | :---: | :---: | :---: |
 | ![Receita](docs/screens/04-receita.png) | ![Dosagem](docs/screens/05-dosagem.png) | ![Alerta](docs/screens/06-alerta.png) | ![Devolução](docs/screens/07-devolucao.png) |
 | Cálculo em frações proporcionais | Visualizador de béquer com nível líquido | Bloqueio por excesso com PIN supervisor | Etiqueta de sobra com QR Code e saldo |
-
----
-
-## 🎯 Impacto esperado
-
-- **−20% de desperdício** de químicos no setor de pintura (meta de projeto até novembro de 2026).
-- **Eliminação de receitas "de cabeça":** padronização do catálogo Sayersystem / Sayerlack e homologados.
-- **Rastreabilidade total de custo:** histórico financeiro rateado por cliente, projeto e ambiente.
-- **Redução drástica de perdas por validade:** garantia de uso de latas abertas antes da violação de novos frascos.
-- **Preservação de ferramentas e peças:** alerta rigoroso contra aplicação de produto com catalisação vencida.
 
 ---
 
