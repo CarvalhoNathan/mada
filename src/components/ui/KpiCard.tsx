@@ -2,18 +2,19 @@ import React from 'react';
 
 export interface KpiCardProps {
   label: string;
-  value: string | number;
+  value: React.ReactNode;
   unit?: string;
   changePercent?: number; // ex: +5.4%
   changeStatus?: 'ok' | 'warn' | 'danger';
   changeText?: string;
   metaTarget?: string;
   icon?: React.ReactNode;
+  isHero?: boolean;
 }
 
 /**
- * KpiCard - Cartão de Métricas para Painel de Gerência (PC Desktop)
- * Layout denso com alta leiturabilidade executiva.
+ * KpiCard - Cartão de Métricas para Painel de Gerência (PC Desktop / Tablet)
+ * Layout denso com alta leiturabilidade executiva e regras de Stat Tile (bento.md).
  */
 export const KpiCard: React.FC<KpiCardProps> = ({
   label,
@@ -24,15 +25,27 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   changeText,
   metaTarget,
   icon,
+  isHero = false,
 }) => {
   return (
-    <div className="ds-kpi-card">
+    <div
+      className="ds-kpi-card"
+      style={
+        isHero
+          ? {
+              borderColor: 'rgba(16, 185, 129, 0.5)',
+              background:
+                'linear-gradient(145deg, rgba(16, 185, 129, 0.12) 0%, var(--card) 100%)',
+            }
+          : undefined
+      }
+    >
       <div className="ds-kpi-top">
         <span className="ds-kpi-label">{label}</span>
         {icon && <span className="ds-kpi-icon">{icon}</span>}
       </div>
 
-      <div className="ds-kpi-value-row">
+      <div className="ds-kpi-value-row" style={{ whiteSpace: 'nowrap' }}>
         <span className="ds-kpi-value">{value}</span>
         {unit && <span className="ds-kpi-unit">{unit}</span>}
       </div>

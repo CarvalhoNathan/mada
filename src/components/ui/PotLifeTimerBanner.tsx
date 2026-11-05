@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertOctagon, AlertTriangle, Clock, Check, Trash2 } from 'lucide-react';
+import { CountNumber } from './CountNumber';
 
 export interface PotLifeState {
   startTime: number; // timestamp em ms
@@ -46,7 +47,6 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
 
   const minutes = Math.floor(secondsRemaining / 60);
   const seconds = secondsRemaining % 60;
-  const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
   const isExpired = secondsRemaining <= 0;
   const isUrgent = secondsRemaining > 0 && secondsRemaining <= 5 * 60; // menos de 5 min
@@ -67,7 +67,7 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
           : 'linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(20, 24, 33, 0.95) 100%)',
         border: `2px solid ${isExpired ? '#EF4444' : isUrgent ? '#F59E0B' : '#10B981'}`,
         borderRadius: '14px',
-        padding: '14px 20px',
+        padding: '12px 18px',
         marginBottom: '16px',
         display: 'flex',
         alignItems: 'center',
@@ -83,29 +83,30 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
     >
       {/* Esquerda: Informação e Status */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div
-            style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '12px',
-              background: isExpired ? '#EF4444' : isUrgent ? '#F59E0B' : '#10B981',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {isExpired ? (
-              <AlertOctagon size={24} strokeWidth={2.4} />
-            ) : isUrgent ? (
-              <AlertTriangle size={24} strokeWidth={2.4} />
-            ) : (
-              <Clock size={24} strokeWidth={2.4} />
-            )}
-          </div>
+        <div
+          style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            background: isExpired ? '#EF4444' : isUrgent ? '#F59E0B' : '#10B981',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          {isExpired ? (
+            <AlertOctagon size={22} strokeWidth={2.4} />
+          ) : isUrgent ? (
+            <AlertTriangle size={22} strokeWidth={2.4} />
+          ) : (
+            <Clock size={22} strokeWidth={2.4} />
+          )}
+        </div>
 
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span
               style={{
                 fontSize: '12px',
@@ -124,28 +125,52 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
             >
               {isExpired ? 'Mistura Endurecida' : isUrgent ? 'Tempo Crítico' : 'Mistura Ativa (Pot Life)'}
             </span>
-            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              {potLife.recipeName} • {potLife.volumeTotal} ml
+            <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 600 }}>
+              {potLife.osNumber} • {potLife.recipeName} • {potLife.volumeTotal} ml
             </span>
           </div>
 
           <h4
             style={{
               margin: '4px 0 0',
-              fontSize: '16px',
+              fontSize: '15px',
               fontWeight: 700,
               color: isExpired ? '#EF4444' : 'var(--text)',
             }}
           >
             {isExpired
               ? 'Tempo de cura (20 min) esgotado! Descarte obrigatório no tambor de refugo.'
-              : `Aplique na pistola antes de endurecer: restam ${formattedTime}`}
+              : 'Aplique na pistola antes de endurecer'}
           </h4>
         </div>
       </div>
 
-      {/* Centro: Barra de Progresso Visual dos 20 minutos */}
-      <div style={{ minWidth: '160px', flex: 1, maxWidth: '240px' }}>
+      {/* Centro: Cronômetro com Rolagem Numérica + Barra de Progresso */}
+      <div style={{ minWidth: '180px', flex: 1, maxWidth: '260px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'baseline',
+            fontSize: '12px',
+            color: 'var(--text-muted)',
+            marginBottom: '5px',
+          }}
+        >
+          <span>Tempo restante:</span>
+          <span
+            style={{
+              fontSize: '16px',
+              fontWeight: 800,
+              color: isExpired ? '#EF4444' : isUrgent ? '#FDE68A' : '#6EE7B7',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            <CountNumber value={minutes} format={(n) => String(Math.round(n)).padStart(2, '0')} />
+            <span>:</span>
+            <CountNumber value={seconds} format={(n) => String(Math.round(n)).padStart(2, '0')} />
+          </span>
+        </div>
         <div
           style={{
             height: '8px',
@@ -163,25 +188,10 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
             }}
           />
         </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontSize: '11px',
-            color: 'var(--text-muted)',
-            marginTop: '4px',
-          }}
-        >
-          <span>Preparo (0 min)</span>
-          <span style={{ fontWeight: 700, color: isExpired ? '#EF4444' : 'var(--text)' }}>
-            {formattedTime}
-          </span>
-          <span>Limite (20 min)</span>
-        </div>
       </div>
 
-      {/* Direita: Ações Rápidas */}
-      <div style={{ display: 'flex', gap: '8px' }}>
+      {/* Direita: Ação Única Direta */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {!isExpired ? (
           <button
             type="button"
@@ -201,7 +211,7 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
               gap: '8px',
             }}
           >
-            <Check size={16} strokeWidth={2.6} /> Aplicação Concluída
+            <Check size={16} strokeWidth={2.6} /> Concluir Aplicação
           </button>
         ) : (
           <button

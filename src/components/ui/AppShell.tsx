@@ -105,21 +105,24 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
         </div>
 
-        {/* Lado Direito: Status + Modo Limpeza + Operador */}
+        {/* Lado Direito: Status Passivo (sem borda de botão) | Ações Interativas (com borda de botão padronizada) */}
         <div className="boardui-header-right">
-          {/* Chips de Conexão */}
-          <div className="boardui-chips-group">
-            <div className={`boardui-chip ${isWifiConnected ? 'online' : 'offline'}`}>
-              <div className="boardui-chip-dot" />
-              <span>{isWifiConnected ? 'Wi-Fi' : 'Sem Wi-Fi'}</span>
-            </div>
-            <div className={`boardui-chip ${isServerLocal ? 'online' : 'offline'}`}>
-              <div className="boardui-chip-dot" />
-              <span>{isServerLocal ? 'Sistema' : 'Offline'}</span>
-            </div>
+          {/* Indicador Único de Status (Não-clicável: sem caixa de botão para não competir com ações) */}
+          <div
+            className={`boardui-status-indicator ${isWifiConnected && isServerLocal ? 'online' : 'offline'}`}
+            title={
+              isWifiConnected && isServerLocal
+                ? 'Wi-Fi e banco sincronizados'
+                : 'Falha de conexão Wi-Fi ou servidor local'
+            }
+          >
+            <span className="boardui-chip-dot" aria-hidden="true" />
+            <span>{isWifiConnected && isServerLocal ? 'Sistema online' : 'Sem conexão'}</span>
           </div>
 
-          {/* Botão Limpeza de Tela */}
+          <span className="boardui-header-divider" aria-hidden="true" />
+
+          {/* Botão Interativo: Limpeza de Tela */}
           <button
             type="button"
             className="boardui-clean-btn"
@@ -133,12 +136,12 @@ export const AppShell: React.FC<AppShellProps> = ({
             <span>Limpar tela</span>
           </button>
 
-          {/* Operador Logado - Estilo BoardUI Profile Selector */}
+          {/* Botão Interativo: Operador Logado */}
           {operator && (
-            <div
+            <button
+              type="button"
               className="boardui-operator-pill"
               onClick={onOperatorClick}
-              role={onOperatorClick ? 'button' : undefined}
               title={onOperatorClick ? 'Toque para alternar operador' : undefined}
               aria-label={`Operador logado: ${operator.name}. Toque para trocar de operador.`}
             >
@@ -149,7 +152,7 @@ export const AppShell: React.FC<AppShellProps> = ({
               <span className="boardui-operator-chevron" aria-hidden="true" style={{ display: 'flex', alignItems: 'center' }}>
                 <ChevronsUpDown size={14} />
               </span>
-            </div>
+            </button>
           )}
         </div>
       </header>

@@ -89,10 +89,14 @@
   --space-48: 48px;
 
   /* ========================================================================
-     5. RAIOS DE BORDA (RADII)
+     5. RAIOS DE BORDA (RADII) — SISTEMA CONCÊNTRICO DE 3 CAMADAS
+     Camada 1 (Card/Superfície): 16px
+     Camada 2 (Botão/Controle Clicável): 10px
+     Camada 3 (Badge/Tag Informativa): 6px
      ======================================================================== */
-  --radius-card: 18px;
-  --radius-button: 12px;
+  --radius-card: 16px;
+  --radius-button: 10px;
+  --radius-badge: 6px;
   --radius-pill: 9999px;
   --radius-sm: 8px;
 
