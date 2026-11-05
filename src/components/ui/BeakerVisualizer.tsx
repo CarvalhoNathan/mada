@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import { AlertTriangle, Check } from 'lucide-react';
 
 export interface BeakerVisualizerProps {
@@ -34,6 +35,58 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
   const beakerWidth = 46;
   const liquidHeight = (fillPct / 110) * (beakerHeight - 8);
 
+  const beakerWrapRef = useRef<HTMLDivElement>(null);
+  const meniscusRef = useRef<SVGEllipseElement>(null);
+  const prevValueRef = useRef<number>(value);
+  const prevExceededRef = useRef<boolean>(isExceeded);
+
+  // Ondulação física de menisco (slosh wave) quando o operador despeja insumo (+10ml / +50ml)
+  useEffect(() => {
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+      prevValueRef.current = value;
+      return;
+    }
+
+    if (value !== prevValueRef.current && value > 0 && meniscusRef.current) {
+      gsap.fromTo(
+        meniscusRef.current,
+        { attr: { ry: 5.5 } },
+        {
+          attr: { ry: 3 },
+          duration: 0.55,
+          ease: 'elastic.out(1.2, 0.35)',
+          overwrite: 'auto',
+        }
+      );
+    }
+    prevValueRef.current = value;
+  }, [value]);
+
+  // Shake tátil de alerta caso o líquido ultrapasse a tolerância crítica (+5%)
+  useEffect(() => {
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reducedMotion && isExceeded && !prevExceededRef.current && beakerWrapRef.current) {
+      gsap.fromTo(
+        beakerWrapRef.current,
+        { x: -4 },
+        {
+          x: 0,
+          duration: 0.38,
+          ease: 'elastic.out(2.2, 0.18)',
+          clearProps: 'transform',
+        }
+      );
+    }
+    prevExceededRef.current = isExceeded;
+  }, [isExceeded]);
+
   // Cor semântica do líquido
   let liquidGradientId = 'liquid-blue';
   let glowColor = 'rgba(56, 189, 248, 0.4)';
@@ -67,6 +120,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
       }}
     >
       <div
+        ref={beakerWrapRef}
         style={{
           position: 'relative',
           width: `${beakerWidth}px`,
@@ -142,6 +196,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
               />
               {/* Menisco da superfície do líquido */}
               <ellipse
+                ref={meniscusRef}
                 cx={beakerWidth / 2}
                 cy={beakerHeight - 4 - liquidHeight}
                 rx={beakerWidth / 2 - 6}

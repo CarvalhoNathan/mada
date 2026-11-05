@@ -11,11 +11,11 @@ import {
   Plus,
   ClipboardCopy,
   Trash2,
-  X,
 } from 'lucide-react';
 import { Lote, Operador, ScreenId, ItemSolicitacaoCompra } from '../types';
 import { Button } from '../components/ui/Button';
 import { CountNumber } from '../components/ui/CountNumber';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { ModalNewBatch } from './ModalNewBatch';
 import { formatarStatusValidade } from '../domain/fefo';
 import { MOCK_PRODUTOS } from '../data';
@@ -212,73 +212,42 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
             <span>Receber Nova Lata / NF</span>
           </button>
 
-          <div
-            style={{
-              display: 'flex',
-              gap: '4px',
-              background: 'var(--bg)',
-              padding: '4px',
-              borderRadius: '14px',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setAbaAtiva('estoque')}
-              style={{
-                minHeight: '46px',
-                padding: '8px 18px',
-                borderRadius: '10px',
-                border: 'none',
-                background: abaAtiva === 'estoque' ? 'var(--primary)' : 'transparent',
-                color: abaAtiva === 'estoque' ? '#fff' : 'var(--text-muted)',
-                fontWeight: 700,
-                fontSize: '16px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontFamily: 'inherit',
-              }}
-            >
-              <Package size={18} strokeWidth={2.4} /> Estoque Físico ({lotes.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setAbaAtiva('compras')}
-              style={{
-                minHeight: '46px',
-                padding: '8px 18px',
-                borderRadius: '10px',
-                border: 'none',
-                background: abaAtiva === 'compras' ? '#10B981' : 'transparent',
-                color: abaAtiva === 'compras' ? '#fff' : 'var(--text-muted)',
-                fontWeight: 700,
-                fontSize: '16px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontFamily: 'inherit',
-              }}
-            >
-              <ShoppingCart size={18} strokeWidth={2.4} /> Lista de Compras
-              {solicitacoes.length > 0 && (
-                <span
-                  style={{
-                    background: '#EF4444',
-                    color: '#fff',
-                    borderRadius: '12px',
-                    padding: '2px 8px',
-                    fontSize: '14px',
-                    fontWeight: 800,
-                  }}
-                >
-                  {solicitacoes.length}
-                </span>
-              )}
-            </button>
-          </div>
+          <SegmentedControl<'estoque' | 'compras'>
+            ariaLabel="Alternar aba de estoque e compras"
+            value={abaAtiva}
+            onChange={(val) => setAbaAtiva(val)}
+            options={[
+              {
+                id: 'estoque',
+                label: `Estoque Físico (${lotes.length})`,
+                icon: <Package size={17} strokeWidth={2.4} />,
+                tone: 'primary',
+              },
+              {
+                id: 'compras',
+                label: 'Lista de Compras',
+                icon: <ShoppingCart size={17} strokeWidth={2.4} />,
+                tone: 'ok',
+                badge:
+                  solicitacoes.length > 0 ? (
+                    <span
+                      style={{
+                        background: '#EF4444',
+                        color: '#fff',
+                        borderRadius: 'var(--radius-badge)',
+                        padding: '1px 7px',
+                        fontSize: '12px',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 800,
+                      }}
+                    >
+                      {solicitacoes.length}
+                    </span>
+                  ) : undefined,
+              },
+            ]}
+            style={{ background: 'var(--bg)' }}
+          />
         </div>
       </div>
 
@@ -361,82 +330,33 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
             </div>
           </div>
 
-          {/* Filtros de Lista (Controle Segmentado Concêntrico: R_ext=12px, pad=4px, R_int=8px) */}
-          <div
-            role="group"
-            aria-label="Filtrar lotes do estoque"
-            style={{
-              display: 'inline-flex',
-              gap: '4px',
-              padding: '4px',
-              borderRadius: '12px',
-              background: 'var(--card)',
-              border: '1px solid var(--border)',
-              marginBottom: '16px',
-              flexWrap: 'wrap',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setFiltro('todos')}
-              style={{
-                minHeight: '38px',
-                padding: '0 14px',
-                borderRadius: '8px',
-                border: 'none',
-                background: filtro === 'todos' ? 'var(--card-hover)' : 'transparent',
-                color: filtro === 'todos' ? 'var(--text)' : 'var(--text-muted)',
-                fontWeight: 600,
-                fontSize: '14px',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              Todos os lotes ({lotes.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFiltro('criticos')}
-              style={{
-                minHeight: '38px',
-                padding: '0 14px',
-                borderRadius: '8px',
-                border: 'none',
-                background: filtro === 'criticos' ? 'rgba(239, 68, 68, 0.16)' : 'transparent',
-                color: filtro === 'criticos' ? '#EF4444' : 'var(--text-muted)',
-                fontWeight: 600,
-                fontSize: '14px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontFamily: 'inherit',
-              }}
-            >
-              <AlertCircle size={14} strokeWidth={2.4} /> Estoque baixo / validade próxima
-            </button>
-            <button
-              type="button"
-              onClick={() => setFiltro('sobras')}
-              style={{
-                minHeight: '38px',
-                padding: '0 14px',
-                borderRadius: '8px',
-                border: 'none',
-                background: filtro === 'sobras' ? 'rgba(245, 158, 11, 0.16)' : 'transparent',
-                color: filtro === 'sobras' ? '#F59E0B' : 'var(--text-muted)',
-                fontWeight: 600,
-                fontSize: '14px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontFamily: 'inherit',
-              }}
-            >
-              <RotateCcw size={14} strokeWidth={2.4} /> Latas de sobras
-            </button>
-          </div>
+          {/* Filtros de Lista (Controle Segmentado com Pílula Deslizante GSAP) */}
+          <SegmentedControl<'todos' | 'criticos' | 'sobras'>
+            ariaLabel="Filtrar lotes do estoque"
+            size="sm"
+            value={filtro}
+            onChange={(val) => setFiltro(val)}
+            options={[
+              {
+                id: 'todos',
+                label: `Todos os lotes (${lotes.length})`,
+                tone: 'neutral',
+              },
+              {
+                id: 'criticos',
+                label: 'Estoque baixo / validade próxima',
+                icon: <AlertCircle size={14} strokeWidth={2.4} />,
+                tone: 'danger',
+              },
+              {
+                id: 'sobras',
+                label: 'Latas de sobras',
+                icon: <RotateCcw size={14} strokeWidth={2.4} />,
+                tone: 'warn',
+              },
+            ]}
+            style={{ marginBottom: '16px' }}
+          />
 
           {/* Grid de Cards de Estoque */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

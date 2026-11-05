@@ -1,4 +1,5 @@
-import React, { useId, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
+import gsap from 'gsap';
 import { CountNumber } from './CountNumber';
 
 export interface ScrubDataPoint {
@@ -42,6 +43,8 @@ function smoothPath(p: { x: number; y: number }[]) {
 export const ScrubChart: React.FC<ScrubChartProps> = ({ points, periodLabel }) => {
   const id = useId().replace(/:/g, '');
   const containerRef = useRef<HTMLDivElement>(null);
+  const lineRef = useRef<SVGPathElement>(null);
+  const areaRef = useRef<SVGPathElement>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [scrubX, setScrubX] = useState<number | null>(null);
 
@@ -67,6 +70,38 @@ export const ScrubChart: React.FC<ScrubChartProps> = ({ points, periodLabel }) =
 
   const activePoint = activeIndex !== null ? points[activeIndex] : null;
   const activeCoord = activeIndex !== null ? realPts[activeIndex] : null;
+
+  useEffect(() => {
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) return;
+
+    const pathEl = lineRef.current;
+    const areaEl = areaRef.current;
+
+    if (pathEl && typeof pathEl.getTotalLength === 'function') {
+      try {
+        const len = pathEl.getTotalLength();
+        gsap.fromTo(
+          pathEl,
+          { strokeDasharray: len, strokeDashoffset: len },
+          { strokeDashoffset: 0, duration: 0.65, ease: 'power2.out', overwrite: 'auto' }
+        );
+      } catch {
+        // Ignora caso SVG ainda não esteja anexado ao layout
+      }
+    }
+
+    if (areaEl) {
+      gsap.fromTo(
+        areaEl,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.55, ease: 'power2.out', overwrite: 'auto' }
+      );
+    }
+  }, [realLine, periodLabel]);
 
   const handlePointerScrub = (clientX: number) => {
     const el = containerRef.current;
@@ -181,7 +216,7 @@ export const ScrubChart: React.FC<ScrubChartProps> = ({ points, periodLabel }) =
           </defs>
 
           {/* Área suave sob a curva real */}
-          {realFill && <path d={realFill} fill={`url(#${id}-area)`} />}
+          {realFill && <path ref={areaRef} d={realFill} fill={`url(#${id}-area)`} />}
 
           {/* Linha tracejada discreta da Meta Prevista */}
           {targetLine && (
@@ -197,6 +232,7 @@ export const ScrubChart: React.FC<ScrubChartProps> = ({ points, periodLabel }) =
           {/* Linha contínua principal do Consumo Real */}
           {realLine && (
             <path
+              ref={lineRef}
               d={realLine}
               fill="none"
               stroke="#3B82F6"

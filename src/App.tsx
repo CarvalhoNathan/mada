@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
+import gsap from 'gsap';
 import { Operator, PieceLot, RecipeState, ScreenId, Lote, ItemSolicitacaoCompra, Receita, Movimentacao, OrdemServico } from './types';
 import { AppShell } from './components/ui/AppShell';
 import { StatusBanner } from './components/ui/StatusBanner';
@@ -40,6 +41,17 @@ import { ordenarLotesFEFO } from './domain/fefo';
 
 const INITIAL_PIECE_LOT: PieceLot = MOCK_ORDENS_SERVICO[0].pecaLote;
 
+const SCREEN_ORDER: Record<ScreenId, number> = {
+  auth: 0,
+  dashboard: 1,
+  os: 2,
+  recipe: 3,
+  dosing: 4,
+  return: 5,
+  inventory: 2,
+  manager: 2,
+};
+
 const INITIAL_RECIPE: RecipeState = {
   totalVolume: 1000,
   proportions: {
@@ -59,8 +71,59 @@ const INITIAL_RECIPE: RecipeState = {
 export const App: React.FC = () => {
   // Estado de navegação e usuário
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('auth');
+  const prevScreenRef = useRef<ScreenId>('auth');
+  const screenStageRef = useRef<HTMLDivElement>(null);
   const [operators, setOperators] = useState<Operator[]>(MOCK_OPERADORES);
   const [selectedOperator, setSelectedOperator] = useState<Operator>(MOCK_OPERADORES[0]);
+
+  // Transição direcional e micro-stagger de cards entre telas via GSAP
+  useEffect(() => {
+    const prev = prevScreenRef.current;
+    prevScreenRef.current = currentScreen;
+    if (prev === currentScreen) return;
+
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) return;
+
+    const stage = screenStageRef.current;
+    if (!stage) return;
+
+    const delta = (SCREEN_ORDER[currentScreen] ?? 1) - (SCREEN_ORDER[prev] ?? 1);
+    const offsetX = delta >= 0 ? 18 : -18;
+
+    gsap.fromTo(
+      stage,
+      { x: offsetX, opacity: 0 },
+      {
+        x: 0,
+        opacity: 1,
+        duration: 0.24,
+        ease: 'power3.out',
+        clearProps: 'transform,opacity',
+      }
+    );
+
+    const cards = stage.querySelectorAll(
+      '.boardui-card, .os-card-surface, .recipe-chem-card, .dosing-card, .ds-kpi-card'
+    );
+    if (cards.length > 0) {
+      gsap.fromTo(
+        cards,
+        { y: 8, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.24,
+          stagger: 0.032,
+          ease: 'power2.out',
+          clearProps: 'transform,opacity',
+        }
+      );
+    }
+  }, [currentScreen]);
 
   // Lotes e movimentações persistidos
   const [lotes, setLotes] = useState<Lote[]>([]);
@@ -376,7 +439,16 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Roteamento de Telas */}
+      {/* Roteamento de Telas com Transição Direcional GSAP */}
+      <div
+        ref={screenStageRef}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
       {currentScreen === 'auth' && (
         <ScreenAuth
           operators={operators}
@@ -551,6 +623,7 @@ export const App: React.FC = () => {
           />
         </Suspense>
       )}
+      </div>
 
       {/* Modal de Latas que vencem primeiro ("Use Primeiro") */}
       <ModalUseFirst

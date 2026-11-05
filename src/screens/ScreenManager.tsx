@@ -16,6 +16,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Button } from '../components/ui/Button';
 import { CountNumber } from '../components/ui/CountNumber';
 import { ScrubChart, ScrubDataPoint } from '../components/ui/ScrubChart';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { ScreenId, Operador, Movimentacao, Lote } from '../types';
 import { MOCK_OPERADORES, MOCK_ORDENS_SERVICO, MOCK_LOTES } from '../data';
 
@@ -270,49 +271,18 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px' }}>
-          {/* Controle Segmentado de Período (Stageshow Segmented Control) */}
-          <div
-            role="group"
-            aria-label="Período de análise"
-            style={{
-              display: 'inline-flex',
-              padding: '4px',
-              borderRadius: '12px',
-              background: 'var(--bg)',
-              border: '1.5px solid var(--border)',
-              gap: '4px',
-            }}
-          >
-            {[
-              { id: '7d', label: '7 Dias' },
-              { id: '30d', label: '30 Dias' },
-              { id: '90d', label: 'Trimestre' },
-            ].map((p) => {
-              const active = periodo === p.id;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPeriodo(p.id as '7d' | '30d' | '90d')}
-                  style={{
-                    minHeight: '42px',
-                    padding: '0 14px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: active ? 'var(--primary)' : 'transparent',
-                    color: active ? '#ffffff' : 'var(--text-muted)',
-                    fontSize: '15px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  {p.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Controle Segmentado de Período (GSAP Sliding Pill) */}
+          <SegmentedControl<'7d' | '30d' | '90d'>
+            ariaLabel="Período de análise"
+            value={periodo}
+            onChange={(val) => setPeriodo(val)}
+            options={[
+              { id: '7d', label: '7 Dias', tone: 'primary' },
+              { id: '30d', label: '30 Dias', tone: 'primary' },
+              { id: '90d', label: 'Trimestre', tone: 'primary' },
+            ]}
+            style={{ background: 'var(--bg)' }}
+          />
           {onResetDemoData && (
             <button
               type="button"
@@ -495,76 +465,32 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
             </p>
           </div>
 
-          <div
-            role="group"
-            aria-label="Filtrar status de apontamentos"
-            style={{
-              display: 'inline-flex',
-              padding: '4px',
-              borderRadius: '12px',
-              background: 'var(--bg)',
-              border: '1px solid var(--border)',
-              gap: '4px',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setFiltroStatus('todos')}
-              style={{
-                minHeight: '38px',
-                padding: '0 14px',
-                borderRadius: '8px',
-                border: 'none',
-                background: filtroStatus === 'todos' ? 'var(--card-hover)' : 'transparent',
-                color: filtroStatus === 'todos' ? 'var(--text)' : 'var(--text-muted)',
-                fontWeight: 600,
-                fontSize: '14px',
-                cursor: 'pointer',
-              }}
-            >
-              Todos ({historicoCombinado.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFiltroStatus('conforme')}
-              style={{
-                minHeight: '38px',
-                padding: '0 14px',
-                borderRadius: '8px',
-                border: 'none',
-                background: filtroStatus === 'conforme' ? 'rgba(16, 185, 129, 0.16)' : 'transparent',
-                color: filtroStatus === 'conforme' ? '#10B981' : 'var(--text-muted)',
-                fontWeight: 600,
-                fontSize: '14px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <Check size={14} strokeWidth={2.4} /> Conforme (&lt;5%)
-            </button>
-            <button
-              type="button"
-              onClick={() => setFiltroStatus('alerta')}
-              style={{
-                minHeight: '38px',
-                padding: '0 14px',
-                borderRadius: '8px',
-                border: 'none',
-                background: filtroStatus === 'alerta' ? 'rgba(239, 68, 68, 0.16)' : 'transparent',
-                color: filtroStatus === 'alerta' ? '#EF4444' : 'var(--text-muted)',
-                fontWeight: 600,
-                fontSize: '14px',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <AlertTriangle size={14} strokeWidth={2.4} /> Excesso
-            </button>
-          </div>
+          <SegmentedControl<'todos' | 'conforme' | 'alerta'>
+            ariaLabel="Filtrar status de apontamentos"
+            size="sm"
+            value={filtroStatus}
+            onChange={(val) => setFiltroStatus(val)}
+            options={[
+              {
+                id: 'todos',
+                label: `Todos (${historicoCombinado.length})`,
+                tone: 'neutral',
+              },
+              {
+                id: 'conforme',
+                label: 'Conforme (<5%)',
+                icon: <Check size={14} strokeWidth={2.4} />,
+                tone: 'ok',
+              },
+              {
+                id: 'alerta',
+                label: 'Excesso',
+                icon: <AlertTriangle size={14} strokeWidth={2.4} />,
+                tone: 'danger',
+              },
+            ]}
+            style={{ background: 'var(--bg)' }}
+          />
         </div>
 
         <DataTable<RowOSConsumo>
