@@ -14,6 +14,8 @@ import {
 import { KpiCard } from '../components/ui/KpiCard';
 import { DataTable } from '../components/ui/DataTable';
 import { Button } from '../components/ui/Button';
+import { CountNumber } from '../components/ui/CountNumber';
+import { ScrubChart, ScrubDataPoint } from '../components/ui/ScrubChart';
 import { ScreenId, Operador, Movimentacao, Lote } from '../types';
 import { MOCK_OPERADORES, MOCK_ORDENS_SERVICO, MOCK_LOTES } from '../data';
 
@@ -38,6 +40,7 @@ interface RowOSConsumo {
   custoTotal: number;
   status: 'conforme' | 'alerta';
   data: string;
+  justificativa?: string;
   isLive?: boolean;
 }
 
@@ -67,6 +70,7 @@ const HISTORICO_CONSUMO_MOCK: RowOSConsumo[] = [
     custoTotal: 160.20,
     status: 'alerta',
     data: '28/10/2026',
+    justificativa: 'Correção de viscosidade • Autorizado por Supervisor Fábio',
   },
   {
     id: '3',
@@ -105,6 +109,8 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
   onResetDemoData,
 }) => {
   const [filtroStatus, setFiltroStatus] = useState<'todos' | 'conforme' | 'alerta'>('todos');
+  const [periodo, setPeriodo] = useState<'7d' | '30d' | '90d'>('30d');
+  const multiplicadorPeriodo = periodo === '7d' ? 0.35 : periodo === '90d' ? 2.8 : 1;
 
   // Converte movimentações reais registradas na sessão em linhas de auditoria no topo
   const todosLotes = lotes.length > 0 ? lotes : MOCK_LOTES;
@@ -134,29 +140,55 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
       custoTotal: Number((mov.quantidade * custoMl).toFixed(2)),
       status: isDescarte || hasJustification ? 'alerta' : 'conforme',
       data: new Date(mov.registradaEm).toLocaleDateString('pt-BR'),
+      justificativa: mov.justificativa
+        ? `${mov.justificativa}${hasJustification ? ' • Autorizado por Supervisor Fábio' : ''}`
+        : undefined,
       isLive: true,
     };
   });
 
   const historicoCombinado = [...linhasAoVivo, ...HISTORICO_CONSUMO_MOCK];
 
-  // Cálculos consolidados dinâmicos
-  const totalRealLitros = (historicoCombinado.reduce((acc, r) => acc + r.realMl, 0) / 1000).toFixed(1);
-  const totalCustoReal = historicoCombinado.reduce((acc, r) => acc + r.custoTotal, 0).toFixed(2);
+  // Cálculos consolidados dinâmicos (ajustados pelo período selecionado)
+  const baseRealMl = historicoCombinado.reduce((acc, r) => acc + r.realMl, 0) * multiplicadorPeriodo;
+  const totalRealLitrosNum = Math.round(baseRealMl / 100) / 10;
+  const totalCustoRealNum = Math.round(historicoCombinado.reduce((acc, r) => acc + r.custoTotal, 0) * multiplicadorPeriodo);
   const totalPrevistoMl = historicoCombinado.reduce((acc, r) => acc + r.previstoMl, 0);
   const totalRealMl = historicoCombinado.reduce((acc, r) => acc + r.realMl, 0);
-  const taxaVariacao = totalPrevistoMl > 0
-    ? (((totalRealMl - totalPrevistoMl) / totalPrevistoMl) * 100).toFixed(1)
-    : '0.0';
+  const taxaVariacaoNum = totalPrevistoMl > 0
+    ? Number((((totalRealMl - totalPrevistoMl) / totalPrevistoMl) * 100).toFixed(1))
+    : 0;
 
-  const totalLatasSobra = 7 + movimentacoes.filter((m) => m.tipo === 'DEVOLUCAO').length;
-  const economiaSobras = (412 + movimentacoes.filter((m) => m.tipo === 'DEVOLUCAO').reduce((acc, m) => acc + m.quantidade * 0.14, 0)).toFixed(2).replace('.', ',');
+  const totalLatasSobra = Math.max(1, Math.round(7 * multiplicadorPeriodo)) + movimentacoes.filter((m) => m.tipo === 'DEVOLUCAO').length;
+  const economiaSobrasNum = Math.round(
+    412 * multiplicadorPeriodo +
+      movimentacoes.filter((m) => m.tipo === 'DEVOLUCAO').reduce((acc, m) => acc + m.quantidade * 0.14, 0)
+  );
+  const custoM2Num = periodo === '7d' ? 17 : periodo === '90d' ? 19 : 18;
 
   const dadosFiltrados = historicoCombinado.filter((r) => {
     if (filtroStatus === 'conforme') return r.status === 'conforme';
     if (filtroStatus === 'alerta') return r.status === 'alerta';
     return true;
   });
+
+  // Pontos cronológicos para o gráfico interativo de Scrub (do mais antigo para o mais recente)
+  const pontosGrafico: ScrubDataPoint[] = [...historicoCombinado]
+    .reverse()
+    .map((r) => ({
+      label: `${r.data.slice(0, 5)} • ${r.os.replace(' • AO VIVO', '')}`,
+      sublabel: `${r.cliente} (${r.ambiente}) — ${r.operador}`,
+      valueMl: Math.round(r.realMl * multiplicadorPeriodo),
+      targetMl: Math.round((r.previstoMl > 0 ? r.previstoMl : r.realMl) * multiplicadorPeriodo),
+      cost: Number((r.custoTotal * multiplicadorPeriodo).toFixed(2)),
+    }));
+
+  const periodLabelText =
+    periodo === '7d'
+      ? 'Últimos 7 dias'
+      : periodo === '90d'
+      ? 'Último trimestre'
+      : 'Últimos 30 dias';
 
   const handleExportarRelatorio = () => {
     const csvContent = [
@@ -237,7 +269,50 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px' }}>
+          {/* Controle Segmentado de Período (Stageshow Segmented Control) */}
+          <div
+            role="group"
+            aria-label="Período de análise"
+            style={{
+              display: 'inline-flex',
+              padding: '4px',
+              borderRadius: '12px',
+              background: 'var(--bg)',
+              border: '1.5px solid var(--border)',
+              gap: '4px',
+            }}
+          >
+            {[
+              { id: '7d', label: '7 Dias' },
+              { id: '30d', label: '30 Dias' },
+              { id: '90d', label: 'Trimestre' },
+            ].map((p) => {
+              const active = periodo === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setPeriodo(p.id as '7d' | '30d' | '90d')}
+                  style={{
+                    minHeight: '42px',
+                    padding: '0 14px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: active ? 'var(--primary)' : 'transparent',
+                    color: active ? '#ffffff' : 'var(--text-muted)',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
           {onResetDemoData && (
             <button
               type="button"
@@ -304,7 +379,7 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
         </div>
       </div>
 
-      {/* 2. Grid de 4 KPIs Gerenciais (KpiCard) */}
+      {/* 2. Bento Grid de 4 KPIs Gerenciais (Stat Tiles com CountNumber e Hierarquia Hero) */}
       <div
         style={{
           display: 'grid',
@@ -314,36 +389,45 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
         }}
       >
         <KpiCard
-          label="Total Consumido no Mês"
-          value={totalRealLitros}
-          unit="Litros"
-          changeText={`R$ ${totalCustoReal} em químicos apontados`}
-          changeStatus="ok"
-          icon={<FlaskConical size={22} color="#3B82F6" strokeWidth={2.4} />}
-        />
-        <KpiCard
-          label="Variação Previsto vs Real"
-          value={`${Number(taxaVariacao) >= 0 ? '+' : ''}${taxaVariacao}%`}
-          changeText="Meta SMART: manter abaixo de +5%"
-          changeStatus={Number(taxaVariacao) <= 5 ? 'ok' : 'warn'}
-          icon={<Target size={22} color="#10B981" strokeWidth={2.4} />}
-        />
-        <KpiCard
-          label="Economia com Sobras"
-          value={`R$ ${economiaSobras}`}
+          isHero={true}
+          label="Economia com Sobras (FEFO)"
+          value={<CountNumber value={economiaSobrasNum} format={(n) => `R$ ${Math.round(n).toLocaleString('pt-BR')}`} />}
           changeText={`${totalLatasSobra} latas reintegradas com etiqueta QR`}
           changeStatus="ok"
           icon={<RotateCcw size={22} color="#10B981" strokeWidth={2.4} />}
         />
         <KpiCard
+          label="Volume Químico Apontado"
+          value={<CountNumber value={Math.round(totalRealLitrosNum * 10)} format={(n) => (n / 10).toFixed(1).replace('.', ',')} />}
+          unit="Litros"
+          changeText={`R$ ${totalCustoRealNum.toLocaleString('pt-BR')} em químicos no período`}
+          changeStatus="ok"
+          icon={<FlaskConical size={22} color="#3B82F6" strokeWidth={2.4} />}
+        />
+        <KpiCard
+          label="Variação Previsto vs Real"
+          value={
+            <CountNumber
+              value={Math.round(taxaVariacaoNum * 10)}
+              format={(n) => `${n >= 0 ? '+' : ''}${(n / 10).toFixed(1).replace('.', ',')}%`}
+            />
+          }
+          changeText="Meta SMART: manter abaixo de +5%"
+          changeStatus={taxaVariacaoNum <= 5 ? 'ok' : 'warn'}
+          icon={<Target size={22} color="#10B981" strokeWidth={2.4} />}
+        />
+        <KpiCard
           label="Custo Médio / m² Pintado"
-          value="R$ 18,20"
+          value={<CountNumber value={custoM2Num} format={(n) => `R$ ${Math.round(n)},20`} />}
           unit="/ m²"
           changeText="Base: Primer Branco + Laca PU"
           changeStatus="ok"
           icon={<Ruler size={22} color="#F59E0B" strokeWidth={2.4} />}
         />
       </div>
+
+      {/* 2.5. Gráfico Interativo de Scrub (Catmull-Rom + Headline Readout com CountNumber) */}
+      <ScrubChart points={pontosGrafico} periodLabel={periodLabelText} />
 
       {/* 3. Seção do Furo do ERP Resolvido (Destaque do Diagnóstico) */}
       <div
@@ -411,19 +495,30 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div
+            role="group"
+            aria-label="Filtrar status de apontamentos"
+            style={{
+              display: 'inline-flex',
+              padding: '4px',
+              borderRadius: '12px',
+              background: 'var(--bg)',
+              border: '1px solid var(--border)',
+              gap: '4px',
+            }}
+          >
             <button
               type="button"
               onClick={() => setFiltroStatus('todos')}
               style={{
-                minHeight: '44px',
-                padding: '6px 16px',
-                borderRadius: '10px',
-                border: '1px solid var(--border)',
+                minHeight: '38px',
+                padding: '0 14px',
+                borderRadius: '8px',
+                border: 'none',
                 background: filtroStatus === 'todos' ? 'var(--card-hover)' : 'transparent',
                 color: filtroStatus === 'todos' ? 'var(--text)' : 'var(--text-muted)',
                 fontWeight: 600,
-                fontSize: '15px',
+                fontSize: '14px',
                 cursor: 'pointer',
               }}
             >
@@ -433,39 +528,41 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
               type="button"
               onClick={() => setFiltroStatus('conforme')}
               style={{
-                padding: '6px 14px',
+                minHeight: '38px',
+                padding: '0 14px',
                 borderRadius: '8px',
-                border: '1px solid var(--border)',
-                background: filtroStatus === 'conforme' ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                border: 'none',
+                background: filtroStatus === 'conforme' ? 'rgba(16, 185, 129, 0.16)' : 'transparent',
                 color: filtroStatus === 'conforme' ? '#10B981' : 'var(--text-muted)',
                 fontWeight: 600,
-                fontSize: '13px',
+                fontSize: '14px',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
               }}
             >
-              <Check size={14} strokeWidth={2.4} /> Conforme (Tolerância &lt;5%)
+              <Check size={14} strokeWidth={2.4} /> Conforme (&lt;5%)
             </button>
             <button
               type="button"
               onClick={() => setFiltroStatus('alerta')}
               style={{
-                padding: '6px 14px',
+                minHeight: '38px',
+                padding: '0 14px',
                 borderRadius: '8px',
-                border: '1px solid var(--border)',
-                background: filtroStatus === 'alerta' ? 'rgba(239, 68, 68, 0.15)' : 'transparent',
+                border: 'none',
+                background: filtroStatus === 'alerta' ? 'rgba(239, 68, 68, 0.16)' : 'transparent',
                 color: filtroStatus === 'alerta' ? '#EF4444' : 'var(--text-muted)',
                 fontWeight: 600,
-                fontSize: '13px',
+                fontSize: '14px',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
               }}
             >
-              <AlertTriangle size={14} strokeWidth={2.4} /> Alerta de Excesso
+              <AlertTriangle size={14} strokeWidth={2.4} /> Excesso
             </button>
           </div>
         </div>
@@ -488,7 +585,16 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
             {
               key: 'acabamento',
               header: 'Acabamento & Produto',
-              render: (row: RowOSConsumo) => <span style={{ fontSize: '13px', fontWeight: 600 }}>{row.acabamento}</span>,
+              render: (row: RowOSConsumo) => (
+                <div>
+                  <span style={{ fontSize: '13px', fontWeight: 600, display: 'block' }}>{row.acabamento}</span>
+                  {row.justificativa && (
+                    <span style={{ fontSize: '12px', color: '#fbbf24', fontWeight: 600, display: 'block', marginTop: '2px' }}>
+                      ↳ {row.justificativa}
+                    </span>
+                  )}
+                </div>
+              ),
             },
             {
               key: 'operador',
@@ -500,14 +606,35 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
               header: 'Previsto vs Real',
               render: (row: RowOSConsumo) => {
                 const diff = row.realMl - row.previstoMl;
+                const ratio = row.previstoMl > 0 ? Math.min(100, Math.round((row.realMl / row.previstoMl) * 100)) : 100;
                 return (
-                  <div>
-                    <span style={{ fontSize: '14px', fontWeight: 700 }}>{row.realMl} ml</span>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '6px' }}>
-                      (meta: {row.previstoMl} ml)
-                    </span>
+                  <div style={{ minWidth: '150px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 700 }}>{row.realMl} ml</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '6px' }}>
+                        meta: {row.previstoMl} ml
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        height: '6px',
+                        width: '100%',
+                        borderRadius: '4px',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        overflow: 'hidden',
+                        marginTop: '5px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${ratio}%`,
+                          height: '100%',
+                          background: diff > row.previstoMl * 0.05 ? '#EF4444' : '#10B981',
+                        }}
+                      />
+                    </div>
                     {diff > 0 && (
-                      <span style={{ display: 'block', fontSize: '11px', color: '#EF4444', fontWeight: 700 }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: '#EF4444', fontWeight: 700, marginTop: '3px' }}>
                         +{diff} ml excesso
                       </span>
                     )}
@@ -530,13 +657,13 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
               render: (row: RowOSConsumo) => (
                 <span
                   style={{
-                    padding: '3px 10px',
-                    borderRadius: '12px',
+                    padding: '4px 10px',
+                    borderRadius: 'var(--radius-badge)',
                     fontSize: '12px',
                     fontWeight: 700,
-                    background: row.status === 'conforme' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                    color: row.status === 'conforme' ? '#10B981' : '#EF4444',
-                    border: `1px solid ${row.status === 'conforme' ? '#10B981' : '#EF4444'}`,
+                    background: row.status === 'conforme' ? 'var(--ok-soft)' : 'var(--danger-soft)',
+                    color: row.status === 'conforme' ? '#4ade80' : '#f87171',
+                    border: `1px solid ${row.status === 'conforme' ? 'var(--ok-border)' : 'var(--danger-border)'}`,
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px',

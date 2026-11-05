@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Lote, Operador, ScreenId, ItemSolicitacaoCompra } from '../types';
 import { Button } from '../components/ui/Button';
+import { CountNumber } from '../components/ui/CountNumber';
 import { formatarStatusValidade } from '../domain/fefo';
 import { MOCK_PRODUTOS } from '../data';
 
@@ -48,6 +49,8 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
   const [isNewBatchModalOpen, setIsNewBatchModalOpen] = useState(false);
   const [selectedProdutoId, setSelectedProdutoId] = useState<number>(MOCK_PRODUTOS[0].id);
   const [volumeEntrada, setVolumeEntrada] = useState<number>(3600);
+  const [receivingRequestId, setReceivingRequestId] = useState<string | null>(null);
+  const [copiedList, setCopiedList] = useState(false);
   const codigoLoteEntrada = `#SY-${8410 + lotes.length}`;
 
   const handleConfirmarEntradaLote = async () => {
@@ -69,6 +72,11 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
       });
     }
 
+    if (receivingRequestId) {
+      onRemoverSolicitacao(receivingRequestId);
+      setReceivingRequestId(null);
+    }
+
     setIsNewBatchModalOpen(false);
     showToast(`✓ Entrada registrada: ${prod.nome} (${volumeEntrada.toLocaleString('pt-BR')} ml) no estoque!`, 'success');
   };
@@ -79,6 +87,11 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
     if (filtro === 'criticos') return l.quantidadeAtual < 1000 || l.statusUrgencia === 'alta';
     return true;
   });
+
+  // Métricas resumidas para os Stat Tiles do Estoque
+  const volumeTotalMl = lotes.reduce((acc, l) => acc + l.quantidadeAtual, 0);
+  const totalCriticos = lotes.filter((l) => l.quantidadeAtual < 1000 || l.statusUrgencia === 'alta').length;
+  const totalSobrasAtivas = lotes.filter((l) => l.codigo.includes('SOBRA') || (l.diasAberto ?? 0) > 0).length;
 
   const handlePedirCompra = (lote: Lote) => {
     const jaExiste = solicitacoes.some((s) => s.produtoId === lote.produtoId);
@@ -125,6 +138,9 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
     } else {
       showToast('Lista gerada com sucesso!', 'info');
     }
+
+    setCopiedList(true);
+    window.setTimeout(() => setCopiedList(false), 1800);
   };
 
   return (
@@ -195,7 +211,16 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
             <span>Receber Nova Lata / NF</span>
           </button>
 
-          <div style={{ display: 'flex', gap: '8px', background: 'var(--card-hover)', padding: '5px', borderRadius: '12px' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '4px',
+              background: 'var(--bg)',
+              padding: '4px',
+              borderRadius: '14px',
+              border: '1px solid var(--border)',
+            }}
+          >
             <button
               type="button"
               onClick={() => setAbaAtiva('estoque')}
@@ -259,61 +284,156 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
       {/* 2. Visualização: Aba de Estoque */}
       {abaAtiva === 'estoque' && (
         <>
-          {/* Filtros de Lista */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+          {/* Bento Stat Strip de Estoque com Rolagem Numérica (Stageshow Count + Stat Tiles) */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '14px',
+              marginBottom: '16px',
+            }}
+          >
+            <div
+              style={{
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                borderRadius: '14px',
+                padding: '14px 18px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+              }}
+            >
+              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)' }}>
+                Saldo químico disponível
+              </span>
+              <span style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                <CountNumber value={Math.round(volumeTotalMl / 100)} format={(n) => `${(n / 10).toFixed(1).replace('.', ',')} L`} />
+              </span>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                Distribuído em {lotes.length} latas / galões
+              </span>
+            </div>
+
+            <div
+              style={{
+                background: 'var(--card)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                borderRadius: '14px',
+                padding: '14px 18px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+              }}
+            >
+              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)' }}>
+                Latas abertas (giro FEFO)
+              </span>
+              <span style={{ fontSize: '26px', fontWeight: 800, color: '#fbbf24', whiteSpace: 'nowrap' }}>
+                <CountNumber value={totalSobrasAtivas} format={(n) => `${Math.round(n)} latas`} />
+              </span>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                Prioridade de uso antes de galões lacrados
+              </span>
+            </div>
+
+            <div
+              style={{
+                background: 'var(--card)',
+                border: `1px solid ${totalCriticos > 0 ? 'rgba(239, 68, 68, 0.4)' : 'var(--border)'}`,
+                borderRadius: '14px',
+                padding: '14px 18px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+              }}
+            >
+              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)' }}>
+                Lotes em nível crítico (&lt;1L)
+              </span>
+              <span style={{ fontSize: '26px', fontWeight: 800, color: totalCriticos > 0 ? '#f87171' : '#4ade80', whiteSpace: 'nowrap' }}>
+                <CountNumber value={totalCriticos} format={(n) => `${Math.round(n)} itens`} />
+              </span>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                {solicitacoes.length} pedido(s) ativo(s) em compras
+              </span>
+            </div>
+          </div>
+
+          {/* Filtros de Lista (Controle Segmentado Concêntrico: R_ext=12px, pad=4px, R_int=8px) */}
+          <div
+            role="group"
+            aria-label="Filtrar lotes do estoque"
+            style={{
+              display: 'inline-flex',
+              gap: '4px',
+              padding: '4px',
+              borderRadius: '12px',
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              marginBottom: '16px',
+              flexWrap: 'wrap',
+            }}
+          >
             <button
               type="button"
               onClick={() => setFiltro('todos')}
               style={{
-                padding: '6px 14px',
+                minHeight: '38px',
+                padding: '0 14px',
                 borderRadius: '8px',
-                border: '1px solid var(--border)',
+                border: 'none',
                 background: filtro === 'todos' ? 'var(--card-hover)' : 'transparent',
                 color: filtro === 'todos' ? 'var(--text)' : 'var(--text-muted)',
                 fontWeight: 600,
-                fontSize: '13px',
+                fontSize: '14px',
                 cursor: 'pointer',
+                fontFamily: 'inherit',
               }}
             >
-              Todos os Lotes ({lotes.length})
+              Todos os lotes ({lotes.length})
             </button>
             <button
               type="button"
               onClick={() => setFiltro('criticos')}
               style={{
-                padding: '6px 14px',
+                minHeight: '38px',
+                padding: '0 14px',
                 borderRadius: '8px',
-                border: '1px solid var(--border)',
-                background: filtro === 'criticos' ? 'rgba(239, 68, 68, 0.15)' : 'transparent',
+                border: 'none',
+                background: filtro === 'criticos' ? 'rgba(239, 68, 68, 0.16)' : 'transparent',
                 color: filtro === 'criticos' ? '#EF4444' : 'var(--text-muted)',
                 fontWeight: 600,
-                fontSize: '13px',
+                fontSize: '14px',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
+                fontFamily: 'inherit',
               }}
             >
-              <AlertCircle size={14} strokeWidth={2.4} /> Estoque Baixo / Validade Próxima
+              <AlertCircle size={14} strokeWidth={2.4} /> Estoque baixo / validade próxima
             </button>
             <button
               type="button"
               onClick={() => setFiltro('sobras')}
               style={{
-                padding: '6px 14px',
+                minHeight: '38px',
+                padding: '0 14px',
                 borderRadius: '8px',
-                border: '1px solid var(--border)',
-                background: filtro === 'sobras' ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
+                border: 'none',
+                background: filtro === 'sobras' ? 'rgba(245, 158, 11, 0.16)' : 'transparent',
                 color: filtro === 'sobras' ? '#F59E0B' : 'var(--text-muted)',
                 fontWeight: 600,
-                fontSize: '13px',
+                fontSize: '14px',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
+                fontFamily: 'inherit',
               }}
             >
-              <RotateCcw size={14} strokeWidth={2.4} /> Latas de Sobras
+              <RotateCcw size={14} strokeWidth={2.4} /> Latas de sobras
             </button>
           </div>
 
@@ -374,16 +494,45 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '18px', fontSize: '14px', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', gap: '18px', fontSize: '14px', color: 'var(--text-muted)', flexWrap: 'wrap', alignItems: 'center' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         <MapPin size={14} color="var(--primary)" strokeWidth={2.4} /> Localização: {lote.prateleira || 'Almoxarifado'}
                       </span>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         <Scale size={14} color="var(--primary)" strokeWidth={2.4} /> Saldo:{' '}
                         <strong style={{ color: isBaixo ? '#EF4444' : 'var(--primary)', fontWeight: 700 }}>
-                          {lote.quantidadeAtual.toLocaleString('pt-BR')} ml
+                          <CountNumber value={lote.quantidadeAtual} format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`} />
                         </strong>
                         {isBaixo && ' (Estoque Baixo)'}
+                      </span>
+                    </div>
+
+                    {/* Medidor Visual de Nível do Galão (Stageshow Meter) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', maxWidth: '420px' }}>
+                      <div
+                        style={{
+                          flex: 1,
+                          height: '7px',
+                          borderRadius: '4px',
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${Math.min(100, Math.max(6, Math.round((lote.quantidadeAtual / 3600) * 100)))}%`,
+                            height: '100%',
+                            background: isBaixo
+                              ? '#EF4444'
+                              : statusVal.nivel === 'urgente'
+                              ? '#F59E0B'
+                              : '#3B82F6',
+                            transition: 'width 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
+                          }}
+                        />
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', minWidth: '42px' }}>
+                        {Math.min(100, Math.round((lote.quantidadeAtual / 3600) * 100))}%
                       </span>
                     </div>
                   </div>
@@ -444,21 +593,25 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
               onClick={handleCopiarListaCompras}
               disabled={solicitacoes.length === 0}
               style={{
-                padding: '10px 20px',
-                background: '#10B981',
+                minHeight: '44px',
+                padding: '0 20px',
+                background: copiedList ? '#059669' : '#10B981',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '10px',
+                borderRadius: 'var(--radius-button)',
                 fontSize: '14px',
                 fontWeight: 700,
                 cursor: solicitacoes.length === 0 ? 'not-allowed' : 'pointer',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
                 opacity: solicitacoes.length === 0 ? 0.5 : 1,
+                fontFamily: 'inherit',
+                transition: 'all 0.18s ease',
               }}
             >
-              <ClipboardCopy size={16} strokeWidth={2.4} /> Copiar Lista (WhatsApp / E-mail)
+              <ClipboardCopy size={16} strokeWidth={2.4} />
+              <span>{copiedList ? '✓ Lista copiada!' : 'Copiar lista (WhatsApp / E-mail)'}</span>
             </button>
           </div>
 
@@ -539,24 +692,61 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => onRemoverSolicitacao(s.id)}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'var(--danger)',
-                      cursor: 'pointer',
-                      padding: '8px 12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: '8px',
-                    }}
-                    title="Remover da lista"
-                  >
-                    <Trash2 size={18} strokeWidth={2.4} />
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const matchingProd =
+                          MOCK_PRODUTOS.find(
+                            (p) =>
+                              p.id === s.produtoId ||
+                              p.nome.toLowerCase().includes(s.produtoNome.toLowerCase()) ||
+                              s.produtoNome.toLowerCase().includes(p.nome.replace(/^[0-9]+[º°]?\s*/, '').toLowerCase())
+                          ) || MOCK_PRODUTOS[0];
+                        setSelectedProdutoId(matchingProd.id);
+                        setReceivingRequestId(s.id);
+                        setIsNewBatchModalOpen(true);
+                      }}
+                      style={{
+                        minHeight: '38px',
+                        padding: '0 14px',
+                        borderRadius: 'var(--radius-button)',
+                        border: '1px solid var(--ok-border)',
+                        background: 'var(--ok-soft)',
+                        color: '#4ade80',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontFamily: 'inherit',
+                      }}
+                      title="Dar entrada desta lata no estoque e concluir solicitação"
+                    >
+                      <Plus size={15} strokeWidth={2.6} />
+                      <span>Receber no estoque</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onRemoverSolicitacao(s.id)}
+                      style={{
+                        background: 'transparent',
+                        border: '1px solid transparent',
+                        color: 'var(--danger)',
+                        cursor: 'pointer',
+                        padding: '8px 10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: 'var(--radius-button)',
+                      }}
+                      title="Remover da lista"
+                    >
+                      <Trash2 size={18} strokeWidth={2.4} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
