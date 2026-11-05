@@ -108,6 +108,8 @@ flowchart LR
 
 ## 🏗️ Arquitetura
 
+O sistema adota os princípios de **Clean Architecture** e **Repository Pattern**, isolando rigorosamente a interface tátil das regras matemáticas puras de mistura e da fonte de dados (mock / Supabase).
+
 ```mermaid
 flowchart TB
     subgraph Frontend ["📱 Aplicação Tablet & Desktop (React 19 + TypeScript)"]
@@ -129,72 +131,7 @@ flowchart TB
     REP -.->|VITE_DATA_SOURCE=supabase| SUPA
 ```
 
-- **Regras de negócio isoladas (`src/domain/`):** Funções puras e determinísticas para proporções de mistura (`mixture.ts`), tolerâncias críticas (`tolerance.ts`), ordenação FEFO por validade (`fefo.ts`) e cálculo de aproveitamento de sobras (`leftover.ts`). Cobertura completa de testes automatizados com Vitest.
-- **Dual-Engine de Leitura QR:** Suporte à API nativa `BarcodeDetector` (alta performance em Chrome/Android) com fallback transparente baseado em canvas (`jsQR`) para compatibilidade integral com Safari/iPadOS e desktops.
-- **Ergonomia de Parede:** Câmera padrão configurada como frontal (`facingMode: 'user'`) com espelhamento horizontal no visor, projetada especificamente para tablets afixados em suportes rígidos na parede da cabine de pintura.
-- **Persistência desacoplada:** A camada de repositórios isola a fonte de dados do restante da interface. No estágio atual do MVP, utiliza repositórios em memória sincronizados com o `localStorage` do navegador.
-
----
-
-## 🛡️ Decisões de Engenharia & UX de Chão de Fábrica
-
-Projetar software para a cabine de pintura de uma marcenaria exige soluções muito diferentes de sistemas corporativos tradicionais:
-
-| Decisão de Projeto | Desafio no Chão de Fábrica | Solução Adotada na Aplicação |
-| :--- | :--- | :--- |
-| **Ergonomia para Luvas & Resíduos** | Operadores trabalham em pé com luvas grossas manchadas de solvente/tinta; cliques milimétricos e gestos de pinça falham com frequência. | **Teclas táteis de 64px a 90px**, teclados numéricos virtuais dedicados em tela, feedback de pulso visual e ausência total de gestos complexos. |
-| **Câmera Frontal com Espelhamento** | O tablet fica chumbado em um suporte de parede ao lado da bancada; a câmera traseira fica obstruída contra a parede. | Câmera com `facingMode: 'user'` e **espelhamento horizontal nativo**, permitindo apresentar a lata ou ficha de OS de frente para o tablet. |
-| **Dual-Engine de Leitura QR Code** | Suporte universal entre tablets Android, iPads de operadores (Safari) e navegadores desktop. | Motor híbrido: `BarcodeDetector` nativo por hardware (alta performance) + decodificador canvas em `jsQR` como fallback transparente para Safari/iOS. |
-| **Volume em Béquer (ml) vs. Balança (g)** | A marcenaria não utiliza balança digital nas cabines de pintura; a mistura é feita por graduação visual em béqueres plásticos. | Padronização canônica de **volume em mililitros (ml)** com visualizador gráfico de nível líquido dinâmico ([`BeakerVisualizer`](src/components/ui/BeakerVisualizer.tsx)). |
-| **Prevenção Ativa vs. Notificação Passiva** | Erros de dosagem custam caro (comprometem a peça pronta do cliente e desperdiçam catalisadores importados). | **Trava impeditiva (+5% / +200ml)**: a interface bloqueia o avanço da dosagem e exige autorização explícita com PIN supervisor. |
-| **Pot Life Irreversível (20 min)** | A resina PU misturada com catalisador entra em processo de cura irreversível; após 20 min endurece e pode danificar a pistola. | Cronômetro regressivo persistente em `localStorage`, alertas progressivos de urgência e rotina para autodescarte consciente de refugo. |
-
----
-
-### 📁 Estrutura do projeto
-
-```text
-mada/
-├── .agents/                      # Diretrizes e regras de arquitetura dos agentes de IA
-├── .github/                      # Automação de CI/CD (GitHub Actions para deploy no Pages)
-│   └── workflows/deploy.yml
-├── assets/                       # Referências visuais e diagramas
-├── docs/                         # Documentação técnica e estratégica completa
-│   ├── screens/                  # Capturas de tela da aplicação
-│   ├── CANVAS.md                 # Project Model Canvas (PMC) consolidado
-│   ├── DECISOES_E_REUNIOES.md    # Registro histórico de decisões, atas e bancas
-│   ├── DESIGN.md                 # Princípios de ergonomia para chão de fábrica
-│   ├── DESIGN_SYSTEM.md          # Especificação canônica de tokens e componentes táteis
-│   └── PROJETO.md                # Documento completo de requisitos e arquitetura
-├── src/
-│   ├── components/
-│   │   └── ui/                   # Design System industrial (BeakerVisualizer, ScrubChart,
-│   │                             # NumericKeypad, PinInput, AppShell, CountNumber, etc.)
-│   ├── data/                     # Camada de abstração de dados (Repository Pattern)
-│   │   ├── __tests__/            # Testes unitários de persistência e integridade
-│   │   ├── mock/                 # Repositórios simulados em memória com persistência local
-│   │   └── repositories.ts       # Contratos TypeScript dos repositórios
-│   ├── domain/                   # Motores de regra de negócio puros (100% testados)
-│   │   ├── __tests__/            # Suítes de testes unitários com Vitest
-│   │   ├── fefo.ts               # Ordenação por validade (First Expire, First Out)
-│   │   ├── leftover.ts           # Saldo de sobras e aproveitamento
-│   │   ├── mixture.ts            # Cálculo proporcional dinâmico dos 4 componentes
-│   │   └── tolerance.ts          # Tolerâncias e trava de excesso (+5% / +200ml)
-│   ├── hooks/                    # Hooks utilitários customizados (useConnectionStatus)
-│   ├── screens/                  # Módulos de interface (Auth, Dashboard, OS, Receita,
-│   │                             # Dosagem, Devolução, Gestor, Estoque e Modais de apoio)
-│   ├── styles/                   # Tokens e folhas de estilo modulares
-│   │   ├── screens/              # Estilos específicos organizados por tela
-│   │   ├── design-system.css     # Estilos canônicos dos componentes táteis
-│   │   ├── shell.css             # Layout global, header e navegação
-│   │   └── tokens.css            # Variáveis CSS e tokens de cor/tipografia
-│   ├── App.tsx                   # Roteador de estados e orquestrador de fluxo
-│   ├── main.tsx                  # Ponto de entrada React
-│   └── types.ts                  # Definições centrais de tipos TypeScript
-├── package.json                  # Dependências e scripts de execução
-├── tsconfig.json                 # Configuração de checagem estrita de tipos
-└── vite.config.ts                # Configuração do bundler Vite (porta 3000)
-```
+> 📘 **Dossiê Técnico de Engenharia:** Para a árvore de diretórios detalhada, especificação do motor *Dual-Engine* de QR Code e todas as decisões ergonômicas de chão de fábrica, consulte **[ARCHITECTURE.md](./ARCHITECTURE.md)**.
 
 ---
 
@@ -261,13 +198,16 @@ npm run build       # Gera os artefatos prontos para produção na pasta dist/
 
 ## 📚 Documentação complementar
 
+Acesse a **[Central de Documentação (docs/README.md)](docs/README.md)** para o índice completo e navegável de todos os documentos estratégicos e técnicos:
+
 | Documento | Conteúdo |
 | :--- | :--- |
-| [Documentação do Projeto](docs/PROJETO.md) | Contexto, requisitos funcionais/não funcionais, objetivos SMART e cronograma |
-| [Project Model Canvas (PMC)](docs/CANVAS.md) | Matriz visual de planejamento estratégico do projeto |
-| [Decisões e Reuniões](docs/DECISOES_E_REUNIOES.md) | Atas de reuniões com o gestor Fabio e alinhamentos de bancas acadêmicas |
-| [Guia de Design de Fábrica](docs/DESIGN.md) | Diretrizes ergonômicas para uso de telas em ambientes agressivos |
-| [Design System](docs/DESIGN_SYSTEM.md) | Especificação canônica dos tokens de cor, tipografia e componentes táteis |
+| **[Arquitetura de Software](ARCHITECTURE.md)** | Diagramas detalhados, separação de camadas, decisões de engenharia fabril e árvore de arquivos |
+| **[Documentação do Projeto](docs/PROJETO.md)** | Contexto de negócio, requisitos funcionais (RF), não-funcionais (RNF) e objetivos SMART |
+| **[Project Model Canvas (PMC)](docs/CANVAS.md)** | Matriz visual de planejamento estratégico pós-banca acadêmica |
+| **[Decisões e Reuniões](docs/DECISOES_E_REUNIOES.md)** | Atas de reuniões com o gestor Fabio e alinhamentos de bancas da faculdade |
+| **[Guia de Design de Fábrica](docs/DESIGN.md)** | Diretrizes ergonômicas para uso de telas táteis em ambientes agressivos |
+| **[Design System](docs/DESIGN_SYSTEM.md)** | Especificação canônica dos tokens de cor, tipografia Geist e componentes táteis |
 
 ---
 
