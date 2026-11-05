@@ -94,9 +94,9 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
         </span>
       </button>
 
-      {/* 3. Grade das 3 Ações Operacionais da Cabine (Botões semânticos de grande área tátil) */}
+      {/* 3. Grade das 3 Ações Operacionais da Cabine (Bento Grid Limpo — Regra "Say it once" & "One Hero") */}
       <div className="boardui-cards-grid" role="group" aria-label="Ações da cabine de pintura">
-        {/* Card 1: Nova Preparação (Destaque Primário) */}
+        {/* Card 1 (HERO): Nova Preparação */}
         <button
           type="button"
           className="boardui-card primary-card"

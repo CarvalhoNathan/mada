@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check } from 'lucide-react';
-import { RecipeState, Operator, OrdemServico, Receita } from '../types';
+import { RecipeState, Operator, OrdemServico, Receita, Lote } from '../types';
 import { Button } from '../components/ui/Button';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
 import { BeakerVisualizer } from '../components/ui/BeakerVisualizer';
+import { CountNumber } from '../components/ui/CountNumber';
 import { ModalCriticalExcess } from './ModalCriticalExcess';
 import { calcularFracoesMistura } from '../domain/mixture';
 import { excedeTolerancia, calcularCustoExcesso } from '../domain/tolerance';
@@ -21,6 +22,7 @@ interface ScreenDosingProps {
   activeRecipe?: Receita;
   operator: Operator;
   activeOS?: OrdemServico;
+  lotes?: Lote[];
   onNavigate: (screen: 'recipe' | 'return' | 'dashboard') => void;
   onCompleteDosing: (
     dosingValues: Record<number, number>,
@@ -36,6 +38,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
   activeRecipe,
   operator,
   activeOS,
+  lotes,
   onNavigate,
   onCompleteDosing,
   onSetTotalVolume,
@@ -46,6 +49,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
   const os = activeOS || MOCK_ORDENS_SERVICO[0];
   const receita = activeRecipe || MOCK_RECEITAS[0];
   const marca = MOCK_MARCAS.find((m) => m.id === receita.marcaId) || { nome: receita.marcaNome };
+  const lotesEstoque = lotes && lotes.length > 0 ? lotes : MOCK_LOTES;
 
   // Cálculo das frações meta (em ml e g)
   const itensParaCalculo = receita.itens.map((item) => ({
@@ -58,7 +62,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
   const fracoes = calcularFracoesMistura(itensParaCalculo, vol);
 
-  // Mapeamento dos itens com metas e produtos
+  // Mapeamento dos itens com metas e produtos (usando estoque ao vivo FEFO)
   const componentes = receita.itens.map((item, idx) => {
     const fracao = fracoes[idx];
     const produto = MOCK_PRODUTOS.find((p) => p.id === item.produtoId) || {
@@ -67,7 +71,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
       unidade: 'ml',
     };
     const lotesDoProduto = ordenarLotesFEFO(
-      MOCK_LOTES.filter((l) => l.produtoId === item.produtoId)
+      lotesEstoque.filter((l) => l.produtoId === item.produtoId && l.quantidadeAtual > 0)
     );
     const loteAtivo = lotesDoProduto[0];
 
@@ -96,6 +100,9 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
     diff: number;
     cost: number;
   } | null>(null);
+
+  // Estado de confirmação no próprio botão (Stageshow States + Check)
+  const [submitState, setSubmitState] = useState<'idle' | 'saving' | 'done'>('idle');
 
   // Verificações de conclusão
   const allDosed = componentes.every((c) => (dosingValues[c.item.id] || 0) > 0);
@@ -161,8 +168,15 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
       return;
     }
 
-    // Nenhum excesso detectado: prosseguir com baixa
-    onCompleteDosing(dosingValues);
+    // Nenhum excesso detectado: transição States + Check no próprio botão antes de avançar
+    if (submitState !== 'idle') return;
+    setSubmitState('saving');
+    window.setTimeout(() => {
+      setSubmitState('done');
+      window.setTimeout(() => {
+        onCompleteDosing(dosingValues);
+      }, 360);
+    }, 220);
   };
 
   const handleRepesarDoZero = () => {
@@ -223,85 +237,67 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
           gap: '10px',
         }}
       >
-        {/* 1. Stepper Unificado Compacto (44px) */}
-        <nav className="dosing-step-bar" aria-label="Progresso da preparação">
+        {/* 1. Stepper Padronizado Idêntico às Telas 1 e 2 (.os-stepper-bar) */}
+        <nav className="os-stepper-bar" aria-label="Progresso da preparação">
           <div
-            className="dosing-step-pill completed"
+            className="os-step-pill clickable"
             onClick={handleBack}
             role="button"
             tabIndex={0}
             title="Voltar para Peça & O.S."
           >
-            <span>✓</span>
-            <span>1. Peça & O.S.</span>
+            <span className="os-step-badge">✓</span>
+            <span className="os-step-text">Peça & O.S.</span>
           </div>
 
-          <span className="dosing-step-separator" aria-hidden="true">
-            →
-          </span>
+          <span className="os-step-separator" aria-hidden="true">→</span>
 
           <div
-            className="dosing-step-pill completed"
+            className="os-step-pill clickable"
             onClick={handleBack}
             role="button"
             tabIndex={0}
             title="Voltar para Receita & Cálculo"
           >
-            <span>✓</span>
-            <span>2. Receita & Cálculo</span>
+            <span className="os-step-badge">✓</span>
+            <span className="os-step-text">Receita & Cálculo</span>
           </div>
 
-          <span className="dosing-step-separator" aria-hidden="true">
-            →
-          </span>
+          <span className="os-step-separator" aria-hidden="true">→</span>
 
-          <div className="dosing-step-pill active">
-            <span className="dosing-step-dot" aria-hidden="true" />
-            <span>3. Dosagem em Béquer (ml)</span>
-          </div>
-
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)' }}>
-              OS <strong style={{ color: 'var(--text)' }}>#{os.numero}</strong> • {os.clienteNome}
-            </span>
+          <div className="os-step-pill active" aria-current="step">
+            <span className="os-step-badge">3</span>
+            <span className="os-step-text">Dosagem em Béquer</span>
           </div>
         </nav>
 
-        {/* 2. Cabeçalho Operacional e Contexto do Béquer (48px) */}
-        <header className="dosing-header-card">
-          <div className="dosing-title-group">
-            <h2 className="dosing-main-title">
-              Dosagem de Componentes
+        {/* 2. Cabeçalho Operacional Limpo (Sem excesso de pílulas diferentes) */}
+        <header className="recipe-header-card" style={{ marginBottom: '2px' }}>
+          <div className="recipe-title-group">
+            <h2 className="recipe-main-title">
+              Dosagem de Componentes — {receita.nome}
             </h2>
-            <span className="dosing-recipe-pill">
-              {receita.nome} • {receita.codigoFormula} • {marca.nome} • Op: {operator.nome}
-            </span>
+            <p className="recipe-sub-title">
+              {os.numero.startsWith('OS') ? os.numero : `OS #${os.numero}`} ({os.clienteNome}) • {marca.nome} • Operador: {operator.nome}
+            </p>
           </div>
 
           <div className="dosing-header-right">
-            <div className="dosing-scale-indicator">
-              <span className="dosing-scale-dot" aria-hidden="true" />
-              <span>Medição: Béquer Graduado (ml)</span>
-            </div>
+            <span className="os-meta-badge os-meta-badge--neutral">
+              Meta: <CountNumber value={vol} format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`} />
+            </span>
 
-            <div className="dosing-total-target-pill">
-              <span style={{ color: 'var(--text-muted)' }}>Meta:</span>
-              <span>{vol.toLocaleString('pt-BR')} ml</span>
-            </div>
-
-            <div
-              style={{
-                fontSize: 'var(--fs-small)',
-                fontWeight: 600,
-                color: totalDosed >= vol ? 'var(--ok)' : 'var(--text-muted)',
-                padding: '4px 10px',
-                borderRadius: '8px',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid var(--border)',
-              }}
+            <span
+              className={`os-meta-badge ${
+                totalDosed >= vol ? 'os-meta-badge--primary' : 'os-meta-badge--neutral'
+              }`}
             >
-              Dosado: <strong style={{ color: 'var(--text)' }}>{totalDosed.toLocaleString('pt-BR')} ml</strong> ({Math.min(100, Math.round((totalDosed / vol) * 100))}%)
-            </div>
+              Dosado:{' '}
+              <strong>
+                <CountNumber value={totalDosed} format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`} />
+              </strong>{' '}
+              (<CountNumber value={Math.min(100, Math.round((totalDosed / vol) * 100))} format={(n) => `${Math.round(n)}%`} />)
+            </span>
           </div>
         </header>
 
@@ -362,7 +358,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                   </div>
 
                   <div className="dosing-target-box">
-                    <span className="dosing-target-pill">
+                    <span className="os-meta-badge os-meta-badge--neutral">
                       Meta: {meta.toLocaleString('pt-BR')} ml
                     </span>
                     <div className="dosing-target-weight">~ {comp.pesoMetaG} g</div>
@@ -398,7 +394,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                     title="Toque para digitar o valor no teclado numérico"
                   >
                     <div className="dosing-val-num-row">
-                      <span className="dosing-val-num">{val.toLocaleString('pt-BR')}</span>
+                      <CountNumber value={val} className="dosing-val-num" />
                       <span className="dosing-val-unit">ml</span>
                     </div>
                     <span className="dosing-val-sub">
@@ -634,10 +630,28 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
             variant="primary"
             size="md"
             onClick={handleAttemptFinish}
-            disabled={!allDosed}
-            style={{ minWidth: '280px', minHeight: 'var(--touch-min)', fontSize: '18px', fontWeight: 700 }}
+            disabled={!allDosed || submitState !== 'idle'}
+            style={{
+              minWidth: '310px',
+              minHeight: 'var(--touch-min)',
+              fontSize: '18px',
+              fontWeight: 700,
+              background: submitState === 'done' ? '#10B981' : undefined,
+              borderColor: submitState === 'done' ? '#10B981' : undefined,
+              transition: 'background-color 0.2s ease, transform 0.15s ease',
+            }}
           >
-            Concluir dosagem e dar baixa →
+            {submitState === 'saving' ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                ● Gravando baixa FEFO...
+              </span>
+            ) : submitState === 'done' ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <Check size={20} strokeWidth={3} /> Baixa registrada na OS!
+              </span>
+            ) : (
+              'Concluir dosagem e dar baixa →'
+            )}
           </Button>
         </div>
       </footer>

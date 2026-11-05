@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Check, X, FileSpreadsheet } from 'lucide-react';
 import { Ambiente, OrdemServico, PieceLot } from '../types';
+import { CountNumber } from '../components/ui/CountNumber';
 import { MOCK_AMBIENTES, MOCK_ORDENS_SERVICO } from '../data/mock/mockData';
 
 interface ScreenOSProps {
@@ -36,6 +37,8 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
 }) => {
   const [isOsModalOpen, setIsOsModalOpen] = useState(false);
   const listaAmbientes = (ambientes || MOCK_AMBIENTES).map(a => ({ name: a.nome, code: a.codigoOS }));
+  const areaNumeric = parseInt((pieceLot.area || '42').replace(/\D/g, ''), 10) || 42;
+  const volumeNumeric = parseInt((pieceLot.estVolume || pieceLot.volumeEstimado || '1050').replace(/\D/g, ''), 10) || 1050;
 
   const handleEnvironmentClick = (envName: string) => {
     onSelectEnvironment(envName);
@@ -85,7 +88,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
           <div className="os-card-surface">
             <div className="os-card-header-row">
               <span className="os-section-label">Ordem de Serviço Ativa</span>
-              <span className="os-number-tag">{selectedOS || 'OS #8841'}</span>
+              <span className="os-meta-badge os-meta-badge--primary">{selectedOS || 'OS #8841'}</span>
             </div>
 
             <div className="os-info-block">
@@ -137,7 +140,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
           <div className="os-card-surface os-env-surface">
             <div className="os-card-header-row">
               <span className="os-section-label">Ambiente / Cômodo</span>
-              <span className="os-hint-label">Toque para selecionar</span>
+              <span className="os-meta-badge os-meta-badge--neutral">{listaAmbientes.length} opções</span>
             </div>
 
             <div className="os-env-grid" role="radiogroup" aria-label="Selecione o ambiente da peça">
@@ -172,25 +175,28 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
           <div className="os-card-surface">
             <div className="os-card-header-row">
               <span className="os-section-label">Lote de Peças</span>
-              <span className="os-qty-pill">{pieceLot.qty || pieceLot.quantidade || '12 frentes'}</span>
+              <span className="os-meta-badge os-meta-badge--neutral">{pieceLot.qty || pieceLot.quantidade || '12 frentes'}</span>
             </div>
 
             <div className="os-piece-info">
               <h3 className="os-piece-title">{pieceLot.title || pieceLot.titulo || 'Armários Superiores - Portas 18mm'}</h3>
-              <div className="os-finish-tag">
+              <div className="os-meta-badge os-meta-badge--amber" style={{ marginTop: '8px' }}>
                 <span className="os-finish-dot" aria-hidden="true" />
                 <span>Laca Branca Fosca 20 Gloss</span>
               </div>
             </div>
 
-            <div className="os-specs-grid">
-              <div className="os-spec-card">
-                <span className="os-spec-k">Substrato Base</span>
+            <div className="os-metrics-row">
+              <div className="os-metric-box">
+                <span className="os-metric-label">Substrato Base</span>
                 <strong className="os-spec-v">{pieceLot.substrate || pieceLot.substrato || 'MDF Cru 18mm Berneck'}</strong>
               </div>
-              <div className="os-spec-card">
-                <span className="os-spec-k">Área Superficial</span>
-                <strong className="os-spec-v os-spec-highlight">~ {pieceLot.area || '42 m²'}</strong>
+              <div className="os-metric-divider" aria-hidden="true" />
+              <div className="os-metric-box">
+                <span className="os-metric-label">Área Superficial</span>
+                <strong className="os-spec-v os-spec-highlight">
+                  ~ <CountNumber value={areaNumeric} format={(n) => `${Math.round(n)} m²`} />
+                </strong>
               </div>
             </div>
 
@@ -209,21 +215,28 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
             </button>
           </div>
 
-          {/* Card de Métricas de Consumo */}
+          {/* Card de Métricas de Consumo com Conector Visual (Stageshow Connector + CountNumber) */}
           <div className="os-card-surface os-metrics-surface">
             <div className="os-card-header-row">
               <span className="os-section-label">Previsão de Consumo Químico</span>
+              <span className="os-meta-badge os-meta-badge--primary">
+                25 ml / m² homologado
+              </span>
             </div>
 
             <div className="os-metrics-row">
               <div className="os-metric-box">
                 <span className="os-metric-label">Área Calculada</span>
-                <span className="os-metric-val">{pieceLot.area || '42 m²'}</span>
+                <span className="os-metric-val">
+                  <CountNumber value={areaNumeric} format={(n) => `${Math.round(n)} m²`} />
+                </span>
               </div>
               <div className="os-metric-divider" aria-hidden="true" />
               <div className="os-metric-box os-metric-box-primary">
                 <span className="os-metric-label">Volume Estimado</span>
-                <span className="os-metric-val os-metric-val-primary">{pieceLot.estVolume || pieceLot.volumeEstimado || '1.050 ml'}</span>
+                <span className="os-metric-val os-metric-val-primary">
+                  <CountNumber value={volumeNumeric} format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`} />
+                </span>
               </div>
             </div>
 

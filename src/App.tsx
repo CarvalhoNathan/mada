@@ -98,7 +98,11 @@ export const App: React.FC = () => {
     setProjectName(os.projetoNome);
     setSelectedEnvironment(os.ambienteNome);
     setPieceLot(os.pecaLote);
-    showToast(`✓ ${os.numero} (${os.ambienteNome}) vinculada à preparação!`, 'success');
+    const parsedVol = parseInt((os.pecaLote.volumeEstimado || '').replace(/\D/g, ''), 10);
+    if (parsedVol >= 100 && parsedVol <= 5000) {
+      setRecipe((prev) => ({ ...prev, totalVolume: parsedVol }));
+    }
+    showToast(`✓ ${os.numero} (${os.ambienteNome}) vinculada • Meta ajustada para ${os.pecaLote.volumeEstimado}!`, 'success');
   };
 
   // Receita de Mistura Homologada (Dinâmica)
@@ -408,8 +412,8 @@ export const App: React.FC = () => {
           onChangePieceLot={() => {
             const currentIdx = MOCK_ORDENS_SERVICO.findIndex(o => o.pecaLote.titulo === pieceLot.titulo);
             const nextIdx = (currentIdx + 1) % MOCK_ORDENS_SERVICO.length;
-            setPieceLot(MOCK_ORDENS_SERVICO[nextIdx].pecaLote);
-            showToast('Lote de peças alternado.', 'info');
+            const nextOS = MOCK_ORDENS_SERVICO[nextIdx];
+            handleSelectOS(nextOS);
           }}
           onChangeOS={() => {
             osRepository.listar().then((ordens) => {
@@ -429,6 +433,7 @@ export const App: React.FC = () => {
         <ScreenRecipe
           recipe={recipe}
           activeRecipe={selectedRecipe}
+          lotes={lotes}
           onSelectRecipe={setSelectedRecipe}
           onSetTotalVolume={handleSetTotalVolume}
           onAdjustVolume={handleAdjustVolume}
@@ -444,6 +449,7 @@ export const App: React.FC = () => {
           activeRecipe={selectedRecipe}
           operator={selectedOperator}
           activeOS={MOCK_ORDENS_SERVICO.find(o => o.numero === selectedOSNumber) || MOCK_ORDENS_SERVICO[0]}
+          lotes={lotes}
           onNavigate={(screen) => setCurrentScreen(screen)}
           onCompleteDosing={handleCompleteDosing}
           onSetTotalVolume={handleSetTotalVolume}

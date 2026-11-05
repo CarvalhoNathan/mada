@@ -1,6 +1,7 @@
 import React from 'react';
 import { FlaskConical, Check, AlertTriangle } from 'lucide-react';
-import { RecipeState, Receita } from '../types';
+import { RecipeState, Receita, Lote } from '../types';
+import { CountNumber } from '../components/ui/CountNumber';
 import { calcularFracoesMistura } from '../domain/mixture';
 import { ordenarLotesFEFO } from '../domain/fefo';
 import {
@@ -12,6 +13,7 @@ import {
 interface ScreenRecipeProps {
   recipe: RecipeState;
   activeRecipe?: Receita;
+  lotes?: Lote[];
   onSelectRecipe?: (receita: Receita) => void;
   onSetTotalVolume: (vol: number) => void;
   onAdjustVolume: (delta: number) => void;
@@ -25,6 +27,7 @@ const PRESET_VOLUMES = [500, 1000, 1500, 2000];
 export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
   recipe,
   activeRecipe,
+  lotes,
   onSelectRecipe,
   onSetTotalVolume,
   onAdjustVolume,
@@ -33,6 +36,7 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
   onOpenCancelPrep,
 }) => {
   const vol = recipe.totalVolume;
+  const lotesEstoque = lotes && lotes.length > 0 ? lotes : MOCK_LOTES;
 
   // Receita ativa selecionada ou padrão
   const receita = activeRecipe || MOCK_RECEITAS[0];
@@ -81,8 +85,22 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
         </div>
       </nav>
 
-      {/* Seletor de Receita Homologada (Acabamento, Verniz ou Fundo Primer) */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
+      {/* Seletor de Receita Homologada (Controle Segmentado Concêntrico: R_ext=14px, pad=4px, R_int=10px) */}
+      <div
+        role="group"
+        aria-label="Selecionar acabamento homologado"
+        style={{
+          display: 'inline-flex',
+          gap: '4px',
+          padding: '4px',
+          borderRadius: '14px',
+          background: 'var(--card)',
+          border: '1px solid var(--border)',
+          marginBottom: '12px',
+          overflowX: 'auto',
+          maxWidth: '100%',
+        }}
+      >
         {MOCK_RECEITAS.map((r) => {
           const isSelected = r.id === receita.id;
           return (
@@ -91,22 +109,26 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
               type="button"
               onClick={() => onSelectRecipe && onSelectRecipe(r)}
               style={{
-                padding: '10px 18px',
-                borderRadius: '12px',
-                border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border)',
-                background: isSelected ? 'rgba(59, 130, 246, 0.18)' : 'var(--card)',
-                color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
+                minHeight: '40px',
+                padding: '0 16px',
+                borderRadius: 'var(--radius-button)',
+                border: isSelected ? '1px solid var(--primary-border)' : '1px solid transparent',
+                background: isSelected ? 'var(--primary-soft)' : 'transparent',
+                color: isSelected ? 'var(--text)' : 'var(--text-muted)',
                 fontSize: '14px',
-                fontWeight: 700,
+                fontWeight: 600,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                boxShadow: isSelected ? '0 0 12px rgba(59, 130, 246, 0.3)' : 'none',
+                fontFamily: 'inherit',
+                transition: 'all 0.15s ease',
               }}
             >
-              <span>{isSelected ? <Check size={16} strokeWidth={2.6} /> : <FlaskConical size={16} strokeWidth={2.2} />}</span>
+              <span style={{ color: isSelected ? 'var(--primary)' : 'var(--text-muted)', display: 'inline-flex' }}>
+                {isSelected ? <Check size={15} strokeWidth={2.6} /> : <FlaskConical size={15} strokeWidth={2.2} />}
+              </span>
               <span>{r.nome}</span>
             </button>
           );
@@ -143,7 +165,7 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
           </button>
 
           <div className="recipe-volume-display">
-            <span className="recipe-volume-num">{vol.toLocaleString('pt-BR')}</span>
+            <CountNumber value={vol} className="recipe-volume-num" />
             <span className="recipe-volume-unit">ml</span>
           </div>
 
@@ -181,27 +203,29 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
         {receita.itens.map((item, idx) => {
           const fracao = fracoes[idx];
           const lotesDoProduto = ordenarLotesFEFO(
-            MOCK_LOTES.filter((l) => l.produtoId === item.produtoId)
+            lotesEstoque.filter((l) => l.produtoId === item.produtoId && l.quantidadeAtual > 0)
           );
           const loteAtivo = lotesDoProduto[0];
+          const saldoInsuficiente = Boolean(loteAtivo && loteAtivo.quantidadeAtual < fracao.volumeMl);
           const isUrgente =
             loteAtivo &&
-            ((loteAtivo.diasAberto ?? 0) > 0 || loteAtivo.statusUrgencia === 'alta');
+            ((loteAtivo.diasAberto ?? 0) > 0 || loteAtivo.statusUrgencia === 'alta' || saldoInsuficiente);
           const percentStr = `${Math.round(item.proporcao * 100)}%`;
 
           const isCatalyst = item.papel === 'catalisador';
           const cardVariantClass = isCatalyst ? 'is-catalyst' : '';
           const cleanedName = item.produtoNome.replace(/^[0-9]+[º°]?\s*/, '');
           const cleanLoteCode = loteAtivo ? loteAtivo.codigo.replace(/^#+/, '') : 'SY-5120';
+          const roleLabel = item.papel.charAt(0).toUpperCase() + item.papel.slice(1).toLowerCase();
 
           return (
             <div key={item.id} className={`recipe-chem-card ${cardVariantClass}`}>
               <div className="recipe-chem-top">
                 <div className="recipe-chem-role-row">
                   <span className="recipe-chem-role">
-                    {idx + 1}º {item.papel.toUpperCase()}
+                    {idx + 1}º • {roleLabel}
                   </span>
-                  <span className={`recipe-chem-percent-pill ${isCatalyst ? 'pill-warn' : ''}`}>
+                  <span className={`os-meta-badge ${isCatalyst ? 'os-meta-badge--amber' : 'os-meta-badge--neutral'}`}>
                     {percentStr}
                   </span>
                 </div>
@@ -209,15 +233,24 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
                 <span className="recipe-chem-code">Cód: {item.codigoProduto}</span>
               </div>
 
-              {/* Status de Lote / FEFO Alinhado */}
+              {/* Status de Lote / FEFO Ao Vivo */}
               <div className="recipe-chem-fefo-box">
-                {isUrgente && loteAtivo ? (
+                {saldoInsuficiente && loteAtivo ? (
+                  <div className="recipe-fefo-urgent" title="O volume solicitado na receita é maior que o saldo desta lata aberta">
+                    <span className="recipe-fefo-icon" aria-hidden="true" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                      <AlertTriangle size={14} strokeWidth={2.4} />
+                    </span>
+                    <span className="recipe-fefo-text">
+                      #{cleanLoteCode} tem {loteAtivo.quantidadeAtual} ml • complementar lote
+                    </span>
+                  </div>
+                ) : isUrgente && loteAtivo ? (
                   <div className="recipe-fefo-urgent">
                     <span className="recipe-fefo-icon" aria-hidden="true" style={{ display: 'inline-flex', alignItems: 'center' }}>
                       <AlertTriangle size={14} strokeWidth={2.4} />
                     </span>
                     <span className="recipe-fefo-text">
-                      Lata aberta #{cleanLoteCode} • {loteAtivo.prateleira || 'B-01'}
+                      Lata aberta #{cleanLoteCode} ({loteAtivo.quantidadeAtual} ml) • {loteAtivo.prateleira || 'B-01'}
                     </span>
                   </div>
                 ) : (
@@ -226,18 +259,20 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
                       <Check size={14} strokeWidth={2.6} />
                     </span>
                     <span className="recipe-fefo-text">
-                      Lote #{cleanLoteCode} • {loteAtivo?.prateleira || 'Estoque'}
+                      Lote #{cleanLoteCode} ({loteAtivo ? `${loteAtivo.quantidadeAtual} ml` : 'Estoque'})
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* Valores de Dosagem */}
+              {/* Valores de Dosagem com Rolagem Numérica (Stageshow Count) */}
               <div className="recipe-chem-bottom">
                 <span className={`recipe-chem-vol ${isCatalyst ? 'vol-warn' : ''}`}>
-                  {fracao.volumeMl} ml
+                  <CountNumber value={fracao.volumeMl} format={(n) => `${Math.round(n)} ml`} />
                 </span>
-                <span className="recipe-chem-weight">Peso: {fracao.pesoGramas} g</span>
+                <span className="recipe-chem-weight">
+                  Peso: <CountNumber value={fracao.pesoGramas} format={(n) => `${Math.round(n)} g`} />
+                </span>
               </div>
             </div>
           );

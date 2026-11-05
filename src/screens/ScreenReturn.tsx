@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Trash2, Printer, Check, Package } from 'lucide-react';
+import { AlertTriangle, Trash2, Printer, Check, Package, ShieldCheck } from 'lucide-react';
 import { Lote, Operator, OrdemServico } from '../types';
 import { Button } from '../components/ui/Button';
+import { CountNumber } from '../components/ui/CountNumber';
 import { calcularSaldoDevolucao } from '../domain/leftover';
 import {
   MOCK_LOTES,
@@ -61,16 +62,21 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
   };
 
   const allChecked = MOCK_CHECKLIST_SOBRAS.every((item) => checklist[item.id]);
+  const [returnState, setReturnState] = useState<'idle' | 'printing' | 'done'>('idle');
 
   const adjustVolume = (delta: number) => {
     setReturnVolume((prev) => Math.max(50, Math.min(maxVolume, prev + delta)));
   };
 
   const handleConfirmReturn = async () => {
-    if (!allChecked) {
-      showToast('Atenção: Marque todos os itens do checklist de integridade.', 'warn');
+    if (!allChecked || returnState !== 'idle') {
+      if (!allChecked) {
+        showToast('Atenção: Marque todos os itens do checklist de integridade.', 'warn');
+      }
       return;
     }
+
+    setReturnState('printing');
 
     if (onConfirmReturn) {
       await onConfirmReturn({
@@ -82,10 +88,13 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
       });
     }
 
-    showToast(`Etiqueta de sobra impressa! ${returnVolume}ml devolvidos ao estoque.`, 'success');
-    setTimeout(() => {
-      onNavigate('dashboard');
-    }, 1000);
+    window.setTimeout(() => {
+      setReturnState('done');
+      showToast(`Etiqueta de sobra impressa! ${returnVolume}ml devolvidos ao estoque.`, 'success');
+      window.setTimeout(() => {
+        onNavigate('dashboard');
+      }, 650);
+    }, 260);
   };
 
   const handleDiscardRefugo = async () => {
@@ -101,34 +110,39 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
   return (
     <>
       <div className="screen-content-area">
-        <div className="section-header-compact" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '12px' }}>
-          <div>
-            <div className="section-tag">03 / DEVOLUÇÃO AO ESTOQUE</div>
-            <h2 className="section-title">Devolução de Sobras & Etiqueta</h2>
-            <p className="section-desc">Selecione a lata utilizada, informe o saldo restante e gere a etiqueta térmica com QR Code.</p>
+        <header className="recipe-header-card" style={{ marginBottom: '12px' }}>
+          <div className="recipe-title-group">
+            <h2 className="recipe-main-title">Devolução de Sobras & Etiqueta Térmica</h2>
+            <p className="recipe-sub-title">
+              Selecione a lata utilizada, informe o saldo restante e gere a etiqueta Zebra com QR Code FEFO.
+            </p>
           </div>
           <button
             type="button"
             onClick={() => window.print()}
-            className="os-bar-btn os-btn-back"
-            style={{ minHeight: '52px', padding: '0 18px', fontSize: '16px' }}
+            className="os-action-btn os-btn-secondary"
+            style={{ flex: '0 0 auto', height: '42px', minHeight: '42px', fontSize: '14px' }}
             title="Imprimir somente a etiqueta térmica Zebra"
           >
-            <Printer size={18} strokeWidth={2.2} />
-            <span>Testar Impressão Térmica</span>
+            <Printer size={16} strokeWidth={2.2} />
+            <span>Testar impressão térmica</span>
           </button>
-        </div>
+        </header>
 
-        {/* Seletor Tátil de Lata / Insumo Químico em Giro */}
+        {/* Seletor Tátil de Lata / Insumo Químico em Giro (Controle Segmentado Concêntrico: R_ext=14px, pad=4px, R_int=10px) */}
         <div
           role="radiogroup"
           aria-label="Selecione a lata para devolução"
           style={{
-            display: 'flex',
-            gap: '10px',
+            display: 'inline-flex',
+            gap: '4px',
+            padding: '4px',
+            borderRadius: '14px',
+            background: 'var(--card)',
+            border: '1px solid var(--border)',
             overflowX: 'auto',
-            paddingBottom: '6px',
-            marginBottom: '12px',
+            maxWidth: '100%',
+            marginBottom: '14px',
           }}
         >
           {lotesDisponiveis.slice(0, 6).map((loteItem) => {
@@ -144,25 +158,28 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                   setReturnVolume(Math.min(maxVolume, Math.max(100, Math.round(loteItem.quantidadeAtual / 2 / 50) * 50)));
                 }}
                 style={{
-                  minHeight: '54px',
-                  padding: '8px 16px',
-                  borderRadius: '12px',
-                  border: isSelected ? '2px solid var(--primary)' : '1.5px solid var(--border)',
-                  background: isSelected ? 'var(--primary-soft)' : 'var(--card)',
+                  minHeight: '42px',
+                  padding: '0 14px',
+                  borderRadius: 'var(--radius-button)',
+                  border: isSelected ? '1px solid var(--primary-border)' : '1px solid transparent',
+                  background: isSelected ? 'var(--primary-soft)' : 'transparent',
                   color: isSelected ? 'var(--text)' : 'var(--text-muted)',
-                  fontSize: '16px',
-                  fontWeight: 700,
+                  fontSize: '14px',
+                  fontWeight: 600,
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
                   fontFamily: 'inherit',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                {isSelected ? <Check size={16} strokeWidth={2.8} color="var(--primary)" /> : <Package size={16} strokeWidth={2.2} />}
-                <span>{loteItem.produtoNome}</span>
-                <span style={{ opacity: 0.75, fontSize: '14px' }}>({loteItem.codigo})</span>
+                <span style={{ color: isSelected ? 'var(--primary)' : 'var(--text-muted)', display: 'inline-flex' }}>
+                  {isSelected ? <Check size={15} strokeWidth={2.6} /> : <Package size={15} strokeWidth={2.2} />}
+                </span>
+                <span>{loteItem.produtoNome.replace(/^[0-9]+[º°]?\s*/, '')}</span>
+                <span style={{ opacity: 0.7, fontSize: '13px' }}>({loteItem.codigo})</span>
               </button>
             );
           })}
@@ -173,9 +190,9 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
           <div className="bottle-visual-box">
             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text)' }}>
-                {produto.nome}
+                {produto.nome.replace(/^[0-9]+[º°]?\s*/, '')}
               </span>
-              <span className="badge-brand-homologated">{loteOriginal.codigo}</span>
+              <span className="os-meta-badge os-meta-badge--primary">{loteOriginal.codigo}</span>
             </div>
 
             {/* Frasco com Líquido Dinâmico e Escala Externa */}
@@ -207,7 +224,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                 −
               </button>
               <div className="sobra-value-center">
-                <span className="sobra-val-num">{returnVolume}</span>
+                <CountNumber value={returnVolume} className="sobra-val-num" />
                 <span className="sobra-val-unit">ml restantes</span>
               </div>
               <button
@@ -252,19 +269,69 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                   <strong style={{ fontSize: '15px', letterSpacing: '0.04em' }}>MADA MARCENARIA</strong>
                   <span style={{ display: 'block', fontSize: '11px', color: '#64748B' }}>CABINE PU • ALMOXARIFADO</span>
                 </div>
-                <div className="sticker-stamp">
-                  REUSO IMEDIATO
-                </div>
+                {allChecked ? (
+                  <div className="sticker-homologation-stamp">
+                    <ShieldCheck size={14} strokeWidth={2.6} />
+                    <span>HOMOLOGADO FEFO</span>
+                  </div>
+                ) : (
+                  <div className="sticker-stamp" style={{ opacity: 0.75 }}>
+                    AGUARDANDO INSPEÇÃO ({Object.values(checklist).filter(Boolean).length}/3)
+                  </div>
+                )}
               </div>
 
               <div className="sticker-badge-urgent" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 <AlertTriangle size={14} strokeWidth={2.4} /> PRIORIDADE FEFO: CONSUMIR ANTES DE VIOLAR LATAS LACRADAS
               </div>
 
+              {/* Faixa Reativa de Inspeção Química na Etiqueta (Stageshow Receipt) */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '6px',
+                  marginBottom: '10px',
+                }}
+              >
+                {[
+                  { id: 'chk1', shortLabel: 'Sem Contam.' },
+                  { id: 'chk2', shortLabel: 'Vedação OK' },
+                  { id: 'chk3', shortLabel: 'Pureza 100%' },
+                ].map((st) => {
+                  const ok = Boolean(checklist[st.id]);
+                  return (
+                    <div
+                      key={st.id}
+                      style={{
+                        padding: '4px 6px',
+                        borderRadius: '6px',
+                        border: ok ? '1.5px solid #16a34a' : '1px dashed #cbd5e1',
+                        background: ok ? '#dcfce7' : '#f8fafc',
+                        color: ok ? '#15803d' : '#64748b',
+                        fontSize: '11px',
+                        fontWeight: 800,
+                        textAlign: 'center',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {ok ? '✓ ' : '○ '}
+                      {st.shortLabel}
+                    </div>
+                  );
+                })}
+              </div>
+
               <div className="sticker-body">
                 <div className="sticker-details">
                   <p><strong>PRODUTO:</strong> <span>{produto.nome.toUpperCase()}</span></p>
-                  <p><strong>VOLUME REAL:</strong> <strong style={{ color: '#0F172A', fontSize: '15px' }}>{returnVolume} ml</strong> <span style={{ color: '#64748B' }}>(± {saldo.pesoEstimadoGramas}g)</span></p>
+                  <p>
+                    <strong>VOLUME REAL:</strong>{' '}
+                    <strong style={{ color: '#0F172A', fontSize: '15px' }}>
+                      <CountNumber value={returnVolume} format={(n) => `${Math.round(n)} ml`} />
+                    </strong>{' '}
+                    <span style={{ color: '#64748B' }}>(± {saldo.pesoEstimadoGramas}g)</span>
+                  </p>
                   <p><strong>LOTE GERADO:</strong> <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }}>{loteGerado}</span></p>
                   <p><strong>ORIGEM:</strong> <span>{ordemServico.numero} ({ordemServico.ambienteNome})</span></p>
                   <p><strong>PINTOR:</strong> <span>{operator.nome || operator.name}</span></p>
@@ -323,11 +390,28 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
             variant="primary"
             size="md"
             onClick={handleConfirmReturn}
-            disabled={!allChecked}
-            style={{ minWidth: '280px' }}
+            disabled={!allChecked || returnState !== 'idle'}
+            style={{
+              minWidth: '320px',
+              background: returnState === 'done' ? '#10B981' : undefined,
+              borderColor: returnState === 'done' ? '#10B981' : undefined,
+              transition: 'background-color 0.2s ease',
+            }}
           >
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              <Printer size={18} strokeWidth={2.4} /> Confirmar sobra e imprimir etiqueta →
+              {returnState === 'printing' ? (
+                <>
+                  <Printer size={18} strokeWidth={2.4} /> Imprimindo na Zebra ZT410...
+                </>
+              ) : returnState === 'done' ? (
+                <>
+                  <Check size={20} strokeWidth={3} /> Etiqueta impressa e lote salvo!
+                </>
+              ) : (
+                <>
+                  <Printer size={18} strokeWidth={2.4} /> Confirmar sobra e imprimir etiqueta →
+                </>
+              )}
             </span>
           </Button>
         </div>
