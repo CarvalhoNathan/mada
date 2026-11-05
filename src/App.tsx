@@ -442,6 +442,10 @@ export const App: React.FC = () => {
             showToast(`Bem-vindo(a), ${selectedOperator.nome}!`, 'success');
             setCurrentScreen('dashboard');
           }}
+          onNavigateToManager={() => {
+            showToast('Acesso de Gestor (Fábio) liberado!', 'success');
+            setCurrentScreen('manager');
+          }}
           isOffline={isOffline}
           showToast={showToast}
         />

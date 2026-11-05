@@ -7,43 +7,43 @@
 
 :root {
   /* ========================================================================
-     1. CORES BASE (TEMA BOARDUI DARK - MATTE CONTRASTE)
+     1. CORES BASE (INSPIRADO EM FORGEUI PRO / VERCEL GESTALT DARK)
      ======================================================================== */
-  --bg: #0D0E11;
-  --card: #16171B;
-  --card-hover: #202127;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --text: #F4F4F6;
-  --text-muted: #9CA3AF;
+  --bg: #0A0A0C;
+  --card: #121215;
+  --card-hover: #1A1A1F;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --text: #FAFAFA;
+  --text-muted: #A1A1AA;
   --text-tertiary: #71717A;
 
   /* ========================================================================
-     2. CORES SEMÂNTICAS & BOARDUI ELECTRIC ACCENT
+     2. CORES SEMÂNTICAS & FORGEUI ELECTRIC ACCENT
      ======================================================================== */
-  --primary: #2B7FFF;
-  --primary-hover: #3B8BFF;
-  --primary-soft: rgba(43, 127, 255, 0.14);
-  --primary-border: rgba(43, 127, 255, 0.38);
+  --primary: #3080FF;
+  --primary-hover: #4B90FF;
+  --primary-soft: rgba(48, 128, 255, 0.12);
+  --primary-border: rgba(48, 128, 255, 0.35);
 
-  --ok: #22C55E;
-  --ok-hover: #16A34A;
-  --ok-soft: rgba(34, 197, 94, 0.14);
-  --ok-border: rgba(34, 197, 94, 0.38);
+  --ok: #10B981;
+  --ok-hover: #059669;
+  --ok-soft: rgba(16, 185, 129, 0.12);
+  --ok-border: rgba(16, 185, 129, 0.32);
 
   --warn: #F59E0B;
   --warn-hover: #D97706;
-  --warn-soft: rgba(245, 158, 11, 0.14);
-  --warn-border: rgba(245, 158, 11, 0.38);
+  --warn-soft: rgba(245, 158, 11, 0.12);
+  --warn-border: rgba(245, 158, 11, 0.32);
 
-  --danger: #EF4444;
-  --danger-hover: #DC2626;
-  --danger-soft: rgba(239, 68, 68, 0.14);
-  --danger-border: rgba(239, 68, 68, 0.38);
+  --danger: #FF6568;
+  --danger-hover: #F43F5E;
+  --danger-soft: rgba(255, 101, 104, 0.12);
+  --danger-border: rgba(255, 101, 104, 0.32);
 
-  /* Neutros para botões secundários */
-  --btn-secondary-bg: #202127;
-  --btn-secondary-hover: #2B2C33;
+  /* Neutros para botões secundários & superfícies de hardware */
+  --btn-secondary-bg: #18181C;
+  --btn-secondary-hover: #222227;
   --btn-disabled-bg: rgba(255, 255, 255, 0.04);
   --btn-disabled-text: #52525B;
 

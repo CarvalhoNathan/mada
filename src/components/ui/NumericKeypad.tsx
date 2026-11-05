@@ -53,6 +53,19 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
     onClear();
   };
 
+  const DIGIT_META: Record<string, string> = {
+    '1': '',
+    '2': 'ABC',
+    '3': 'DEF',
+    '4': 'GHI',
+    '5': 'JKL',
+    '6': 'MNO',
+    '7': 'PQRS',
+    '8': 'TUV',
+    '9': 'WXYZ',
+    '0': '+',
+  };
+
   const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
   return (
@@ -66,7 +79,12 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
             onClick={() => onDigitPress(num)}
             disabled={disabled}
           >
-            {num}
+            <span className="ds-keypad-digit-num">{num}</span>
+            {DIGIT_META[num] ? (
+              <span className="ds-keypad-digit-sub">{DIGIT_META[num]}</span>
+            ) : (
+              <span className="ds-keypad-digit-sub" style={{ opacity: 0 }}>-</span>
+            )}
           </button>
         ))}
 
@@ -100,7 +118,8 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
           onClick={() => onDigitPress('0')}
           disabled={disabled}
         >
-          0
+          <span className="ds-keypad-digit-num">0</span>
+          <span className="ds-keypad-digit-sub">+</span>
         </button>
 
         <button
