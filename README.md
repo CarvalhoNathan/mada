@@ -22,21 +22,6 @@ Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas qu
 
 ---
 
-## 🚀 Guia Rápido de Teste (Walkthrough em 2 Minutos)
-
-Se você está testando a aplicação diretamente pela **[Demonstração Online no GitHub Pages](https://carvalhonathan.github.io/mada/)**, siga este roteiro passo a passo para experimentar os principais diferenciais técnicos:
-
-1. **Entrada na Cabine:** No login, selecione um operador (ex: *Carlos Silva*) e digite o PIN `1234`.
-2. **Vinculação de OS:** Toque em `NOVA PREPARAÇÃO` e escolha uma Ordem de Serviço ou clique em `SIMULAR LEITURA QR` para carregar o cliente e ambiente automaticamente.
-3. **Cálculo da Mistura:** Selecione o acabamento desejado (ex: *Laca PU Alto Brilho Sayerlack*). Altere o volume total para `1.000 ml` e observe o recálculo dinâmico e proporcional das 4 frações (Base, Catálise PU, Diluidor e Retardador).
-4. **Trava Anti-Erro em Ação:** Na dosagem em béquer, adicione intencionalmente mais de +5% de produto em um componente. O **Modal de Bloqueio Crítico** impedirá o avanço. Digite o PIN de supervisor `9999` para autorizar a justificativa.
-5. **Monitor de Pot Life:** Conclua a preparação e veja o cronômetro regressivo de **20 minutos** entrar em ação no topo da aplicação, alertando sobre o tempo hábil antes da cura irreversível do PU.
-6. **Auditoria Gerencial & Estoque:** Abra o menu lateral no canto superior esquerdo e explore:
-   - **Painel do Gestor:** Gráfico tátil interativo (*Scrub Chart*), KPIs de desperdício em R$ e exportação de histórico em CSV.
-   - **Gestão de Estoque:** Visualização de insumos por FEFO ("Use Primeiro"), registro de novos lotes e lista de compras.
-
----
-
 ## 💡 O problema
 
 Em uma marcenaria de alto padrão, o setor de pintura e acabamento utiliza insumos de alto custo (bases PU, catalisadores alifáticos, diluidores, retardadores e vernizes bi-componentes). Historicamente, as receitas e proporções de mistura vivem na cabeça dos pintores.
@@ -103,6 +88,21 @@ flowchart LR
 - **Rastreabilidade total de custo:** histórico financeiro rateado por cliente, projeto e ambiente.
 - **Redução drástica de perdas por validade:** garantia de uso de latas abertas antes da violação de novos frascos.
 - **Preservação de ferramentas e peças:** alerta rigoroso contra aplicação de produto com catalisação vencida.
+
+---
+
+## 🚀 Experimente na Prática (Test Drive em 2 Minutos)
+
+Pronto para ver a solução em ação? Acesse a **[Demonstração Online no GitHub Pages](https://carvalhonathan.github.io/mada/)** e siga este roteiro guiado para testar os principais diferenciais do produto:
+
+1. **Entrada na Cabine:** No login, selecione um operador (ex: *Carlos Silva*) e digite o PIN `1234`.
+2. **Vinculação de OS:** Toque em `NOVA PREPARAÇÃO` e escolha uma Ordem de Serviço ou clique em `SIMULAR LEITURA QR` para carregar o cliente e ambiente automaticamente.
+3. **Cálculo da Mistura:** Selecione o acabamento desejado (ex: *Laca PU Alto Brilho Sayerlack*). Altere o volume total para `1.000 ml` e observe o recálculo dinâmico e proporcional das 4 frações (Base, Catálise PU, Diluidor e Retardador).
+4. **Trava Anti-Erro em Ação:** Na dosagem em béquer, adicione intencionalmente mais de +5% de produto em um componente. O **Modal de Bloqueio Crítico** impedirá o avanço. Digite o PIN de supervisor `9999` para autorizar a justificativa.
+5. **Monitor de Pot Life:** Conclua a preparação e veja o cronômetro regressivo de **20 minutos** entrar em ação no topo da aplicação, alertando sobre o tempo hábil antes da cura irreversível do PU.
+6. **Auditoria Gerencial & Estoque:** Abra o menu lateral no canto superior esquerdo e explore:
+   - **Painel do Gestor:** Gráfico tátil interativo (*Scrub Chart*), KPIs de desperdício em R$ e exportação de histórico em CSV.
+   - **Gestão de Estoque:** Visualização de insumos por FEFO ("Use Primeiro"), registro de novos lotes e lista de compras.
 
 ---
 
