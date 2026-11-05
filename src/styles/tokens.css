@@ -19,12 +19,17 @@
   --text-tertiary: #71717A;
 
   /* ========================================================================
-     2. CORES SEMÂNTICAS & FORGEUI ELECTRIC ACCENT
+     2. CORES SEMÂNTICAS & FORGEUI MONOCHROMATIC PRIMARY
      ======================================================================== */
-  --primary: #3080FF;
-  --primary-hover: #4B90FF;
-  --primary-soft: rgba(48, 128, 255, 0.12);
-  --primary-border: rgba(48, 128, 255, 0.35);
+  --primary: #FAFAFA;
+  --primary-foreground: #0A0A0C;
+  --primary-hover: #E4E4E7;
+  --primary-soft: rgba(255, 255, 255, 0.08);
+  --primary-border: rgba(255, 255, 255, 0.22);
+
+  /* Acento auxiliar para telemetria/gráficos */
+  --accent-blue: #3080FF;
+  --accent-blue-soft: rgba(48, 128, 255, 0.12);
 
   --ok: #10B981;
   --ok-hover: #059669;
@@ -112,8 +117,8 @@
   /* ========================================================================
      7. FOCO VISÍVEL & TRANSIÇÕES
      ======================================================================== */
-  --focus-ring: 0 0 0 3px #3B82F6;
-  --focus-ring-danger: 0 0 0 3px #EF4444;
+  --focus-ring: 0 0 0 3px rgba(255, 255, 255, 0.35);
+  --focus-ring-danger: 0 0 0 3px rgba(255, 101, 104, 0.5);
   --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.35);
   --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
 

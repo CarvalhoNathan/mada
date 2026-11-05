@@ -166,9 +166,9 @@
 }
 
 .operator-card-apple.is-active {
-  border: 2px solid var(--primary);
-  background-color: var(--primary-soft);
-  box-shadow: 0 4px 20px rgba(48, 128, 255, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
 }
 
@@ -190,10 +190,10 @@
 }
 
 .operator-card-apple.is-active .operator-avatar-circle {
-  background-color: var(--primary);
-  color: #ffffff;
-  border-color: var(--primary);
-  box-shadow: 0 0 18px rgba(48, 128, 255, 0.45);
+  background-color: #FAFAFA;
+  color: #0A0A0C;
+  border-color: #FAFAFA;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.25);
 }
 
 .operator-shift-badge {
@@ -300,9 +300,9 @@
 }
 
 .auth-supervisor-btn:hover {
-  background: var(--primary-soft);
-  border-color: var(--primary);
-  color: #90c5ff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #FAFAFA;
   transform: translateY(-1px);
 }
 
@@ -361,9 +361,9 @@
 }
 
 .operator-select-indicator.is-selected {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--text);
+  background-color: #FAFAFA;
+  border-color: #FAFAFA;
+  color: #0A0A0C;
 }
 
 .auth-help-link-subtle {
@@ -439,9 +439,9 @@
   gap: 6px;
   padding: 4px 12px;
   border-radius: var(--radius-pill);
-  background-color: var(--primary-soft);
-  border: 1px solid var(--primary-border);
-  color: var(--primary);
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #FAFAFA;
   font-size: var(--fs-small);
   font-weight: 600;
   margin-bottom: 4px;
@@ -500,7 +500,7 @@
 .btn-auth-submit {
   height: 58px;
   background: var(--primary);
-  color: white;
+  color: var(--primary-foreground);
   border: none;
   border-radius: var(--radius-card);
   font-size: 20px;
@@ -515,16 +515,17 @@
 
 .btn-auth-submit:hover:not(:disabled) {
   background: var(--primary-hover);
+  color: var(--primary-foreground);
 }
 
 .btn-auth-submit:active:not(:disabled) {
   transform: scale(0.97);
-  filter: brightness(0.9);
+  filter: brightness(0.95);
 }
 
 .btn-auth-submit:disabled {
-  background: #243040;
-  color: var(--text-muted);
+  background: #18181C;
+  color: #52525B;
   border: 1.5px solid var(--border);
   cursor: not-allowed;
   opacity: 0.6;

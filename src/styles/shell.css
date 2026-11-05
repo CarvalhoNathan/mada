@@ -594,14 +594,14 @@ body {
 
 /* O clássico azul elétrico do BoardUI (Print 1: Principal [152]) */
 .boardui-nav-btn.active {
-  background-color: #2b7fff;
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 0 20px rgba(43, 127, 255, 0.35);
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .boardui-nav-btn.active svg {
-  color: #ffffff;
+  color: var(--primary-foreground);
 }
 
 .boardui-nav-badge {
@@ -808,9 +808,9 @@ body {
 }
 
 .boardui-model-row.selected .boardui-radio-dot {
-  border-color: #2b7fff;
-  background-color: #2b7fff;
-  box-shadow: 0 0 10px rgba(43, 127, 255, 0.6);
+  border-color: #fafafa;
+  background-color: #fafafa;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
 .boardui-model-row.selected .boardui-radio-dot:after {
@@ -818,7 +818,7 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #ffffff;
+  background-color: #0a0a0c;
 }
 
 /* Slider com Marcas de Tique (Print 1: Esforço Médio) */
@@ -894,9 +894,10 @@ body {
 }
 
 .boardui-segmented-btn.active {
-  background-color: #24252b;
-  color: #ededed;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .boardui-checkbox-group {
@@ -920,8 +921,8 @@ body {
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  background-color: #2b7fff;
-  color: #ffffff;
+  background-color: #fafafa;
+  color: #0a0a0c;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -959,12 +960,12 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background-color: #2b7fff;
-  color: #ffffff;
+  background-color: #fafafa;
+  color: #0a0a0c;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 16px rgba(43, 127, 255, 0.4);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
 }
 
 .boardui-brand-icon svg {
@@ -1560,22 +1561,23 @@ body {
 .boardui-btn-primary {
   height: 44px;
   padding: 0 24px;
-  background-color: #2b7fff;
+  background-color: var(--primary);
   border: none;
   border-radius: 12px;
-  color: #ffffff;
+  color: var(--primary-foreground);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 20px rgba(43, 127, 255, 0.35);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   transition: all 0.15s ease;
 }
 
 .boardui-btn-primary:hover:not(:disabled) {
-  background-color: #3b8bff;
+  background-color: var(--primary-hover);
+  color: var(--primary-foreground);
 }
 
 .boardui-btn-primary:disabled {

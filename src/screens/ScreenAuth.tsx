@@ -340,7 +340,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
               }}
               title="Acesso direto ao painel gerencial do Fábio"
             >
-              <Shield size={16} strokeWidth={2.4} color="#3b82f6" />
+              <Shield size={16} strokeWidth={2.4} color="currentColor" />
               <span>Painel do Gestor (Fábio)</span>
             </button>
 
@@ -428,9 +428,9 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                     width: '44px',
                     height: '44px',
                     borderRadius: '12px',
-                    background: 'rgba(37, 99, 235, 0.16)',
-                    border: '1px solid rgba(59, 130, 246, 0.4)',
-                    color: '#60a5fa',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: '#FAFAFA',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

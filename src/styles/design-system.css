@@ -57,11 +57,14 @@
 /* Variantes */
 .ds-btn-primary {
   background-color: var(--primary);
-  color: var(--text);
+  color: var(--primary-foreground);
   border-color: var(--primary);
+  font-weight: 700;
 }
 .ds-btn-primary:hover:not(:disabled) {
   background-color: var(--primary-hover);
+  color: var(--primary-foreground);
+  border-color: var(--primary-hover);
 }
 
 .ds-btn-secondary {
@@ -167,9 +170,9 @@
 
 /* Selecionável */
 .ds-card-selectable.is-selected {
-  border-color: var(--primary);
-  background-color: var(--primary-soft);
-  box-shadow: 0 0 0 2px var(--primary);
+  border-color: rgba(255, 255, 255, 0.45);
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
 }
 
 .ds-card-check {
@@ -191,7 +194,7 @@
 
 .ds-card-check.is-active {
   background: var(--primary);
-  color: white;
+  color: var(--primary-foreground);
   transform: scale(1.1);
 }
 
@@ -362,8 +365,8 @@
 
 .ds-keypad-btn:active:not(:disabled) {
   transform: scale(0.95);
-  background-color: var(--primary-soft);
-  border-color: var(--primary);
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .ds-keypad-digit-num {
