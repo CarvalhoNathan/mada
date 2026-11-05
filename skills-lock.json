@@ -55,6 +55,12 @@
       "skillPath": "skills/security-and-hardening/SKILL.md",
       "computedHash": "dbab1f4697ece5cab24a90911ae052320d8f8b191324df7f836aa42344699b89"
     },
+    "stageshow": {
+      "source": "benjitaylor/skills",
+      "sourceType": "github",
+      "skillPath": "stageshow/SKILL.md",
+      "computedHash": "ba928f2526ec0a7da76a0a7fe0f6b10d23b5a1bf1a292fd7f1001f4597521ad8"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
