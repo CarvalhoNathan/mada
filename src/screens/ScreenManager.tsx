@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { KpiCard } from '../components/ui/KpiCard';
 import { DataTable } from '../components/ui/DataTable';
-import { Button } from '../components/ui/Button';
 import { CountNumber } from '../components/ui/CountNumber';
 import { ScrubChart, ScrubDataPoint } from '../components/ui/ScrubChart';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
@@ -612,16 +611,20 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
         />
       </div>
 
-      {/* Rodapé Fixo */}
-      <footer className="ds-bottom-bar">
-        <div className="ds-bottom-bar-left">
-          <Button variant="secondary" size="md" onClick={() => onNavigate('dashboard')}>
+      {/* Rodapé Fixo Padronizado */}
+      <footer className="os-bottom-bar-minimal">
+        <div className="os-bottom-left">
+          <button
+            type="button"
+            className="os-bar-btn os-btn-back"
+            onClick={() => onNavigate('dashboard')}
+          >
             ← Voltar ao Chão de Fábrica
-          </Button>
+          </button>
         </div>
-        <div className="ds-bottom-bar-right">
-          <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Logado como: <strong>{operator.nome}</strong> (Perfil: {operator.papel})
+        <div className="os-bottom-right">
+          <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+            Logado como: <strong style={{ color: 'var(--text)' }}>{operator.nome}</strong> (Perfil: {operator.papel})
           </span>
         </div>
       </footer>

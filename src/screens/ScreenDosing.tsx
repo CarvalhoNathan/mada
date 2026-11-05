@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check } from 'lucide-react';
 import { RecipeState, Operator, OrdemServico, Receita, Lote } from '../types';
-import { Button } from '../components/ui/Button';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
 import { BeakerVisualizer } from '../components/ui/BeakerVisualizer';
 import { CountNumber } from '../components/ui/CountNumber';
@@ -228,7 +227,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
       <main
         className="screen-content-area"
         style={{
-          padding: '12px 24px 96px 24px',
+          padding: '0 24px 96px 24px',
           boxSizing: 'border-box',
           minHeight: '100%',
           height: 'auto',
@@ -237,40 +236,6 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
           gap: '10px',
         }}
       >
-        {/* 1. Stepper Padronizado Idêntico às Telas 1 e 2 (.os-stepper-bar) */}
-        <nav className="os-stepper-bar" aria-label="Progresso da preparação">
-          <div
-            className="os-step-pill clickable"
-            onClick={handleBack}
-            role="button"
-            tabIndex={0}
-            title="Voltar para Peça & O.S."
-          >
-            <span className="os-step-badge">✓</span>
-            <span className="os-step-text">Peça & O.S.</span>
-          </div>
-
-          <span className="os-step-separator" aria-hidden="true">→</span>
-
-          <div
-            className="os-step-pill clickable"
-            onClick={handleBack}
-            role="button"
-            tabIndex={0}
-            title="Voltar para Receita & Cálculo"
-          >
-            <span className="os-step-badge">✓</span>
-            <span className="os-step-text">Receita & Cálculo</span>
-          </div>
-
-          <span className="os-step-separator" aria-hidden="true">→</span>
-
-          <div className="os-step-pill active" aria-current="step">
-            <span className="os-step-badge">3</span>
-            <span className="os-step-text">Dosagem em Béquer</span>
-          </div>
-        </nav>
-
         {/* 2. Cabeçalho Operacional Limpo (Sem excesso de pílulas diferentes) */}
         <header className="recipe-header-card" style={{ marginBottom: '2px' }}>
           <div className="recipe-title-group">
@@ -610,34 +575,32 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
         />
       )}
 
-      {/* Barra Inferior Fixa Padronizada (56px) */}
-      <footer className="ds-bottom-bar">
-        <div className="ds-bottom-bar-left">
-          <Button variant="secondary" size="md" onClick={handleBack}>
+      {/* Barra Inferior Padronizada Idêntica a Peça & O.S. e Receita */}
+      <footer className="os-bottom-bar-minimal">
+        <div className="os-bottom-left">
+          <button
+            type="button"
+            className="os-bar-btn os-btn-back"
+            onClick={handleBack}
+          >
             ← Voltar
-          </Button>
-          <Button
-            variant="secondary"
-            size="md"
+          </button>
+          <button
+            type="button"
+            className="os-bar-btn os-btn-cancel"
             onClick={onOpenCancelPrep}
-            style={{ borderColor: 'var(--danger-border)', color: 'var(--danger)' }}
           >
             ✕ Cancelar preparação
-          </Button>
+          </button>
         </div>
-        <div className="ds-bottom-bar-right">
-          <Button
-            variant="primary"
-            size="md"
+        <div className="os-bottom-right">
+          <button
+            type="button"
+            className={`os-bar-btn os-btn-continue ${submitState === 'done' ? 'is-success' : ''}`}
             onClick={handleAttemptFinish}
             disabled={!allDosed || submitState !== 'idle'}
             style={{
               minWidth: '310px',
-              minHeight: 'var(--touch-min)',
-              fontSize: '18px',
-              fontWeight: 700,
-              background: submitState === 'done' ? '#10B981' : undefined,
-              borderColor: submitState === 'done' ? '#10B981' : undefined,
               transition: 'background-color 0.2s ease, transform 0.15s ease',
             }}
           >
@@ -650,9 +613,11 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                 <Check size={20} strokeWidth={3} /> Baixa registrada na OS!
               </span>
             ) : (
-              'Concluir dosagem e dar baixa →'
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                Concluir dosagem e dar baixa →
+              </span>
             )}
-          </Button>
+          </button>
         </div>
       </footer>
     </>

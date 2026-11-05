@@ -56,36 +56,6 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
 
   return (
     <div className="recipe-screen-container">
-      {/* 1. Stepper de Progresso Industrial (Compacto) */}
-      <nav className="os-stepper-bar" aria-label="Etapas da preparação">
-        <div
-          className="os-step-pill clickable"
-          onClick={() => onNavigate('os')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onNavigate('os');
-            }
-          }}
-          title="Voltar para Peça & O.S."
-        >
-          <span className="os-step-badge">✓</span>
-          <span className="os-step-text">Peça & O.S.</span>
-        </div>
-        <span className="os-step-separator" aria-hidden="true">→</span>
-        <div className="os-step-pill active" aria-current="step">
-          <span className="os-step-badge">2</span>
-          <span className="os-step-text">Receita & Cálculo</span>
-        </div>
-        <span className="os-step-separator" aria-hidden="true">→</span>
-        <div className="os-step-pill pending">
-          <span className="os-step-badge">3</span>
-          <span className="os-step-text">Dosagem em Béquer</span>
-        </div>
-      </nav>
-
       {/* Seletor de Receita Homologada com Pílula Deslizante GSAP */}
       <SegmentedControl
         ariaLabel="Selecionar acabamento homologado"

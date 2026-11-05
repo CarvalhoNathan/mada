@@ -72,12 +72,6 @@ export const ScrubChart: React.FC<ScrubChartProps> = ({ points, periodLabel }) =
   const activeCoord = activeIndex !== null ? realPts[activeIndex] : null;
 
   useEffect(() => {
-    const reducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotion) return;
-
     const pathEl = lineRef.current;
     const areaEl = areaRef.current;
 
@@ -87,7 +81,7 @@ export const ScrubChart: React.FC<ScrubChartProps> = ({ points, periodLabel }) =
         gsap.fromTo(
           pathEl,
           { strokeDasharray: len, strokeDashoffset: len },
-          { strokeDashoffset: 0, duration: 0.65, ease: 'power2.out', overwrite: 'auto' }
+          { strokeDashoffset: 0, duration: 0.78, ease: 'power2.out', overwrite: 'auto' }
         );
       } catch {
         // Ignora caso SVG ainda não esteja anexado ao layout
@@ -98,7 +92,7 @@ export const ScrubChart: React.FC<ScrubChartProps> = ({ points, periodLabel }) =
       gsap.fromTo(
         areaEl,
         { opacity: 0 },
-        { opacity: 1, duration: 0.55, ease: 'power2.out', overwrite: 'auto' }
+        { opacity: 1, duration: 0.65, ease: 'power2.out', overwrite: 'auto' }
       );
     }
   }, [realLine, periodLabel]);

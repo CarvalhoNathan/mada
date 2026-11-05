@@ -5,6 +5,7 @@ import { AppShell } from './components/ui/AppShell';
 import { StatusBanner } from './components/ui/StatusBanner';
 import { Toast } from './components/ui/Toast';
 import { PotLifeTimerBanner, PotLifeState } from './components/ui/PotLifeTimerBanner';
+import { PrepStepperBar } from './components/ui/PrepStepperBar';
 
 import { ScreenAuth } from './screens/ScreenAuth';
 import { ScreenDashboard } from './screens/ScreenDashboard';
@@ -41,17 +42,6 @@ import { ordenarLotesFEFO } from './domain/fefo';
 
 const INITIAL_PIECE_LOT: PieceLot = MOCK_ORDENS_SERVICO[0].pecaLote;
 
-const SCREEN_ORDER: Record<ScreenId, number> = {
-  auth: 0,
-  dashboard: 1,
-  os: 2,
-  recipe: 3,
-  dosing: 4,
-  return: 5,
-  inventory: 2,
-  manager: 2,
-};
-
 const INITIAL_RECIPE: RecipeState = {
   totalVolume: 1000,
   proportions: {
@@ -76,48 +66,34 @@ export const App: React.FC = () => {
   const [operators, setOperators] = useState<Operator[]>(MOCK_OPERADORES);
   const [selectedOperator, setSelectedOperator] = useState<Operator>(MOCK_OPERADORES[0]);
 
-  // Transição direcional e micro-stagger de cards entre telas via GSAP
+  // Transição calma e coreografada (Benji Taylor motion.md #55, #61, #93, #165):
+  // - Stepper permanece firme no topo enquanto a pílula desliza
+  // - Barra inferior de ações permanece fixa sem ser afetada por transform do container
+  // - Apenas os cards e blocos de conteúdo internos sobem suavemente com stagger
   useEffect(() => {
     const prev = prevScreenRef.current;
     prevScreenRef.current = currentScreen;
     if (prev === currentScreen) return;
 
-    const reducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotion) return;
-
     const stage = screenStageRef.current;
     if (!stage) return;
 
-    const delta = (SCREEN_ORDER[currentScreen] ?? 1) - (SCREEN_ORDER[prev] ?? 1);
-    const offsetX = delta >= 0 ? 18 : -18;
-
-    gsap.fromTo(
-      stage,
-      { x: offsetX, opacity: 0 },
-      {
-        x: 0,
-        opacity: 1,
-        duration: 0.24,
-        ease: 'power3.out',
-        clearProps: 'transform,opacity',
-      }
-    );
-
+    // IMPORTANTE: Nunca aplicar transform ou filter no `stage` inteiro, pois qualquer
+    // elemento com `position: fixed` (como a barra de rodapé) ficaria confinado à largura
+    // do container durante a animação, causando o bug de encolher e depois expandir.
     const cards = stage.querySelectorAll(
-      '.boardui-card, .os-card-surface, .recipe-chem-card, .dosing-card, .ds-kpi-card'
+      '.boardui-card, .os-card-surface, .recipe-header-card, .recipe-volume-strip, .recipe-chem-card, .dosing-card, .ds-kpi-card'
     );
     if (cards.length > 0) {
+      gsap.killTweensOf(cards);
       gsap.fromTo(
         cards,
-        { y: 8, opacity: 0 },
+        { y: 12, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          duration: 0.24,
-          stagger: 0.032,
+          duration: 0.45,
+          stagger: 0.045,
           ease: 'power2.out',
           clearProps: 'transform,opacity',
         }
@@ -439,7 +415,15 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Roteamento de Telas com Transição Direcional GSAP */}
+      {/* Stepper Persistente nas 3 etapas da Cabine (Benji Taylor motion.md #93: Keep header steady while content changes inside) */}
+      {(currentScreen === 'os' || currentScreen === 'recipe' || currentScreen === 'dosing') && (
+        <PrepStepperBar
+          currentScreen={currentScreen}
+          onNavigate={(screen) => setCurrentScreen(screen)}
+        />
+      )}
+
+      {/* Roteamento de Telas com Transição Coreografada GSAP */}
       <div
         ref={screenStageRef}
         style={{

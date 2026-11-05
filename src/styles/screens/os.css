@@ -568,12 +568,25 @@
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
 }
 
-.os-btn-continue:hover {
+.os-btn-continue:hover:not(:disabled) {
   background-color: var(--primary-hover);
   border-color: var(--primary-hover);
   transform: translateY(-1px);
 }
 
-.os-bar-btn:active {
+.os-btn-continue:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.os-btn-continue.is-success {
+  background-color: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.os-bar-btn:active:not(:disabled) {
   transform: scale(0.98);
 }

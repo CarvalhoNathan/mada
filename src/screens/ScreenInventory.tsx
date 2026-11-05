@@ -13,7 +13,6 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Lote, Operador, ScreenId, ItemSolicitacaoCompra } from '../types';
-import { Button } from '../components/ui/Button';
 import { CountNumber } from '../components/ui/CountNumber';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { ModalNewBatch } from './ModalNewBatch';
@@ -688,17 +687,25 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
         volumesDisponiveis={VOLUMES_ENTRADA}
       />
 
-      {/* Barra Inferior */}
-      <footer className="ds-bottom-bar">
-        <div className="ds-bottom-bar-left">
-          <Button variant="secondary" size="md" onClick={() => onNavigate('dashboard')}>
+      {/* Barra Inferior Padronizada */}
+      <footer className="os-bottom-bar-minimal">
+        <div className="os-bottom-left">
+          <button
+            type="button"
+            className="os-bar-btn os-btn-back"
+            onClick={() => onNavigate('dashboard')}
+          >
             ← Voltar ao Início
-          </Button>
+          </button>
         </div>
-        <div className="ds-bottom-bar-right">
-          <Button variant="primary" size="md" onClick={() => onNavigate('os')}>
-            Nova Preparação →
-          </Button>
+        <div className="os-bottom-right">
+          <button
+            type="button"
+            className="os-bar-btn os-btn-continue"
+            onClick={() => onNavigate('os')}
+          >
+            <span>Nova Preparação →</span>
+          </button>
         </div>
       </footer>
     </div>

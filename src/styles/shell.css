@@ -1810,12 +1810,6 @@ body {
   transition: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ss-count__strip {
-    transition: none;
-  }
-}
-
 /* Selo Animado de Homologação na Etiqueta Térmica (ScreenReturn) */
 @keyframes stampPopIn {
   0% {

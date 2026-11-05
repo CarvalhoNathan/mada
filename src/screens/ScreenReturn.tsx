@@ -343,25 +343,24 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
         </div>
       </div>
 
-      {/* Barra Inferior Fixa */}
-      <footer className="ds-bottom-bar">
-        <div className="ds-bottom-bar-left">
-          <Button variant="secondary" size="md" onClick={() => onNavigate('dashboard')}>
+      {/* Barra Inferior Padronizada Idêntica a Peça & O.S., Receita e Dosagem */}
+      <footer className="os-bottom-bar-minimal">
+        <div className="os-bottom-left">
+          <button
+            type="button"
+            className="os-bar-btn os-btn-back"
+            onClick={() => onNavigate('dashboard')}
+          >
             ← Voltar
-          </Button>
+          </button>
         </div>
-        <div className="ds-bottom-bar-right">
-          <Button
-            variant="primary"
-            size="md"
+        <div className="os-bottom-right">
+          <button
+            type="button"
+            className={`os-bar-btn os-btn-continue ${returnState === 'done' ? 'is-success' : ''}`}
             onClick={handleConfirmReturn}
             disabled={!allChecked || returnState !== 'idle'}
-            style={{
-              minWidth: '320px',
-              background: returnState === 'done' ? '#10B981' : undefined,
-              borderColor: returnState === 'done' ? '#10B981' : undefined,
-              transition: 'background-color 0.2s ease',
-            }}
+            style={{ minWidth: '320px' }}
           >
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
               {returnState === 'printing' ? (
@@ -378,7 +377,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                 </>
               )}
             </span>
-          </Button>
+          </button>
         </div>
       </footer>
     </>

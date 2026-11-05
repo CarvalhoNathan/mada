@@ -79,12 +79,7 @@ export function SegmentedControl<T extends string | number>({
     const targetH = btn.offsetHeight;
     const targetY = btn.offsetTop;
 
-    const reducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (firstRender.current || reducedMotion) {
+    if (firstRender.current) {
       gsap.set(pill, {
         x: targetX,
         y: targetY,
@@ -94,14 +89,16 @@ export function SegmentedControl<T extends string | number>({
       });
       firstRender.current = false;
     } else {
+      // Regra de Benji Taylor (motion.md #55 & #111):
+      // "Landings are soft: decelerate over the last third, back to size before arrival, no bounce"
       gsap.to(pill, {
         x: targetX,
         y: targetY,
         width: targetW,
         height: targetH,
         opacity: 1,
-        duration: 0.28,
-        ease: 'power3.out',
+        duration: 0.42,
+        ease: 'expo.out',
         overwrite: 'auto',
       });
     }

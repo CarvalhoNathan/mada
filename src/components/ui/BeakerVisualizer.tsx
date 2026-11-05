@@ -36,50 +36,59 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
   const liquidHeight = (fillPct / 110) * (beakerHeight - 8);
 
   const beakerWrapRef = useRef<HTMLDivElement>(null);
+  const liquidRectRef = useRef<SVGRectElement>(null);
   const meniscusRef = useRef<SVGEllipseElement>(null);
   const prevValueRef = useRef<number>(value);
   const prevExceededRef = useRef<boolean>(isExceeded);
 
-  // Ondulação física de menisco (slosh wave) quando o operador despeja insumo (+10ml / +50ml)
+  // Física de líquido e ondulação de menisco (slosh wave) quando o operador despeja insumo (+10ml / +50ml)
   useEffect(() => {
-    const reducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotion) {
-      prevValueRef.current = value;
-      return;
+    const targetY = beakerHeight - 4 - liquidHeight;
+    const targetH = liquidHeight + 10;
+
+    if (liquidRectRef.current) {
+      gsap.to(liquidRectRef.current, {
+        attr: { y: targetY, height: targetH },
+        duration: 0.45,
+        ease: 'elastic.out(1, 0.55)',
+        overwrite: 'auto',
+      });
+    }
+
+    if (meniscusRef.current) {
+      gsap.to(meniscusRef.current, {
+        attr: { cy: targetY },
+        duration: 0.45,
+        ease: 'elastic.out(1, 0.55)',
+        overwrite: 'auto',
+      });
     }
 
     if (value !== prevValueRef.current && value > 0 && meniscusRef.current) {
       gsap.fromTo(
         meniscusRef.current,
-        { attr: { ry: 5.5 } },
+        { attr: { ry: 6.5 } },
         {
           attr: { ry: 3 },
-          duration: 0.55,
-          ease: 'elastic.out(1.2, 0.35)',
+          duration: 0.65,
+          ease: 'elastic.out(1.4, 0.3)',
           overwrite: 'auto',
         }
       );
     }
     prevValueRef.current = value;
-  }, [value]);
+  }, [value, liquidHeight, beakerHeight]);
 
   // Shake tátil de alerta caso o líquido ultrapasse a tolerância crítica (+5%)
   useEffect(() => {
-    const reducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!reducedMotion && isExceeded && !prevExceededRef.current && beakerWrapRef.current) {
+    if (isExceeded && !prevExceededRef.current && beakerWrapRef.current) {
       gsap.fromTo(
         beakerWrapRef.current,
-        { x: -4 },
+        { x: -6 },
         {
           x: 0,
-          duration: 0.38,
-          ease: 'elastic.out(2.2, 0.18)',
+          duration: 0.48,
+          ease: 'elastic.out(2.5, 0.15)',
           clearProps: 'transform',
         }
       );
@@ -184,15 +193,13 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
           {value > 0 && (
             <g clipPath="url(#beaker-inner-clip)">
               <rect
+                ref={liquidRectRef}
                 x="0"
                 y={beakerHeight - 4 - liquidHeight}
                 width={beakerWidth}
                 height={liquidHeight + 10}
                 fill={`url(#${liquidGradientId})`}
                 opacity={0.88}
-                style={{
-                  transition: 'y 0.25s cubic-bezier(0.16, 1, 0.3, 1), height 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                }}
               />
               {/* Menisco da superfície do líquido */}
               <ellipse
@@ -202,9 +209,6 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
                 rx={beakerWidth / 2 - 6}
                 ry="3"
                 fill="rgba(255, 255, 255, 0.35)"
-                style={{
-                  transition: 'cy 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                }}
               />
             </g>
           )}
