@@ -24,26 +24,34 @@ Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas qu
 
 ## 💡 O Cenário: O Custo Invisível no Setor de Pintura
 
-Em uma marcenaria de alto padrão, a cabine de pintura e acabamento utiliza os insumos mais nobres e caros da fábrica: bases poliuretano (PU), catalisadores alifáticos, diluidores especiais, retardadores térmicos e vernizes bi-componentes. 
+Uma marcenaria de alto padrão investe centenas de milhares de reais em centros de usinagem CNC de alta precisão, seccionadoras computadorizadas e nas madeiras mais nobres do mercado. Mas na etapa mais visível e que define a percepção de luxo para o cliente final — **o acabamento em laca e pintura poliuretano (PU)** —, o setor costuma operar como nos anos 90: dependendo da memória de operadores com latas na mão.
 
-Historicamente, as proporções de mistura vivem guardadas na cabeça dos operadores:
+A cabine de pintura utiliza os insumos mais caros da fábrica: bases PU, catalisadores alifáticos, diluidores especiais, retardadores térmicos e vernizes bi-componentes. 
+
+Historicamente, as proporções de mistura vivem guardadas na cabeça de cada pintor:
 
 > _"Composição e mistura, eles sabem de cabeça, e isso é um problema. Preferiria ter um tablet com as receitas, sabe? E eles darem baixa no que forem usando, e associar para qual cliente e ambiente, devolve a lata pro estoque com os valores..."_  
 > — **Fabio, gestor da Mada Marcenaria**
 
-### As dores reais do chão de fábrica:
-- **Erros de proporção:** dosagens imprecisas comprometem a secagem, o alastramento e a resistência mecânica da laca.
-- **Sobras abandonadas:** latas abertas voltam para a prateleira sem medição de saldo, gerando perda silenciosa de matéria-prima.
-- **Validade expirada:** produtos caros vencem no estoque porque operadores abrem frascos novos sem consumir os lotes abertos.
-- **Custo cego:** impossibilidade de apurar quanto de química foi efetivamente investido em cada ambiente do cliente.
-- **Perda de misturas catalisadas:** a mistura PU endurece irreversivelmente em 20 minutos (*pot life*), podendo danificar pistolas e estragar a peça final.
-
 ### 💸 A Conta do Desperdício: Quanto Custa Continuar no Jeito Antigo?
-Em uma marcenaria sob medida com 2 a 3 cabines de pintura consumindo em média R$ 15.000 a R$ 20.000 mensais em químicos nobres (bases PU, catalisadores alifáticos e vernizes especiais), uma perda invisível de 15% a 20% significa **jogar fora de R$ 27.000 a R$ 48.000 por ano** diretamente no ralo:
+Em uma marcenaria sob medida com 2 a 3 cabines de pintura consumindo em média R$ 15.000 a R$ 20.000 mensais em químicos nobres, uma perda invisível de 15% a 20% significa **jogar fora de R$ 27.000 a R$ 48.000 por ano** diretamente no ralo:
 - Latas abertas que vencem esquecidas no fundo das prateleiras;
 - Excesso de catalisador ou solvente dosados "no olhômetro";
 - Misturas descartadas na cabine por estouro do tempo de cura (*pot life*);
 - Horas de retrabalho em peças prontas por defeitos de secagem e brilho.
+
+---
+
+## ⚡ O Confronto: O Jeito Antigo vs. O Novo Padrão
+
+| ❌ O Jeito Antigo (Caos Tácito no Olho) | 💎 O Novo Padrão (Mada Gerenciador) |
+| :--- | :--- |
+| **Receitas de cabeça:** misturas calculadas de memória ou em papéis manchados de solvente. | **Cálculo dinâmico milimétrico:** o sistema decompõe instantaneamente as 4 frações (Base + Catálise + Diluidor + Retardador) em 3 toques. |
+| **Latas abertas abandonadas:** produtos usados voltam à prateleira sem medição de saldo. | **Devolução rastreada com QR Code:** pesagem do saldo restante e emissão de nova etiqueta identificada. |
+| **Lotes caros vencendo esquecidos:** frascos novos são violados enquanto latas antigas passam da validade. | **Protocolo FEFO ("Use Primeiro"):** destaque visual obrigatório para latas abertas e lotes críticos. |
+| **Erro percebido tarde demais:** dosagens desbalanceadas só são notadas quando a laca mancha ou não seca na peça. | **Trava ativa (+5% / +200ml):** barreira visual impeditiva que bloqueia a retirada excessiva na bancada. |
+| **Perda de produto e pistolas entupidas:** mistura PU catalisada ultrapassa o tempo útil e empedra. | **Monitor de Pot Life (20 min):** cronômetro regressivo com avisos de urgência e descarte consciente orientado. |
+| **Custo por cliente no "chute":** impossibilidade de saber quanto de química foi gasto em cada obra. | **Rastreabilidade financeira exata:** rateio do centavo real consumido por **Cliente ➔ Projeto ➔ Ambiente**. |
 
 ---
 
