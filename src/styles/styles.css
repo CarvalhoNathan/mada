@@ -3,8 +3,8 @@
    Design System Industrial Tablet (1280x800)
    ========================================================================== */
 
-/* tokens.css e design-system.css já são importados em global.css (antes deste arquivo). */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+/* tokens.css e design-system.css já são importados em global.css (antes deste arquivo).
+   As fontes variáveis Geist Sans e Geist Mono são carregadas localmente via @fontsource-variable em main.tsx. */
 
 :root {
   /* Mapeamento de variáveis legadas para os tokens oficiais */
@@ -62,7 +62,7 @@ html, body {
   height: 100%;
   background-color: var(--bg);
   color: var(--text);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-family);
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -4658,11 +4658,55 @@ body {
   border: 2px solid #16a34a;
   background: rgba(22, 163, 74, 0.12);
   color: #15803d;
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.06em;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   animation: stampPopIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ==========================================================================
+   SISTEMA TIPOGRÁFICO VERCEL GEIST SANS & GEIST MONO
+   - Geist Sans: Títulos geométricos (tracking -0.025em) e leitura humana
+   - Geist Mono: Códigos de OS/lote, badges técnicas, telemetria (ml/g/R$) e etiqueta Zebra
+   ========================================================================== */
+h1,
+h2,
+h3,
+.boardui-dash-title,
+.boardui-card-title,
+.os-client-title,
+.os-piece-title,
+.recipe-main-title,
+.dosing-chem-name,
+.auth-title-minimal {
+  font-family: var(--font-family);
+  letter-spacing: -0.025em;
+}
+
+.os-meta-badge,
+.os-step-badge,
+.dosing-step-badge,
+.os-env-code,
+.recipe-chem-code,
+.dosing-chem-code,
+.dosing-target-weight,
+.recipe-chem-weight,
+.recipe-volume-num,
+.dosing-val-num,
+.os-metric-val,
+.os-spec-highlight,
+.recipe-chem-vol,
+.ds-kpi-value,
+.supervisor-pin-input,
+.boardui-search-kbd,
+.thermal-sticker-card .sticker-code,
+.thermal-sticker-card .sticker-meta-val,
+.ss-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 

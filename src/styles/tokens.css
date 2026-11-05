@@ -48,11 +48,11 @@
   --btn-disabled-text: #52525B;
 
   /* ========================================================================
-     3. TIPOGRAFIA (INTER / ATKINSON HYPERLEGIBLE / SYSTEM-UI)
-     Regra: Nenhum texto na aplicação é inferior a 16px (--fs-small)
+     3. TIPOGRAFIA (VERCEL GEIST SANS + GEIST MONO — EMBUTIDAS LOCALMENTE)
+     Regra: Geist Sans para UI/leitura humana; Geist Mono para códigos, lotes e telemetria
      ======================================================================== */
-  --font-family: 'Inter', 'Atkinson Hyperlegible', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+  --font-family: 'Geist Variable', 'Geist', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
 
   --fs-number: 56px;
   --lh-number: 1.1;
