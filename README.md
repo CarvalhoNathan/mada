@@ -1,4 +1,4 @@
-<div align="center">
+<div id="topo" align="center">
 
 # 🪵 Gerenciador de Químicos
 
@@ -277,20 +277,51 @@ Acesse no navegador através do endereço: `http://localhost:3000`.
 
 ---
 
-## 👥 Equipe & Contribuições
+## 👥 Equipe & Autoria
 
-Projeto de curricularização acadêmica desenvolvido em parceria com a **Mada Marcenaria** (São Bernardo do Campo, SP):
+Projeto de curricularização acadêmica desenvolvido para o curso de **Tecnologia em Sistemas para Internet** da **Faculdade de Tecnologia da Baixada Santista Rubens Lara (FATEC Rubens Lara)** em parceria com a **Mada Marcenaria** (São Bernardo do Campo, SP):
 
-| Integrante | Atribuições & Papel no Projeto | Contato / Links |
+<table align="center">
+  <tr>
+    <td align="center" width="220px">
+      <a href="https://github.com/CarvalhoNathan">
+        <img src="https://github.com/CarvalhoNathan.png" width="85px" alt="Nathan Carvalho" style="border-radius: 50%;" /><br />
+        <sub><b>Nathan Carvalho</b></sub>
+      </a><br />
+      <small>Liderança Técnica & Full Stack</small>
+    </td>
+    <td align="center" width="220px">
+      <a href="https://github.com/treedrewlife">
+        <img src="https://github.com/treedrewlife.png" width="85px" alt="Gabriel Cavalcanti Martins" style="border-radius: 50%;" /><br />
+        <sub><b>Gabriel C. Martins</b></sub>
+      </a><br />
+      <small>Relações com Parceiro & Doc</small>
+    </td>
+    <td align="center" width="220px">
+      <a href="https://github.com/DreyCelestino">
+        <img src="https://github.com/DreyCelestino.png" width="85px" alt="Andrey Celestino" style="border-radius: 50%;" /><br />
+        <sub><b>Andrey Celestino</b></sub>
+      </a><br />
+      <small>Atas de Reunião & Apoio Doc</small>
+    </td>
+  </tr>
+</table>
+
+| Integrante | Atribuições & Papel no Projeto | Perfil GitHub |
 | :--- | :--- | :--- |
 | **Nathan Carvalho** | **Liderança Técnica & Desenvolvimento Full Stack:** Arquitetura do sistema, engenharia de software, desenvolvimento Front-end & UI/UX *tablet-first*, regras de negócio em TypeScript, testes automatizados e deploy. | [![GitHub](https://img.shields.io/badge/GitHub-carvalhonathan-181717?logo=github)](https://github.com/carvalhonathan) |
 | **Gabriel Cavalcanti Martins** | **Relações com a Empresa Parceira & Documentação:** Contato inicial com a Mada Marcenaria, alinhamento nas reuniões com Fabio e apoio no levantamento e refinamento de documentação. | [![GitHub](https://img.shields.io/badge/GitHub-treedrewlife-181717?logo=github)](https://github.com/treedrewlife) |
 | **Andrey Celestino** | **Suporte a Reuniões & Documentação:** Levantamento de anotações e atas das reuniões com a empresa parceira e auxílio na documentação acadêmica. | [![GitHub](https://img.shields.io/badge/GitHub-DreyCelestino-181717?logo=github)](https://github.com/DreyCelestino) |
 
-> 🪵 Desenvolvido para modernização e gestão de acabamento químico no setor de pintura e laca PU.
+---
+
+## 📄 Licença
+
+Este projeto é desenvolvido para fins acadêmicos e educacionais sob os termos da **[Licença MIT](LICENSE)**.  
+&copy; 2026 Nathan Carvalho.
 
 ---
 
-## 📄 Licença e uso
-
-Projeto acadêmico e profissional em processo de homologação junto à empresa parceira. Todos os direitos reservados.
+<p align="center">
+  <a href="#topo">↑ Voltar ao topo</a>
+</p>
