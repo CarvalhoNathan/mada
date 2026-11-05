@@ -16,6 +16,7 @@ import {
 import { Lote, Operador, ScreenId, ItemSolicitacaoCompra } from '../types';
 import { Button } from '../components/ui/Button';
 import { CountNumber } from '../components/ui/CountNumber';
+import { ModalNewBatch } from './ModalNewBatch';
 import { formatarStatusValidade } from '../domain/fefo';
 import { MOCK_PRODUTOS } from '../data';
 
@@ -755,112 +756,17 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
       )}
 
       {/* Modal Tátil de Recebimento de Nova Lata / Nota Fiscal */}
-      {isNewBatchModalOpen && (
-        <div
-          className="ds-modal-overlay active"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Receber Nova Lata no Estoque"
-        >
-          <div className="ds-modal-card" style={{ maxWidth: '680px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-              <div>
-                <h3 className="ds-modal-title" style={{ fontSize: '22px', margin: 0 }}>
-                  Dar Entrada em Nova Lata / Galão
-                </h3>
-                <p style={{ margin: '4px 0 0', fontSize: '16px', color: 'var(--text-muted)' }}>
-                  Selecione o insumo químico homologado e o volume do recipiente lacrado.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsNewBatchModalOpen(false)}
-                className="os-bar-btn os-btn-back"
-                style={{ minHeight: '52px', padding: '0 16px' }}
-                aria-label="Fechar modal"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-muted)' }}>
-                1. Produto Químico Homologado:
-              </span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
-                {MOCK_PRODUTOS.map((prod) => {
-                  const isSel = prod.id === selectedProdutoId;
-                  return (
-                    <button
-                      key={prod.id}
-                      type="button"
-                      onClick={() => setSelectedProdutoId(prod.id)}
-                      style={{
-                        minHeight: '64px',
-                        padding: '12px 16px',
-                        borderRadius: '12px',
-                        border: isSel ? '2px solid var(--primary)' : '1.5px solid var(--border)',
-                        background: isSel ? 'var(--primary-soft)' : 'var(--bg)',
-                        color: 'var(--text)',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        gap: '2px',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <strong style={{ fontSize: '16px' }}>{prod.nome.replace(/^[0-9]+[º°]?\s*/, '')}</strong>
-                      <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-                        Ref: {prod.codigo} • {prod.prateleiraPadrao}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-muted)', marginTop: '4px' }}>
-                2. Volume do Galão / Lata Lacrada:
-              </span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                {VOLUMES_ENTRADA.map((volOpt) => {
-                  const isVolSel = volOpt === volumeEntrada;
-                  return (
-                    <button
-                      key={volOpt}
-                      type="button"
-                      onClick={() => setVolumeEntrada(volOpt)}
-                      style={{
-                        minHeight: '56px',
-                        borderRadius: '12px',
-                        border: isVolSel ? '2px solid var(--primary)' : '1.5px solid var(--border)',
-                        background: isVolSel ? 'var(--primary-soft)' : 'var(--bg)',
-                        color: 'var(--text)',
-                        fontSize: '17px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      {volOpt.toLocaleString('pt-BR')} ml
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="ds-modal-actions">
-              <Button variant="secondary" size="md" onClick={() => setIsNewBatchModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button variant="primary" size="md" onClick={handleConfirmarEntradaLote}>
-                ✓ Confirmar Entrada ({codigoLoteEntrada})
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ModalNewBatch
+        isOpen={isNewBatchModalOpen}
+        onClose={() => setIsNewBatchModalOpen(false)}
+        selectedProdutoId={selectedProdutoId}
+        onSelectProdutoId={setSelectedProdutoId}
+        volumeEntrada={volumeEntrada}
+        onSelectVolumeEntrada={setVolumeEntrada}
+        codigoLoteEntrada={codigoLoteEntrada}
+        onConfirmar={handleConfirmarEntradaLote}
+        volumesDisponiveis={VOLUMES_ENTRADA}
+      />
 
       {/* Barra Inferior */}
       <footer className="ds-bottom-bar">

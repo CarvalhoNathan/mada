@@ -2,6 +2,7 @@ import React from 'react';
 import { FlaskConical, Check, AlertTriangle } from 'lucide-react';
 import { RecipeState, Receita, Lote } from '../types';
 import { CountNumber } from '../components/ui/CountNumber';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { calcularFracoesMistura } from '../domain/mixture';
 import { ordenarLotesFEFO } from '../domain/fefo';
 import {
@@ -85,55 +86,22 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
         </div>
       </nav>
 
-      {/* Seletor de Receita Homologada (Controle Segmentado Concêntrico: R_ext=14px, pad=4px, R_int=10px) */}
-      <div
-        role="group"
-        aria-label="Selecionar acabamento homologado"
-        style={{
-          display: 'inline-flex',
-          gap: '4px',
-          padding: '4px',
-          borderRadius: '14px',
-          background: 'var(--card)',
-          border: '1px solid var(--border)',
-          marginBottom: '12px',
-          overflowX: 'auto',
-          maxWidth: '100%',
+      {/* Seletor de Receita Homologada com Pílula Deslizante GSAP */}
+      <SegmentedControl
+        ariaLabel="Selecionar acabamento homologado"
+        value={receita.id}
+        onChange={(newId) => {
+          const found = MOCK_RECEITAS.find((r) => r.id === newId);
+          if (found && onSelectRecipe) onSelectRecipe(found);
         }}
-      >
-        {MOCK_RECEITAS.map((r) => {
-          const isSelected = r.id === receita.id;
-          return (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => onSelectRecipe && onSelectRecipe(r)}
-              style={{
-                minHeight: '40px',
-                padding: '0 16px',
-                borderRadius: 'var(--radius-button)',
-                border: isSelected ? '1px solid var(--primary-border)' : '1px solid transparent',
-                background: isSelected ? 'var(--primary-soft)' : 'transparent',
-                color: isSelected ? 'var(--text)' : 'var(--text-muted)',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontFamily: 'inherit',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <span style={{ color: isSelected ? 'var(--primary)' : 'var(--text-muted)', display: 'inline-flex' }}>
-                {isSelected ? <Check size={15} strokeWidth={2.6} /> : <FlaskConical size={15} strokeWidth={2.2} />}
-              </span>
-              <span>{r.nome}</span>
-            </button>
-          );
-        })}
-      </div>
+        options={MOCK_RECEITAS.map((r) => ({
+          id: r.id,
+          label: r.nome,
+          icon: r.id === receita.id ? <Check size={15} strokeWidth={2.6} /> : <FlaskConical size={15} strokeWidth={2.2} />,
+          tone: 'primary',
+        }))}
+        style={{ marginBottom: '12px' }}
+      />
 
       {/* 2. Cabeçalho da Receita (Apple / Notion) */}
       <div className="recipe-header-card">

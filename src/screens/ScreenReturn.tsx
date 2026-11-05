@@ -3,6 +3,7 @@ import { AlertTriangle, Trash2, Printer, Check, Package, ShieldCheck } from 'luc
 import { Lote, Operator, OrdemServico } from '../types';
 import { Button } from '../components/ui/Button';
 import { CountNumber } from '../components/ui/CountNumber';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { calcularSaldoDevolucao } from '../domain/leftover';
 import {
   MOCK_LOTES,
@@ -129,61 +130,25 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
           </button>
         </header>
 
-        {/* Seletor Tátil de Lata / Insumo Químico em Giro (Controle Segmentado Concêntrico: R_ext=14px, pad=4px, R_int=10px) */}
-        <div
-          role="radiogroup"
-          aria-label="Selecione a lata para devolução"
-          style={{
-            display: 'inline-flex',
-            gap: '4px',
-            padding: '4px',
-            borderRadius: '14px',
-            background: 'var(--card)',
-            border: '1px solid var(--border)',
-            overflowX: 'auto',
-            maxWidth: '100%',
-            marginBottom: '14px',
+        {/* Seletor Tátil de Lata / Insumo Químico em Giro com Pílula Deslizante GSAP */}
+        <SegmentedControl
+          ariaLabel="Selecione a lata para devolução"
+          value={loteOriginal.id}
+          onChange={(newId) => {
+            setSelectedLoteId(newId);
+            const found = lotesDisponiveis.find((l) => l.id === newId);
+            if (found) {
+              setReturnVolume(Math.min(maxVolume, Math.max(100, Math.round(found.quantidadeAtual / 2 / 50) * 50)));
+            }
           }}
-        >
-          {lotesDisponiveis.slice(0, 6).map((loteItem) => {
-            const isSelected = loteItem.id === loteOriginal.id;
-            return (
-              <button
-                key={loteItem.id}
-                type="button"
-                role="radio"
-                aria-checked={isSelected}
-                onClick={() => {
-                  setSelectedLoteId(loteItem.id);
-                  setReturnVolume(Math.min(maxVolume, Math.max(100, Math.round(loteItem.quantidadeAtual / 2 / 50) * 50)));
-                }}
-                style={{
-                  minHeight: '42px',
-                  padding: '0 14px',
-                  borderRadius: 'var(--radius-button)',
-                  border: isSelected ? '1px solid var(--primary-border)' : '1px solid transparent',
-                  background: isSelected ? 'var(--primary-soft)' : 'transparent',
-                  color: isSelected ? 'var(--text)' : 'var(--text-muted)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontFamily: 'inherit',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <span style={{ color: isSelected ? 'var(--primary)' : 'var(--text-muted)', display: 'inline-flex' }}>
-                  {isSelected ? <Check size={15} strokeWidth={2.6} /> : <Package size={15} strokeWidth={2.2} />}
-                </span>
-                <span>{loteItem.produtoNome.replace(/^[0-9]+[º°]?\s*/, '')}</span>
-                <span style={{ opacity: 0.7, fontSize: '13px' }}>({loteItem.codigo})</span>
-              </button>
-            );
-          })}
-        </div>
+          options={lotesDisponiveis.slice(0, 6).map((loteItem) => ({
+            id: loteItem.id,
+            label: `${loteItem.produtoNome.replace(/^[0-9]+[º°]?\s*/, '')} (${loteItem.codigo})`,
+            icon: loteItem.id === loteOriginal.id ? <Check size={15} strokeWidth={2.6} /> : <Package size={15} strokeWidth={2.2} />,
+            tone: 'primary',
+          }))}
+          style={{ marginBottom: '14px' }}
+        />
 
         <div className="return-layout">
           {/* Coluna Esquerda: Frasco e Balança */}

@@ -19,4 +19,6 @@ export * from './PotLifeTimerBanner';
 export * from './BeakerVisualizer';
 export * from './CountNumber';
 export * from './ScrubChart';
+export * from './SegmentedControl';
+
 
