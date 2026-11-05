@@ -193,8 +193,8 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
             userSelect: 'none',
           }}
         >
-          <Sparkles size={48} color="#38BDF8" style={{ marginBottom: '16px' }} />
-          <h2 style={{ fontSize: '26px', fontWeight: 800, margin: '0 0 8px 0' }}>
+          <Sparkles size={44} color="#FAFAFA" style={{ marginBottom: '16px' }} />
+          <h2 style={{ fontSize: '26px', fontWeight: 800, margin: '0 0 8px 0', color: '#FAFAFA' }}>
             Modo de Limpeza de Tela Ativo
           </h2>
           <p style={{ fontSize: '16px', color: '#a1a1aa', margin: '0 0 24px 0' }}>
@@ -205,14 +205,15 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
               width: '84px',
               height: '84px',
               borderRadius: '50%',
-              border: '3px solid #38BDF8',
+              border: '2px solid rgba(255, 255, 255, 0.4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '32px',
               fontWeight: 800,
               fontFamily: 'var(--font-mono)',
-              boxShadow: '0 0 24px rgba(56, 189, 248, 0.4)',
+              color: '#FAFAFA',
+              boxShadow: '0 0 24px rgba(255, 255, 255, 0.15)',
             }}
           >
             {cleaningSeconds}s
