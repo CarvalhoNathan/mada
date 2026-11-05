@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { X, Camera, RefreshCw, FlipHorizontal, Flashlight } from 'lucide-react';
+import { X, Camera, RefreshCw, FlipHorizontal, Flashlight, Check } from 'lucide-react';
 import jsQR from 'jsqr';
 
 export interface QrScannerModalProps {
@@ -41,6 +41,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   const [torchOn, setTorchOn] = useState<boolean>(false);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
   const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user');
+  const [detectedCode, setDetectedCode] = useState<string | null>(null);
 
   // Para o loop contínuo de escaneamento de QR Code
   const stopScanning = useCallback(() => {
@@ -73,10 +74,15 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         // Silencioso
       }
     }
-    stopCamera();
-    onScanSuccess(code);
-    onClose();
-  }, [onScanSuccess, onClose, stopCamera]);
+    setDetectedCode(code);
+    stopScanning();
+    setTimeout(() => {
+      stopCamera();
+      onScanSuccess(code);
+      onClose();
+      setDetectedCode(null);
+    }, 280);
+  }, [onScanSuccess, onClose, stopCamera, stopScanning]);
 
   // Loop de detecção duplo: BarcodeDetector nativo (se suportado) + fallback universal jsQR (Safari / iPadOS)
   const startDetectionLoop = useCallback(() => {
@@ -385,34 +391,67 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               }}
             />
 
-            {/* Retículo e Mira Laser */}
+            {/* Retículo e Mira Laser Industrial */}
             {cameraActive && (
               <div
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '160px',
-                  height: '160px',
-                  border: '2px dashed #2b7fff',
-                  borderRadius: '12px',
-                  pointerEvents: 'none',
-                  boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.4)',
-                }}
+                className={`qr-reticle-box ${detectedCode ? 'is-detected' : ''}`}
               >
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: 0,
-                    right: 0,
-                    height: '2px',
-                    background: '#22c55e',
-                    boxShadow: '0 0 10px #22c55e',
-                    opacity: 0.85,
-                  }}
-                />
+                {/* 4 Cantos Industriais de Foco */}
+                <span className="qr-corner qr-corner--tl" aria-hidden="true" />
+                <span className="qr-corner qr-corner--tr" aria-hidden="true" />
+                <span className="qr-corner qr-corner--bl" aria-hidden="true" />
+                <span className="qr-corner qr-corner--br" aria-hidden="true" />
+
+                {/* Feixe Laser Neon com Varredura Vertical */}
+                {!detectedCode && (
+                  <div className="qr-laser-line" aria-hidden="true" />
+                )}
+
+                {/* Feedback Tátil de QR Code Detectado */}
+                {detectedCode && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'rgba(16, 185, 129, 0.24)',
+                      borderRadius: '12px',
+                      color: '#ffffff',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '46px',
+                        height: '46px',
+                        borderRadius: '50%',
+                        background: '#10B981',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 0 18px rgba(16, 185, 129, 0.85)',
+                      }}
+                    >
+                      <Check size={26} strokeWidth={3} />
+                    </div>
+                    <span
+                      style={{
+                        marginTop: '10px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: '#4ade80',
+                        fontFamily: 'var(--font-mono)',
+                        background: 'rgba(0, 0, 0, 0.6)',
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                      }}
+                    >
+                      {detectedCode}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 

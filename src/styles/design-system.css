@@ -769,23 +769,27 @@
 .ds-modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-24);
   z-index: 1000;
+  animation: modalBackdropFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .ds-modal-card {
   background-color: var(--card);
-  border: 2px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-card);
   max-width: 680px;
   width: 100%;
   overflow: hidden;
-  box-shadow: var(--shadow-modal);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  animation: modalScaleUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: center center;
 }
 
 .ds-modal-header {

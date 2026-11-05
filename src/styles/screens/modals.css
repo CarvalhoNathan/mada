@@ -1,6 +1,31 @@
 /* ==========================================================================
-   Modais do Design System (Cancelar Preparação e Detalhes Use Primeiro)
+   Modais do Design System (Cancelar Preparação, Use Primeiro, Nova Lata)
+   Animação física Apple HIG / Stageshow (Glass Blur + Soft Scale-Up)
    ========================================================================== */
+@keyframes modalBackdropFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+@keyframes modalScaleUp {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 .ds-modal-overlay {
   display: none;
   position: fixed;
@@ -8,13 +33,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 100;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  animation: fadeIn 0.15s ease-out;
+  animation: modalBackdropFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .ds-modal-overlay.active {
@@ -23,15 +49,17 @@
 
 .ds-modal-card {
   background: var(--card);
-  border: 2px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-card);
   padding: 28px 32px;
   max-width: 600px;
   width: 100%;
-  box-shadow: var(--shadow-modal);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   gap: 20px;
+  animation: modalScaleUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: center center;
 }
 
 .ds-modal-title {
@@ -74,4 +102,107 @@
   border-bottom: 1px solid var(--border);
   font-size: 16px;
   color: var(--text);
+}
+
+/* ==========================================================================
+   Scanner Laser & Retículo Industrial (QrScannerModal)
+   ========================================================================== */
+@keyframes qrLaserSweep {
+  0% {
+    top: 6px;
+    opacity: 0.35;
+  }
+  50% {
+    top: calc(100% - 10px);
+    opacity: 1;
+  }
+  100% {
+    top: 6px;
+    opacity: 0.35;
+  }
+}
+
+@keyframes qrReticlePulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    border-color: rgba(59, 130, 246, 0.45);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.02);
+    border-color: rgba(59, 130, 246, 0.85);
+  }
+}
+
+.qr-reticle-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 170px;
+  height: 170px;
+  pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  border-radius: 14px;
+  animation: qrReticlePulse 2.8s ease-in-out infinite;
+  transition: all 0.2s ease;
+}
+
+.qr-reticle-box.is-detected {
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.72), 0 0 25px rgba(16, 185, 129, 0.6) !important;
+  animation: none;
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+.qr-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: #3b82f6;
+  border-style: solid;
+  pointer-events: none;
+  transition: border-color 0.2s ease;
+}
+
+.qr-reticle-box.is-detected .qr-corner {
+  border-color: #10b981 !important;
+}
+
+.qr-corner--tl {
+  top: -2px;
+  left: -2px;
+  border-width: 3.5px 0 0 3.5px;
+  border-top-left-radius: 12px;
+}
+
+.qr-corner--tr {
+  top: -2px;
+  right: -2px;
+  border-width: 3.5px 3.5px 0 0;
+  border-top-right-radius: 12px;
+}
+
+.qr-corner--bl {
+  bottom: -2px;
+  left: -2px;
+  border-width: 0 0 3.5px 3.5px;
+  border-bottom-left-radius: 12px;
+}
+
+.qr-corner--br {
+  bottom: -2px;
+  right: -2px;
+  border-width: 0 3.5px 3.5px 0;
+  border-bottom-right-radius: 12px;
+}
+
+.qr-laser-line {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, #38bdf8 20%, #3b82f6 50%, #38bdf8 80%, transparent 100%);
+  box-shadow: 0 0 12px #38bdf8, 0 0 4px #60a5fa;
+  border-radius: 2px;
+  animation: qrLaserSweep 2.2s ease-in-out infinite;
+  pointer-events: none;
 }

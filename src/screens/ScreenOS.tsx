@@ -128,7 +128,9 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                     <div className="os-env-chip-header">
                       <span className="os-env-name">{env.name}</span>
                       {isSelected && (
-                        <span className="os-env-check" aria-hidden="true">✓</span>
+                        <span className="os-env-check" aria-hidden="true">
+                          <Check size={17} strokeWidth={2.8} />
+                        </span>
                       )}
                     </div>
                     <span className="os-env-code">{env.code}</span>
