@@ -15,9 +15,12 @@
 
 /* 2. Cabeçalho da Receita (Apple / Notion) */
 .recipe-header-card {
-  background-color: var(--card);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+  box-shadow: var(--glass-card-shadow);
   padding: 14px 22px;
   display: flex;
   align-items: center;
