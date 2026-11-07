@@ -4,8 +4,6 @@ import { RecipeState, Operator, OrdemServico, Receita, Lote } from '../types';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
 import { BeakerVisualizer } from '../components/ui/BeakerVisualizer';
 import { CountNumber } from '../components/ui/CountNumber';
-import { RollingOdometer } from '../components/ui/RollingOdometer';
-import { SlideToConfirm } from '../components/ui/SlideToConfirm';
 import { ModalCriticalExcess } from './ModalCriticalExcess';
 import { calcularFracoesMistura } from '../domain/mixture';
 import { excedeTolerancia, calcularCustoExcesso } from '../domain/tolerance';
@@ -104,7 +102,6 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
   // Estado de confirmação no próprio botão (Stageshow States + Check)
   const [submitState, setSubmitState] = useState<'idle' | 'saving' | 'done'>('idle');
-  const [useSlideConfirm, setUseSlideConfirm] = useState(true);
 
   // Verificações de conclusão
   const allDosed = componentes.every((c) => (dosingValues[c.item.id] || 0) > 0);
@@ -252,7 +249,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
           <div className="dosing-header-right">
             <span className="os-meta-badge os-meta-badge--neutral">
-              Meta: <RollingOdometer value={vol} unit="ml" />
+              Meta: <CountNumber value={vol} format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`} />
             </span>
 
             <span
@@ -262,9 +259,9 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
             >
               Dosado:{' '}
               <strong>
-                <RollingOdometer value={totalDosed} unit="ml" />
+                <CountNumber value={totalDosed} format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`} />
               </strong>{' '}
-              (<RollingOdometer value={Math.min(100, Math.round((totalDosed / vol) * 100))} unit="%" />)
+              (<CountNumber value={Math.min(100, Math.round((totalDosed / vol) * 100))} format={(n) => `${Math.round(n)}%`} />)
             </span>
           </div>
         </header>
@@ -362,17 +359,13 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                     title="Toque para digitar o valor no teclado numérico"
                   >
                     <div className="dosing-val-num-row">
-                      <RollingOdometer value={val} className="dosing-val-num" />
+                      <CountNumber value={val} className="dosing-val-num" />
                       <span className="dosing-val-unit">ml</span>
                     </div>
                     <span className="dosing-val-sub">
-                      {val > 0 ? (
-                        <>
-                          ~ <RollingOdometer value={Math.round(val * comp.item.densidade)} unit="g" /> • Toque p/ digitar
-                        </>
-                      ) : (
-                        'Toque para digitar'
-                      )}
+                      {val > 0
+                        ? `~ ${Math.round(val * comp.item.densidade)} g • Toque p/ digitar`
+                        : 'Toque para digitar'}
                     </span>
                   </div>
 
@@ -600,58 +593,30 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
             ✕ Cancelar preparação
           </button>
         </div>
-        <div className="os-bottom-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {useSlideConfirm ? (
-            <SlideToConfirm
-              onConfirm={handleAttemptFinish}
-              disabled={!allDosed || submitState !== 'idle'}
-              isLoading={submitState === 'saving'}
-              isConfirmed={submitState === 'done'}
-              label="Deslize para concluir dosagem →"
-              confirmedLabel="Baixa registrada na OS!"
-              disabledLabel="Dose os 4 componentes para liberar"
-            />
-          ) : (
-            <button
-              type="button"
-              className={`os-bar-btn os-btn-continue ${submitState === 'done' ? 'is-success' : ''}`}
-              onClick={handleAttemptFinish}
-              disabled={!allDosed || submitState !== 'idle'}
-              style={{
-                minWidth: '310px',
-                transition: 'background-color 0.2s ease, transform 0.15s ease',
-              }}
-            >
-              {submitState === 'saving' ? (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                  ● Gravando baixa FEFO...
-                </span>
-              ) : submitState === 'done' ? (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                  <Check size={20} strokeWidth={3} /> Baixa registrada na OS!
-                </span>
-              ) : (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                  Concluir dosagem e dar baixa →
-                </span>
-              )}
-            </button>
-          )}
-
+        <div className="os-bottom-right">
           <button
             type="button"
-            className="os-bar-btn os-btn-cancel"
-            onClick={() => setUseSlideConfirm(!useSlideConfirm)}
-            title={useSlideConfirm ? 'Alternar para botão clássico' : 'Alternar para slider Bencho'}
+            className={`os-bar-btn os-btn-continue ${submitState === 'done' ? 'is-success' : ''}`}
+            onClick={handleAttemptFinish}
+            disabled={!allDosed || submitState !== 'idle'}
             style={{
-              padding: '0 12px',
-              fontSize: '12px',
-              height: '56px',
-              opacity: 0.75,
-              whiteSpace: 'nowrap',
+              minWidth: '310px',
+              transition: 'background-color 0.2s ease, transform 0.15s ease',
             }}
           >
-            {useSlideConfirm ? 'Modo: Slider' : 'Modo: Botão'}
+            {submitState === 'saving' ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                ● Gravando baixa FEFO...
+              </span>
+            ) : submitState === 'done' ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <Check size={20} strokeWidth={3} /> Baixa registrada na OS!
+              </span>
+            ) : (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                Concluir dosagem e dar baixa →
+              </span>
+            )}
           </button>
         </div>
       </footer>
