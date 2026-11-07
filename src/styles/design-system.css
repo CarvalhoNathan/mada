@@ -1594,3 +1594,200 @@
   transform: scale(0.97);
 }
 
+/* ==========================================================================
+   14. ROLLING ODOMETER (FANCY COMPONENTS / NUMBER TICKER)
+   ========================================================================== */
+.odometer-drum-root {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.odometer-drum-viewport {
+  display: inline-flex;
+  align-items: baseline;
+  overflow: hidden;
+  line-height: 1;
+}
+
+.odometer-drum-column {
+  display: inline-block;
+  height: 1em;
+  line-height: 1;
+  overflow: hidden;
+  vertical-align: baseline;
+  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+}
+
+.odometer-drum-ribbon {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.odometer-drum-digit {
+  display: block;
+  height: 1em;
+  line-height: 1;
+  text-align: center;
+}
+
+.odometer-drum-separator {
+  display: inline-block;
+  padding: 0 1px;
+}
+
+.odometer-drum-unit {
+  display: inline-block;
+  margin-left: 0.22em;
+  font-size: 0.58em;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   15. SLIDE TO CONFIRM (BENCHO BLOCK)
+   ========================================================================== */
+.slide-confirm-rail {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  min-height: 56px;
+  min-width: 320px;
+  max-width: 440px;
+  width: 100%;
+  background-color: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  user-select: none;
+  touch-action: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.slide-confirm-rail:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.slide-confirm-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(16, 185, 129, 0.18);
+  border-radius: calc(var(--radius-card) - 2px);
+  pointer-events: none;
+}
+
+.slide-confirm-text-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0 54px;
+  box-sizing: border-box;
+}
+
+.slide-confirm-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: -0.01em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slide-confirm-thumb {
+  position: relative;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  margin-left: 4px;
+  border-radius: 12px;
+  background-color: #FAFAFA;
+  color: #0A0A0C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  will-change: transform;
+  touch-action: none;
+}
+
+.slide-confirm-thumb:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+.slide-confirm-chevrons {
+  transition: transform 0.15s ease;
+}
+
+.slide-confirm-thumb:hover .slide-confirm-chevrons {
+  transform: translateX(2px);
+}
+
+/* Estado de Confirmação Concluída */
+.slide-confirm-rail.is-confirmed {
+  border-color: var(--ok);
+  background-color: rgba(16, 185, 129, 0.08);
+}
+
+.slide-confirm-rail.is-confirmed .slide-confirm-fill {
+  background-color: rgba(16, 185, 129, 0.25);
+}
+
+.slide-confirm-rail.is-confirmed .slide-confirm-label {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.slide-confirm-rail.is-confirmed .slide-confirm-thumb {
+  background-color: var(--ok);
+  color: #FFFFFF;
+  cursor: default;
+}
+
+.slide-confirm-check {
+  animation: slideCheckPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideCheckPop {
+  0% { transform: scale(0.5); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* Estado de Carregamento */
+.slide-confirm-spinner {
+  animation: ds-spin 0.8s linear infinite;
+}
+
+/* Estado Desabilitado */
+.slide-confirm-rail.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.slide-confirm-rail.is-disabled .slide-confirm-thumb {
+  background-color: #222227;
+  color: #71717A;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
