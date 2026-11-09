@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { AlertTriangle, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { AlertTriangle, Check, RotateCcw, Layers } from 'lucide-react';
 import { RecipeState, Operator, OrdemServico, Receita, Lote } from '../types';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
 import { BeakerVisualizer } from '../components/ui/BeakerVisualizer';
@@ -7,7 +7,7 @@ import { CountNumber } from '../components/ui/CountNumber';
 import { ModalCriticalExcess } from './ModalCriticalExcess';
 import { calcularFracoesMistura } from '../domain/mixture';
 import { excedeTolerancia, calcularCustoExcesso } from '../domain/tolerance';
-import { ordenarLotesFEFO } from '../domain/fefo';
+import { ordenarLotesFEFO, alocarConsumoMultiLoteFEFO } from '../domain/fefo';
 import {
   MOCK_RECEITAS,
   MOCK_MARCAS,
@@ -61,7 +61,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
   const fracoes = calcularFracoesMistura(itensParaCalculo, vol);
 
-  // Mapeamento dos itens com metas e produtos (usando estoque ao vivo FEFO)
+  // Mapeamento dos itens com metas, produtos e plano multi-lote FEFO
   const componentes = receita.itens.map((item, idx) => {
     const fracao = fracoes[idx];
     const produto = MOCK_PRODUTOS.find((p) => p.id === item.produtoId) || {
@@ -69,10 +69,12 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
       preco: 100,
       unidade: 'ml',
     };
-    const lotesDoProduto = ordenarLotesFEFO(
-      lotesEstoque.filter((l) => l.produtoId === item.produtoId && l.quantidadeAtual > 0)
+    const lotesFiltrados = lotesEstoque.filter(
+      (l) => l.produtoId === item.produtoId && l.quantidadeAtual > 0
     );
+    const lotesDoProduto = ordenarLotesFEFO(lotesFiltrados);
     const loteAtivo = lotesDoProduto[0];
+    const planoMultiLote = alocarConsumoMultiLoteFEFO(lotesFiltrados, fracao.volumeMl);
 
     return {
       item,
@@ -80,13 +82,70 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
       pesoMetaG: fracao.pesoGramas,
       produto,
       loteAtivo,
+      planoMultiLote,
     };
   });
 
-  // Estado dos valores dosados por item (inicial: 0)
-  const [dosingValues, setDosingValues] = useState<Record<number, number>>(() =>
-    receita.itens.reduce((acc, it) => ({ ...acc, [it.id]: 0 }), {})
-  );
+  // Estado dos valores dosados por item (com recuperação automática de rascunho persistido)
+  const [restoredFromDraft] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem('mada_active_dosing_draft');
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return Boolean(
+        parsed &&
+          parsed.osNumero === os.numero &&
+          parsed.receitaId === receita.id &&
+          parsed.values &&
+          Object.values(parsed.values).some((v) => Number(v) > 0)
+      );
+    } catch {
+      return false;
+    }
+  });
+
+  const [dosingValues, setDosingValues] = useState<Record<number, number>>(() => {
+    const empty = receita.itens.reduce((acc, it) => ({ ...acc, [it.id]: 0 }), {});
+    try {
+      const raw = localStorage.getItem('mada_active_dosing_draft');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (
+          parsed &&
+          parsed.osNumero === os.numero &&
+          parsed.receitaId === receita.id &&
+          parsed.values
+        ) {
+          return { ...empty, ...parsed.values };
+        }
+      }
+    } catch {
+      // Ignora erro de parse
+    }
+    return empty;
+  });
+
+  useEffect(() => {
+    try {
+      const hasAny = Object.values(dosingValues).some((v) => v > 0);
+      if (hasAny) {
+        localStorage.setItem(
+          'mada_active_dosing_draft',
+          JSON.stringify({
+            osNumero: os.numero,
+            receitaId: receita.id,
+            volumeTotal: vol,
+            values: dosingValues,
+            updatedAt: new Date().toISOString(),
+          })
+        );
+      } else {
+        localStorage.removeItem('mada_active_dosing_draft');
+      }
+    } catch {
+      // Ignora erro de quota
+    }
+  }, [dosingValues, os.numero, receita.id, vol]);
 
   // Controle do teclado numérico tátil
   const [keypadItemId, setKeypadItemId] = useState<number | null>(null);
@@ -173,6 +232,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
     window.setTimeout(() => {
       setSubmitState('done');
       window.setTimeout(() => {
+        localStorage.removeItem('mada_active_dosing_draft');
         onCompleteDosing(dosingValues);
       }, 360);
     }, 220);
@@ -205,6 +265,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
   const handleConfirmDesperdicio = (reason: string) => {
     setCriticalItem(null);
+    localStorage.removeItem('mada_active_dosing_draft');
     onCompleteDosing(dosingValues, reason);
   };
 
@@ -236,20 +297,31 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
           gap: '10px',
         }}
       >
-        {/* 2. Cabeçalho Operacional Limpo (Sem excesso de pílulas diferentes) */}
+        {/* 2. Cabeçalho Operacional Limpo */}
         <header className="recipe-header-card" style={{ marginBottom: '2px' }}>
           <div className="recipe-title-group">
             <h2 className="recipe-main-title">
               Dosagem de Componentes — {receita.nome}
             </h2>
             <p className="recipe-sub-title">
-              {os.numero.startsWith('OS') ? os.numero : `OS #${os.numero}`} ({os.clienteNome}) • {marca.nome} • Operador: {operator.nome}
+              {os.numero.startsWith('OS') ? os.numero : `OS #${os.numero}`} ({os.clienteNome}) •{' '}
+              {marca.nome} • Operador: {operator.nome}
             </p>
           </div>
 
           <div className="dosing-header-right">
+            {restoredFromDraft && hasAnyValue && (
+              <span
+                className="os-meta-badge os-meta-badge--amber"
+                title="Valores de pesagem restaurados automaticamente após atualização da tela"
+              >
+                <RotateCcw size={12} style={{ marginRight: '4px' }} />
+                Rascunho recuperado
+              </span>
+            )}
             <span className="os-meta-badge os-meta-badge--neutral">
-              Meta: <CountNumber value={vol} format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`} />
+              Meta:{' '}
+              <CountNumber value={vol} format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`} />
             </span>
 
             <span
@@ -259,9 +331,17 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
             >
               Dosado:{' '}
               <strong>
-                <CountNumber value={totalDosed} format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`} />
+                <CountNumber
+                  value={totalDosed}
+                  format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`}
+                />
               </strong>{' '}
-              (<CountNumber value={Math.min(100, Math.round((totalDosed / vol) * 100))} format={(n) => `${Math.round(n)}%`} />)
+              (
+              <CountNumber
+                value={Math.min(100, Math.round((totalDosed / vol) * 100))}
+                format={(n) => `${Math.round(n)}%`}
+              />
+              )
             </span>
           </div>
         </header>
@@ -277,6 +357,9 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
             const isUnder = val > 0 && val < meta;
             const diff = val - meta;
             const isCatalyst = comp.item.papel.toLowerCase().includes('catalisador');
+            const { planoMultiLote } = comp;
+            const aloc0 = planoMultiLote.alocacoes[0];
+            const aloc1 = planoMultiLote.alocacoes[1];
 
             // Determina as classes de estado do card
             let cardStateClass = '';
@@ -330,6 +413,33 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                   </div>
                 </div>
 
+                {/* Guia de Complemento Multi-Lote FEFO quando a 1ª lata aberta não basta */}
+                {planoMultiLote.precisaComplementar && aloc0 && aloc1 && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '8px',
+                      padding: '6px 10px',
+                      borderRadius: '10px',
+                      background: 'rgba(245, 158, 11, 0.14)',
+                      border: '1px solid rgba(245, 158, 11, 0.4)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      color: '#fcd34d',
+                    }}
+                  >
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <Layers size={14} style={{ flexShrink: 0 }} />
+                      <span>
+                        Complemento FEFO: <strong>1º Esvaziar {aloc0.lote.codigo} ({aloc0.volumeAlocadoMl} ml)</strong> +{' '}
+                        <strong>2º Completar {aloc1.volumeAlocadoMl} ml de {aloc1.lote.codigo}</strong>
+                      </span>
+                    </span>
+                  </div>
+                )}
+
                 {/* Controles de Dosagem e Visor Central com Béquer Graduado */}
                 <div className="dosing-controls-row">
                   <BeakerVisualizer
@@ -381,13 +491,28 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
 
                 {/* Atalhos Rápidos de Simulação para Operador */}
                 <div className="dosing-shortcuts-row">
-                  <button
-                    type="button"
-                    className="dosing-shortcut-chip"
-                    onClick={() => handleValueChange(comp.item.id, val + 50)}
-                  >
-                    +50 ml
-                  </button>
+                  {planoMultiLote.precisaComplementar && aloc0 ? (
+                    <button
+                      type="button"
+                      className="dosing-shortcut-chip"
+                      onClick={() => handleValueChange(comp.item.id, aloc0.volumeAlocadoMl)}
+                      style={{
+                        borderColor: 'rgba(245, 158, 11, 0.45)',
+                        color: '#fbbf24',
+                      }}
+                      title={`Dosar todo o saldo da 1ª lata aberta (${aloc0.lote.codigo})`}
+                    >
+                      1ª Lata ({aloc0.volumeAlocadoMl} ml)
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="dosing-shortcut-chip"
+                      onClick={() => handleValueChange(comp.item.id, val + 50)}
+                    >
+                      +50 ml
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="dosing-shortcut-chip chip-target"
@@ -421,10 +546,10 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                     isExceeded
                       ? 'status-exceeded'
                       : isExactOrWithin
-                      ? 'status-within'
-                      : isUnder
-                      ? 'status-under'
-                      : 'status-default'
+                        ? 'status-within'
+                        : isUnder
+                          ? 'status-under'
+                          : 'status-default'
                   }`}
                 >
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
@@ -434,10 +559,15 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
                       </>
                     ) : isExactOrWithin ? (
                       <>
-                        <Check size={14} strokeWidth={2.6} /> {val === meta ? 'Meta exata atingida' : `Dentro da tolerância (+${diff} ml)`}
+                        <Check size={14} strokeWidth={2.6} />{' '}
+                        {val === meta ? 'Meta exata atingida' : `Dentro da tolerância (+${diff} ml)`}
                       </>
                     ) : isUnder ? (
-                      `Em dosagem no béquer (faltam ${meta - val} ml)`
+                      planoMultiLote.precisaComplementar && aloc0 && val === aloc0.volumeAlocadoMl ? (
+                        `1ª lata (${aloc0.lote.codigo}) esvaziada • complete +${meta - val} ml da 2ª lata`
+                      ) : (
+                        `Em dosagem no béquer (faltam ${meta - val} ml)`
+                      )
                     ) : (
                       'Aguardando dosagem no béquer...'
                     )}
@@ -575,7 +705,7 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
         />
       )}
 
-      {/* Barra Inferior Padronizada Idêntica a Peça & O.S. e Receita */}
+      {/* Barra Inferior Padronizada (Única etapa com o botão de Cancelar preparação) */}
       <footer className="os-bottom-bar-minimal">
         <div className="os-bottom-left">
           <button

@@ -1,6 +1,5 @@
 import React from 'react';
 import { AlertTriangle, X, ArrowLeft, Trash2 } from 'lucide-react';
-import { Button } from '../components/ui/Button';
 
 interface ModalCancelPrepProps {
   isOpen: boolean;
@@ -26,31 +25,31 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px',
-        background: 'rgba(0, 0, 0, 0.72)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        background: 'rgba(0, 0, 0, 0.78)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
       }}
     >
       <div
-        className="ds-modal-card ds-modal-standard"
+        className="ds-modal-card"
         style={{
-          maxWidth: '560px',
-          width: '100%',
-          borderRadius: '20px',
-          backgroundColor: 'var(--card)',
-          border: '1px solid var(--border)',
-          boxShadow: 'var(--glass-modal-shadow)',
+          maxWidth: '680px',
+          width: '94%',
+          borderRadius: '24px',
+          backgroundColor: '#131418',
+          border: '1px solid rgba(255, 255, 255, 0.14)',
+          boxShadow: '0 28px 72px -12px rgba(0, 0, 0, 0.90)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
         }}
       >
-        {/* Cabeçalho com Hairline Specular e Ícone Âmbar/Perigo */}
+        {/* Cabeçalho */}
         <header
           style={{
-            padding: '20px 24px',
-            background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%)',
-            borderBottom: '1px solid var(--border)',
+            padding: '22px 28px',
+            background: 'rgba(255, 255, 255, 0.02)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -63,14 +62,13 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
                 width: '48px',
                 height: '48px',
                 borderRadius: '14px',
-                background: 'var(--danger-soft)',
-                border: '1px solid var(--danger-border)',
-                color: 'var(--danger)',
+                background: 'rgba(239, 68, 68, 0.14)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                color: '#EF4444',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                boxShadow: '0 0 16px rgba(239, 68, 68, 0.20)',
               }}
               aria-hidden="true"
             >
@@ -81,10 +79,10 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
                 id="modal-cancel-prep-title"
                 style={{
                   margin: 0,
-                  fontSize: '20px',
-                  color: 'var(--text)',
+                  fontSize: '21px',
+                  color: '#FAFAFA',
                   fontWeight: 700,
-                  letterSpacing: '-0.02em',
+                  letterSpacing: '-0.015em',
                   lineHeight: 1.25,
                 }}
               >
@@ -94,8 +92,8 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
                 style={{
                   margin: '4px 0 0',
                   fontSize: '14px',
-                  color: 'var(--text-muted)',
-                  lineHeight: 1.3,
+                  color: '#A1A1AA',
+                  lineHeight: 1.2,
                 }}
               >
                 Ação de abandono da mistura em andamento
@@ -105,19 +103,18 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
 
           <button
             type="button"
-            className="ds-modal-close-btn"
             onClick={onClose}
             aria-label="Fechar janela"
             style={{
-              width: '44px',
-              height: '44px',
+              width: '42px',
+              height: '42px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               background: 'transparent',
-              border: '1px solid transparent',
-              borderRadius: '12px',
-              color: 'var(--text-tertiary)',
+              border: 'none',
+              borderRadius: '10px',
+              color: '#71717A',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
               flexShrink: 0,
@@ -127,13 +124,13 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
           </button>
         </header>
 
-        {/* Corpo com Aviso Operacional e Callout Destrutivo */}
-        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Corpo com Aviso Operacional */}
+        <div style={{ padding: '26px 28px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <p
             style={{
               fontSize: '16px',
-              color: 'var(--text)',
-              lineHeight: 1.55,
+              color: '#D4D4D8',
+              lineHeight: 1.6,
               margin: 0,
             }}
           >
@@ -142,67 +139,87 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
 
           <div
             style={{
-              padding: '14px 16px',
+              padding: '14px 18px',
               borderRadius: '12px',
               background: 'rgba(239, 68, 68, 0.08)',
-              border: '1px solid var(--danger-border)',
+              border: '1px solid rgba(239, 68, 68, 0.24)',
               display: 'flex',
-              alignItems: 'flex-start',
+              alignItems: 'center',
               gap: '12px',
             }}
           >
-            <Trash2 size={18} color="var(--danger)" style={{ marginTop: '2px', flexShrink: 0 }} />
-            <span style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+            <Trash2 size={18} color="#EF4444" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: '14px', color: '#A1A1AA', lineHeight: 1.45 }}>
               Todo o volume já colocado no béquer precisará ser descartado ou pesado novamente do zero.
             </span>
           </div>
         </div>
 
-        {/* Rodapé Tablet-First com Alvos de Toque Mínimos de 64px */}
+        {/* Rodapé Tablet Espaçoso com Grade 50/50 e Botões Alinhados */}
         <footer
           style={{
-            padding: '16px 24px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            padding: '20px 28px',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
             gap: '16px',
-            borderTop: '1px solid var(--border)',
-            background: 'rgba(255, 255, 255, 0.02)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            background: 'rgba(255, 255, 255, 0.015)',
           }}
         >
-          {/* Ação Destrutiva Segura (Hold-to-Confirm para evitar toque acidental de luva) */}
-          <Button
-            variant="danger"
-            size="md"
-            holdToConfirm={true}
-            onHoldConfirm={onConfirmCancel}
-            icon={<Trash2 size={18} />}
+          {/* Botão Secundário: Continuar Pesando */}
+          <button
+            type="button"
+            onClick={onClose}
             style={{
-              minHeight: 'var(--touch-min)',
-              minWidth: '220px',
-              fontSize: '15px',
+              minHeight: '64px',
+              padding: '0 20px',
+              borderRadius: '14px',
+              backgroundColor: '#1F2026',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#FAFAFA',
+              fontSize: '16px',
               fontWeight: 600,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              transition: 'all 0.15s ease',
+              fontFamily: 'inherit',
+              whiteSpace: 'nowrap',
             }}
           >
-            Descartar Lote
-          </Button>
+            <ArrowLeft size={18} strokeWidth={2.4} />
+            Continuar Pesando
+          </button>
 
-          {/* Ação Primária Positiva: Continuar Pesando com Destaque Ergonômico */}
-          <Button
-            variant="primary"
-            size="md"
-            onClick={onClose}
-            icon={<ArrowLeft size={18} />}
+          {/* Botão Destrutivo: Sim, Cancelar */}
+          <button
+            type="button"
+            onClick={onConfirmCancel}
             style={{
-              minHeight: 'var(--touch-min)',
-              minWidth: '200px',
+              minHeight: '64px',
+              padding: '0 20px',
+              borderRadius: '14px',
+              backgroundColor: '#DC2626',
+              border: '1px solid rgba(239, 68, 68, 0.5)',
+              color: '#FFFFFF',
               fontSize: '16px',
               fontWeight: 700,
-              flex: 1,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              boxShadow: '0 4px 18px rgba(220, 38, 38, 0.35)',
+              transition: 'all 0.15s ease',
+              fontFamily: 'inherit',
+              whiteSpace: 'nowrap',
             }}
           >
-            Continuar Pesando
-          </Button>
+            <Trash2 size={18} strokeWidth={2.4} />
+            Sim, Cancelar
+          </button>
         </footer>
       </div>
     </div>

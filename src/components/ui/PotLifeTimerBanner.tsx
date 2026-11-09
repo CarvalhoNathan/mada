@@ -273,7 +273,7 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
             gap: '8px',
           }}
         >
-          <Check size={16} strokeWidth={2.6} /> Concluir Aplicação
+          <Check size={16} strokeWidth={2.6} /> Concluir Aplicação na Pistola
         </button>
       </div>
     </aside>

@@ -9,6 +9,8 @@ export interface BeakerVisualizerProps {
   isExceeded: boolean;
   isWithin: boolean;
   isCatalyst?: boolean;
+  markerLabel?: string;
+  unitLabel?: string;
 }
 
 /**
@@ -23,6 +25,8 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
   isExceeded,
   isWithin,
   isCatalyst = false,
+  markerLabel = 'META',
+  unitLabel,
 }) => {
   const safeTarget = target > 0 ? target : 100;
   const ratio = value / safeTarget;
@@ -311,7 +315,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
             gap: '2px',
           }}
         >
-          <span>META</span>
+          <span>{markerLabel}</span>
           {isWithin && <Check size={11} strokeWidth={3} />}
           {isExceeded && <AlertTriangle size={11} strokeWidth={3} />}
         </div>
@@ -347,7 +351,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
             color: 'var(--text-muted)',
           }}
         >
-          {isExceeded ? 'Excesso' : isWithin ? 'Atingida' : isCatalyst ? 'Béquer PU' : 'Béquer'}
+          {unitLabel || (isExceeded ? 'Excesso' : isWithin ? 'Atingida' : isCatalyst ? 'Béquer PU' : 'Béquer')}
         </span>
       </div>
     </div>

@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import QRCode from 'qrcode';
 import {
   AlertTriangle,
   Trash2,
@@ -27,6 +28,8 @@ import {
 import { Button } from '../components/ui/Button';
 import { CountNumber } from '../components/ui/CountNumber';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
+import { BeakerVisualizer } from '../components/ui/BeakerVisualizer';
+import { NumericKeypad } from '../components/ui/NumericKeypad';
 import { calcularSaldoDevolucao } from '../domain/leftover';
 import {
   calcularProgressoDevolucao,
@@ -59,6 +62,7 @@ interface ScreenReturnProps {
   }) => Promise<void>;
   onMarkStickerPrinted?: (preparacaoId: string, itemId: string) => Promise<void>;
   onFinishPreparacao?: (preparacaoId: string) => Promise<void>;
+  onFinishApplication?: () => Promise<void>;
   onOpenOccurrenceModal?: () => void;
   onNavigate: (screen: 'dashboard' | 'os') => void;
   showToast: (msg: string, type?: 'info' | 'success' | 'warn' | 'danger') => void;
@@ -179,6 +183,8 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
     Record<string, Record<string, boolean>>
   >({});
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isKeypadOpen, setIsKeypadOpen] = useState(false);
+  const [keypadBuffer, setKeypadBuffer] = useState('');
 
   const returnVolume = useMemo(() => {
     if (!itemAtual) return 400;
@@ -201,7 +207,6 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
 
   const maxVolume = Math.max(1000, itemAtual?.saldoInicialLataMl || 1000);
   const saldo = calcularSaldoDevolucao(returnVolume, maxVolume, produtoAtual.densidade || 0.95);
-  const percent = saldo.porcentagemPreenchimento;
 
   const avaliacaoChecklist = avaliarChecklistProduto(
     produtoAtual,
@@ -271,6 +276,33 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
       ...prev,
       [itemAtual.id]: Math.max(0, Math.min(maxVolume, val)),
     }));
+  };
+
+  const handleOpenKeypad = () => {
+    if (!itemAtual || itemJaResolvido) return;
+    setKeypadBuffer(returnVolume > 0 ? String(returnVolume) : '');
+    setIsKeypadOpen(true);
+  };
+
+  const handleKeypadDigit = (digit: string) => {
+    if (keypadBuffer.length < 5) {
+      setKeypadBuffer((prev) => (prev === '0' ? digit : prev + digit));
+    }
+  };
+
+  const handleKeypadBackspace = () => {
+    setKeypadBuffer((prev) => prev.slice(0, -1));
+  };
+
+  const handleKeypadClear = () => {
+    setKeypadBuffer('');
+  };
+
+  const handleKeypadConfirm = () => {
+    const parsed = parseInt(keypadBuffer, 10) || 0;
+    setExactVolume(parsed);
+    setIsKeypadOpen(false);
+    setKeypadBuffer('');
   };
 
   const direcionarProximoPendente = (prep: Preparacao, currentId: string) => {
@@ -392,31 +424,6 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
     }
   };
 
-  // Impressão complementar de etiqueta térmica (NUNCA encerra a preparação automaticamente)
-  const handlePrintComponentSticker = async () => {
-    if (!preparacaoAtual || !itemAtual) return;
-    if (onMarkStickerPrinted) {
-      await onMarkStickerPrinted(preparacaoAtual.id, itemAtual.id);
-    }
-    showToast(
-      `🖨️ Etiqueta térmica ${
-        itemAtual.codigoEtiquetaGerada || `#SOBRA-${itemAtual.loteCodigo.replace(/^#+/, '')}`
-      } impressa para ${itemAtual.produtoNome}!`,
-      'info'
-    );
-  };
-
-  // Encerramento formal da preparação inteira (somente quando todos os componentes estiverem resolvidos)
-  const handleFinishAll = async () => {
-    if (!preparacaoAtual || !progresso.podeFinalizarPreparacao) {
-      showToast('Resolva todos os componentes pendentes antes de encerrar a preparação.', 'warn');
-      return;
-    }
-    if (onFinishPreparacao) {
-      await onFinishPreparacao(preparacaoAtual.id);
-    }
-  };
-
   const cleanLoteCode = itemAtual ? itemAtual.loteCodigo.replace(/^#+/, '') : 'SY-6032';
   const loteGeradoPreview =
     itemAtual?.loteSobraGeradoCodigo ||
@@ -429,6 +436,154 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
         minute: '2-digit',
       })
     : new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
+
+  useEffect(() => {
+    let active = true;
+    QRCode.toDataURL(loteGeradoPreview, {
+      width: 140,
+      margin: 1,
+      color: { dark: '#0F172A', light: '#FFFFFF' },
+    })
+      .then((url) => {
+        if (active) setQrDataUrl(url);
+      })
+      .catch(() => {
+        // Ignora erro de geração em ambiente de teste
+      });
+    return () => {
+      active = false;
+    };
+  }, [loteGeradoPreview]);
+
+  // Encerramento formal da preparação inteira (somente quando todos os componentes estiverem resolvidos)
+  const handleFinishAll = async () => {
+    if (!preparacaoAtual || !progresso.podeFinalizarPreparacao) {
+      showToast('Resolva todos os componentes pendentes antes de encerrar a preparação.', 'warn');
+      return;
+    }
+    if (onFinishPreparacao) {
+      await onFinishPreparacao(preparacaoAtual.id);
+    }
+  };
+
+  // Impressão complementar de etiqueta térmica Zebra ZT410 (100x50mm com QR Code real)
+  const handlePrintComponentSticker = async () => {
+    if (!preparacaoAtual || !itemAtual) return;
+    if (onMarkStickerPrinted) {
+      await onMarkStickerPrinted(preparacaoAtual.id, itemAtual.id);
+    }
+
+    try {
+      const printWin = window.open('', '_blank', 'width=520,height=360');
+      if (printWin) {
+        printWin.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Etiqueta Térmica ${codigoEtiquetaPreview}</title>
+  <style>
+    @page { size: 100mm 50mm; margin: 0; }
+    body {
+      margin: 0;
+      padding: 10px 14px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #0F172A;
+      background: #FFFFFF;
+      box-sizing: border-box;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #0F172A;
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+    }
+    .title { font-size: 13px; font-weight: 800; letter-spacing: 0.04em; }
+    .sub { font-size: 9px; color: #475569; }
+    .stamp {
+      font-size: 9px;
+      font-weight: 800;
+      border: 1.5px solid #0F172A;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+    .fefo-bar {
+      background: #FEF3C7;
+      border: 1px solid #D97706;
+      font-size: 9px;
+      font-weight: 800;
+      text-align: center;
+      padding: 2px 4px;
+      margin-bottom: 6px;
+    }
+    .grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .info p {
+      margin: 2px 0;
+      font-size: 10px;
+    }
+    .qr-col {
+      text-align: center;
+    }
+    .qr-col img {
+      width: 72px;
+      height: 72px;
+      display: block;
+      margin: 0 auto;
+    }
+    .qr-code-txt {
+      font-size: 9px;
+      font-weight: 800;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">MADA MARCENARIA • QUÍMICOS</div>
+      <div class="sub">RASTREABILIDADE FEFO • ${preparacaoAtual.id}</div>
+    </div>
+    <div class="stamp">${allChecked ? 'HOMOLOGADO ESTOQUE' : 'CONFERÊNCIA'}</div>
+  </div>
+  <div class="fefo-bar">PRIORIDADE FEFO: CONSUMIR ANTES DE VIOLAR LATAS LACRADAS</div>
+  <div class="grid">
+    <div class="info">
+      <p><strong>PRODUTO:</strong> ${itemAtual.produtoNome}</p>
+      <p><strong>SALDO RESTANTE:</strong> <strong>${returnVolume} ml</strong> (± ${saldo.pesoEstimadoGramas}g)</p>
+      <p><strong>LOTE ORIGEM:</strong> ${itemAtual.loteCodigo}</p>
+      <p><strong>LOTE SOBRA:</strong> ${loteGeradoPreview}</p>
+      <p><strong>ORIGEM:</strong> ${preparacaoAtual.ordemServicoNumero} (${preparacaoAtual.ambienteNome})</p>
+      <p><strong>OPERADOR:</strong> ${itemAtual.avaliadoPorNome || operator.nome} • ${dataFormatada}</p>
+    </div>
+    <div class="qr-col">
+      ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR Code" />` : ''}
+      <div class="qr-code-txt">${codigoEtiquetaPreview}</div>
+    </div>
+  </div>
+  <script>
+    window.onload = function() { window.print(); };
+  </script>
+</body>
+</html>`);
+        printWin.document.close();
+      }
+    } catch {
+      // Fallback caso o bloqueador de popups impeça a janela de impressão
+    }
+
+    showToast(
+      `🖨️ Etiqueta térmica ${codigoEtiquetaPreview} enviada para impressão (${itemAtual.produtoNome})!`,
+      'info'
+    );
+  };
 
   return (
     <>
@@ -600,7 +755,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
 
         {viewMode === 'pendentes' && preparacaoAtual && itemAtual && (
           <>
-            {/* Barra de Progresso e Seleção dos 4 Componentes da Preparação */}
+            {/* Barra de Progresso e Seleção dos 4 Componentes da Preparação (No padrão visual da Dosagem) */}
             <div
               role="tablist"
               aria-label="Componentes utilizados na preparação"
@@ -615,6 +770,8 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                 const isSelected = comp.id === itemAtual.id;
                 const badge = STATUS_BADGE_MAP[comp.status];
                 const cleanName = comp.produtoNome.replace(/^[0-9]+[º°]?\s*/, '');
+                const isResolvedOk =
+                  comp.status === 'DEVOLVIDO_AO_ESTOQUE' || comp.status === 'EMBALAGEM_ESGOTADA';
 
                 return (
                   <button
@@ -626,31 +783,63 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                     style={{
                       minHeight: '68px',
                       padding: '10px 14px',
-                      borderRadius: '12px',
-                      background: isSelected ? 'rgba(255, 255, 255, 0.10)' : 'var(--card)',
+                      borderRadius: '14px',
+                      background: isSelected
+                        ? isResolvedOk
+                          ? 'rgba(16, 185, 129, 0.12)'
+                          : 'rgba(255, 255, 255, 0.08)'
+                        : 'var(--card)',
                       border: isSelected
-                        ? '2px solid var(--primary)'
+                        ? `2px solid ${isResolvedOk ? 'var(--ok)' : 'var(--primary)'}`
                         : `1.5px solid ${comp.status === 'PENDENTE' ? 'var(--border)' : badge.border}`,
+                      boxShadow: isSelected
+                        ? isResolvedOk
+                          ? '0 0 18px rgba(16, 185, 129, 0.18)'
+                          : '0 0 18px rgba(59, 130, 246, 0.14)'
+                        : 'none',
                       color: 'var(--text)',
                       cursor: 'pointer',
                       textAlign: 'left',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      gap: '4px',
+                      gap: '6px',
                       fontFamily: 'inherit',
                       transition: 'all 0.15s ease',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>
-                        {idx + 1}. {cleanName}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                        <span
+                          className="dosing-step-badge"
+                          style={{
+                            width: '22px',
+                            height: '22px',
+                            fontSize: '12px',
+                            borderColor: isResolvedOk ? 'var(--ok)' : undefined,
+                            color: isResolvedOk ? 'var(--ok)' : undefined,
+                          }}
+                        >
+                          {idx + 1}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            color: 'var(--text)',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {cleanName}
+                        </span>
+                      </div>
                       <span
                         style={{
                           padding: '2px 8px',
                           borderRadius: '999px',
-                          fontSize: '12px',
+                          fontSize: '11px',
                           fontWeight: 800,
                           background: badge.bg,
                           border: `1px solid ${badge.border}`,
@@ -665,16 +854,16 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
-                        fontSize: '13px',
+                        fontSize: '12px',
                         color: 'var(--text-muted)',
                         fontFamily: 'var(--font-mono)',
                       }}
                     >
-                      <span>{comp.loteCodigo}</span>
+                      <span>Lote: {comp.loteCodigo}</span>
                       <span>
                         {comp.status === 'PENDENTE'
-                          ? `Usado: ${comp.quantidadeRetiradaMl}ml`
-                          : `${comp.saldoRestanteInformadoMl}ml`}
+                          ? `Retirado: ${comp.quantidadeRetiradaMl} ml`
+                          : `Saldo: ${comp.saldoRestanteInformadoMl} ml`}
                       </span>
                     </div>
                   </button>
@@ -682,31 +871,45 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
               })}
             </div>
 
-            {/* Área Principal 2 Colunas: Esquerda (Inspeção + Volume + Checklist do Produto) | Direita (Etiqueta Térmica + Destino) */}
+            {/* Área Principal 2 Colunas: Esquerda (Card no padrão do Béquer + Checklist) | Direita (Etiqueta Térmica + Destino) */}
             <div className="return-layout">
-              {/* Coluna Esquerda: Embalagem em Foco e Checklist Homologado */}
-              <div className="bottle-visual-box">
-                <div
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '6px',
-                    flexWrap: 'wrap',
-                    gap: '8px',
-                  }}
-                >
-                  <div>
-                    <span style={{ fontWeight: 800, fontSize: '17px', color: 'var(--text)', display: 'block' }}>
-                      {itemAtual.produtoNome}
+              {/* Coluna Esquerda: Embalagem em Foco no mesmo padrão de DosingCard + BeakerVisualizer */}
+              <article
+                className={`dosing-card ${
+                  itemAtual.status === 'DESCARTADO_COMO_REFUGO'
+                    ? 'is-exceeded'
+                    : allChecked || isZeroVolume
+                    ? 'is-within'
+                    : 'is-under'
+                } ${itemAtual.papel.toLowerCase().includes('catalisador') ? 'is-catalyst' : ''}`}
+                style={{ justifyContent: 'flex-start', gap: '10px' }}
+              >
+                {/* 1. Cabeçalho Idêntico ao Card de Dosagem */}
+                <div className="dosing-card-header">
+                  <div className="dosing-card-title-group">
+                    <span className="dosing-step-badge">
+                      {preparacaoAtual.itensDevolucao.findIndex((i) => i.id === itemAtual.id) + 1}
                     </span>
-                    <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-                      Retirado na dosagem: <strong>{itemAtual.quantidadeRetiradaMl} ml</strong> • Embalagem:{' '}
-                      <span style={{ fontFamily: 'var(--font-mono)' }}>{itemAtual.embalagemId || itemAtual.loteCodigo}</span>
-                    </span>
+                    <div>
+                      <h3 className="dosing-chem-name">{itemAtual.produtoNome}</h3>
+                      <div className="dosing-chem-code">
+                        <span>Cód: {itemAtual.codigoProduto}</span>
+                        <span>•</span>
+                        <span>Lote: {itemAtual.loteCodigo}</span>
+                        <span>•</span>
+                        <span>Emb: {itemAtual.embalagemId || itemAtual.loteCodigo}</span>
+                      </div>
+                    </div>
                   </div>
-                  <span className="os-meta-badge os-meta-badge--primary">{itemAtual.loteCodigo}</span>
+
+                  <div className="dosing-target-box">
+                    <span className="os-meta-badge os-meta-badge--neutral">
+                      Retirado: {itemAtual.quantidadeRetiradaMl.toLocaleString('pt-BR')} ml
+                    </span>
+                    <div className="dosing-target-weight">
+                      Saldo inicial: {maxVolume.toLocaleString('pt-BR')} ml
+                    </div>
+                  </div>
                 </div>
 
                 {/* Alerta quando o produto não possui configuração técnica homologada */}
@@ -715,124 +918,165 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                     style={{
                       width: '100%',
                       padding: '8px 12px',
-                      marginBottom: '6px',
                       borderRadius: '10px',
                       background: 'rgba(245, 158, 11, 0.14)',
                       border: '1px solid rgba(245, 158, 11, 0.45)',
                       color: '#FBBF24',
-                      fontSize: '14px',
+                      fontSize: '13px',
                       fontWeight: 600,
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
                     }}
                   >
-                    <FileWarning size={16} />
+                    <FileWarning size={15} />
                     <span>
                       Parâmetros específicos pendentes de homologação pelo responsável técnico. Usando checklist padrão.
                     </span>
                   </div>
                 )}
 
-                {/* Frasco + Stepper de Saldo Restante + Atalho Sem Sobra (0 ml) */}
-                <div
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '16px',
-                    margin: '4px 0',
-                  }}
-                >
-                  <div className="bottle-wrapper" style={{ margin: 0 }}>
-                    <div>
-                      <div className="bottle-neck" />
-                      <div className="bottle-container" style={{ height: '105px', width: '96px' }}>
-                        <div className="bottle-liquid" style={{ height: `${percent}%` }}>
-                          <span>{returnVolume} ml</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                {/* 2. Linha Central de Controles Idêntica à Dosagem (BeakerVisualizer + Botões Quadrados + Visor Central Tátil) */}
+                <div className="dosing-controls-row">
+                  <BeakerVisualizer
+                    value={returnVolume}
+                    target={maxVolume}
+                    toleranceMax={maxVolume}
+                    isExceeded={itemAtual.status === 'DESCARTADO_COMO_REFUGO'}
+                    isWithin={allChecked || isZeroVolume}
+                    isCatalyst={itemAtual.papel.toLowerCase().includes('catalisador')}
+                    markerLabel="LATA"
+                    unitLabel={isZeroVolume ? 'Esgotada' : allChecked ? 'Aprovada' : 'Sobra'}
+                  />
 
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '6px' }}>
-                      Informe o saldo restante na embalagem:
+                  <button
+                    type="button"
+                    className="dosing-control-btn"
+                    onClick={() => adjustVolume(-50)}
+                    disabled={itemJaResolvido || returnVolume <= 0}
+                    aria-label="Diminuir 50 ml"
+                  >
+                    −
+                  </button>
+
+                  <div
+                    className="dosing-value-display"
+                    onClick={handleOpenKeypad}
+                    role="button"
+                    tabIndex={0}
+                    title="Toque para digitar o saldo restante no teclado numérico"
+                  >
+                    <div className="dosing-val-num-row">
+                      <CountNumber value={returnVolume} className="dosing-val-num" />
+                      <span className="dosing-val-unit">ml</span>
+                    </div>
+                    <span className="dosing-val-sub">
+                      {returnVolume > 0
+                        ? `~ ${saldo.pesoEstimadoGramas} g restantes • Toque p/ digitar`
+                        : '0 ml (Sem sobra) • Toque p/ digitar'}
                     </span>
-                    <div className="sobra-stepper-box" style={{ margin: '4px 0' }}>
-                      <button
-                        type="button"
-                        className="btn-stepper-round"
-                        onClick={() => adjustVolume(-50)}
-                        disabled={itemJaResolvido}
-                        aria-label="Diminuir 50ml"
-                      >
-                        −
-                      </button>
-                      <div className="sobra-value-center" style={{ minWidth: '185px' }}>
-                        <CountNumber value={returnVolume} className="sobra-val-num" />
-                        <span className="sobra-val-unit">ml restantes</span>
-                      </div>
-                      <button
-                        type="button"
-                        className="btn-stepper-round"
-                        onClick={() => adjustVolume(50)}
-                        disabled={itemJaResolvido}
-                        aria-label="Aumentar 50ml"
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    {!itemJaResolvido && returnVolume > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setExactVolume(0)}
-                        style={{
-                          marginTop: '6px',
-                          padding: '5px 12px',
-                          borderRadius: '8px',
-                          border: '1px solid var(--border)',
-                          background: 'rgba(255, 255, 255, 0.06)',
-                          color: 'var(--text-muted)',
-                          fontSize: '13px',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Lata esgotou / Sem sobra (0 ml)
-                      </button>
-                    )}
                   </div>
+
+                  <button
+                    type="button"
+                    className="dosing-control-btn"
+                    onClick={() => adjustVolume(50)}
+                    disabled={itemJaResolvido || returnVolume >= maxVolume}
+                    aria-label="Aumentar 50 ml"
+                  >
+                    +
+                  </button>
                 </div>
 
-                {/* Quando o saldo restante é 0 ml (não teve sobra), dispensa o checklist e orienta a baixa direta */}
+                {/* 3. Atalhos Rápidos no mesmo padrão dos chips da Dosagem */}
+                {!itemJaResolvido && (
+                  <div className="dosing-shortcuts-row">
+                    <button
+                      type="button"
+                      className="dosing-shortcut-chip"
+                      onClick={() => adjustVolume(50)}
+                    >
+                      +50 ml
+                    </button>
+                    <button
+                      type="button"
+                      className="dosing-shortcut-chip chip-target"
+                      onClick={() => setExactVolume(itemAtual.saldoRestanteInformadoMl)}
+                    >
+                      Saldo Sugerido ({itemAtual.saldoRestanteInformadoMl} ml)
+                    </button>
+                    <button
+                      type="button"
+                      className="dosing-shortcut-chip"
+                      onClick={() => setExactVolume(0)}
+                      style={
+                        isZeroVolume
+                          ? {
+                              borderColor: 'var(--ok)',
+                              color: '#4ade80',
+                              background: 'rgba(16, 185, 129, 0.14)',
+                            }
+                          : undefined
+                      }
+                    >
+                      Lata Esgotou / Sem Sobra (0 ml)
+                    </button>
+                  </div>
+                )}
+
+                {/* 4. Barra de Status Inferior no mesmo padrão do DosingCard */}
+                <div
+                  className={`dosing-status-bar ${
+                    itemAtual.status === 'DESCARTADO_COMO_REFUGO'
+                      ? 'status-exceeded'
+                      : allChecked || isZeroVolume
+                      ? 'status-within'
+                      : 'status-under'
+                  }`}
+                >
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    {isZeroVolume ? (
+                      <>
+                        <Check size={14} strokeWidth={2.6} /> Embalagem esgotada (0 ml) — pronta para baixa direta
+                      </>
+                    ) : allChecked ? (
+                      <>
+                        <Check size={14} strokeWidth={2.6} /> Checklist aprovado ({criteriosProduto.length}/{criteriosProduto.length}) — liberado p/ estoque
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle size={14} strokeWidth={2.4} /> Checklist pendente ({criteriosProduto.length - avaliacaoChecklist.criteriosPendentes.length}/{criteriosProduto.length})
+                      </>
+                    )}
+                  </span>
+                  <span>Capacidade máx: {maxVolume} ml</span>
+                </div>
+
+                {/* 5. Quando o saldo restante é 0 ml (não teve sobra), dispensa o checklist e orienta a baixa direta */}
                 {isZeroVolume ? (
                   <div
                     style={{
                       width: '100%',
-                      marginTop: '8px',
-                      padding: '16px 18px',
-                      borderRadius: '14px',
-                      background: 'rgba(16, 185, 129, 0.12)',
-                      border: '1.5px solid rgba(16, 185, 129, 0.45)',
+                      padding: '14px 16px',
+                      borderRadius: '12px',
+                      background: 'rgba(16, 185, 129, 0.10)',
+                      border: '1px solid rgba(16, 185, 129, 0.40)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '6px',
+                      gap: '4px',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4ADE80', fontWeight: 800, fontSize: '16px' }}>
-                      <PackageCheck size={20} strokeWidth={2.4} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4ADE80', fontWeight: 800, fontSize: '15px' }}>
+                      <PackageCheck size={18} strokeWidth={2.4} />
                       <span>Embalagem Esgotada • Nenhuma sobra física (0 ml)</span>
                     </div>
-                    <p style={{ margin: 0, fontSize: '14px', color: 'var(--text)', lineHeight: 1.45 }}>
-                      Todo o volume desta embalagem ({itemAtual.quantidadeRetiradaMl} ml) foi consumido na preparação. Não há sobra para retornar à prateleira nem necessidade de preencher o checklist de armazenamento.
+                    <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      Todo o volume desta embalagem ({itemAtual.quantidadeRetiradaMl} ml) foi consumido na preparação. Não há sobra para retornar à prateleira nem necessidade de preencher o checklist.
                     </p>
                   </div>
                 ) : (
                   /* Checklist de Integridade Química Homologado por Produto (somente quando há sobra > 0 ml) */
-                  <div className="checklist-container">
+                  <div className="checklist-container" style={{ marginTop: '2px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span className="checklist-title">
                         Checklist Homologado ({produtoAtual.papelPadrao.toUpperCase()}):
@@ -845,7 +1089,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                         }}
                       >
                         {allChecked
-                          ? '✓ Aprovado para retornar ao estoque'
+                          ? '✓ Aprovado p/ estoque'
                           : `Pendente (${criteriosProduto.length - avaliacaoChecklist.criteriosPendentes.length}/${criteriosProduto.length})`}
                       </span>
                     </div>
@@ -855,12 +1099,12 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                         key={item.id}
                         className={`checklist-row-card ${checklist[item.id] ? 'checked' : ''}`}
                         onClick={() => toggleChecklistItem(item.id)}
-                        style={{ minHeight: '52px', padding: '8px 14px' }}
+                        style={{ minHeight: '48px', padding: '6px 12px' }}
                       >
-                        <div className="checklist-checkbox-box" style={{ width: '30px', height: '30px', fontSize: '17px' }}>
+                        <div className="checklist-checkbox-box" style={{ width: '28px', height: '28px', fontSize: '15px' }}>
                           ✓
                         </div>
-                        <span className="checklist-label" style={{ fontSize: '15px' }}>
+                        <span className="checklist-label" style={{ fontSize: '14px' }}>
                           {item.label}
                         </span>
                       </div>
@@ -869,13 +1113,13 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                     {!allChecked && avaliacaoChecklist.motivoReprovacao && (
                       <div
                         style={{
-                          marginTop: '4px',
-                          padding: '8px 12px',
+                          marginTop: '2px',
+                          padding: '7px 12px',
                           borderRadius: '8px',
                           background: 'rgba(239, 68, 68, 0.12)',
                           border: '1px solid rgba(239, 68, 68, 0.35)',
                           color: '#FCA5A5',
-                          fontSize: '14px',
+                          fontSize: '13px',
                           fontWeight: 600,
                         }}
                       >
@@ -884,7 +1128,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                     )}
                   </div>
                 )}
-              </div>
+              </article>
 
               {/* Coluna Direita: Etiqueta Térmica Individual & Ações de Destino do Componente */}
               <div className="return-right-col">
@@ -1000,9 +1244,22 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                     </div>
 
                     <div className="sticker-qr-box">
-                      <svg viewBox="0 0 100 100" fill="black">
-                        <path d="M0 0h30v30H0zm5 5h20v20H5zm35-5h30v30H40zm5 5h20v20H45zM0 40h30v30H0zm5 5h20v20H5zm45 5h10v10H50zm15 0h15v15H65zm0 25h10v10H65zm-25 0h10v10H40zm15 15h10v10H55z" />
-                      </svg>
+                      {qrDataUrl ? (
+                        <img
+                          src={qrDataUrl}
+                          alt={`QR Code escaneável ${loteGeradoPreview}`}
+                          style={{
+                            width: '76px',
+                            height: '76px',
+                            display: 'block',
+                            borderRadius: '4px',
+                          }}
+                        />
+                      ) : (
+                        <svg viewBox="0 0 100 100" fill="black">
+                          <path d="M0 0h30v30H0zm5 5h20v20H5zm35-5h30v30H40zm5 5h20v20H45zM0 40h30v30H0zm5 5h20v20H5zm45 5h10v10H50zm15 0h15v15H65zm0 25h10v10H65zm-25 0h10v10H40zm15 15h10v10H55z" />
+                        </svg>
+                      )}
                       <span
                         style={{
                           fontSize: '11px',
@@ -1468,6 +1725,114 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
           </div>
         )}
       </div>
+
+      {/* Modal de Teclado Numérico Direto (NumericKeypad idêntico à Dosagem em Béquer) */}
+      {isKeypadOpen && itemAtual && (
+        <div
+          className="ds-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 90,
+            padding: '16px',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div
+            className="ds-modal-card ds-modal-standard"
+            style={{
+              maxWidth: '440px',
+              width: '100%',
+              backgroundColor: 'var(--card)',
+              border: '1.5px solid var(--border)',
+              borderRadius: '20px',
+              padding: '20px 24px',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.6)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '16px',
+              }}
+            >
+              <div>
+                <h3 style={{ margin: 0, fontSize: '20px', color: 'var(--text)', fontWeight: 700 }}>
+                  Digitar Saldo Restante
+                </h3>
+                <span style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
+                  {itemAtual.produtoNome} ({itemAtual.loteCodigo})
+                </span>
+              </div>
+              <button
+                type="button"
+                className="ds-modal-close-btn"
+                onClick={() => setIsKeypadOpen(false)}
+                style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-muted)',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              style={{
+                height: '74px',
+                background: 'rgba(0, 0, 0, 0.35)',
+                border: '2px solid var(--primary)',
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '44px',
+                fontWeight: 800,
+                color: 'var(--text)',
+                marginBottom: '16px',
+              }}
+            >
+              {keypadBuffer || '0'}{' '}
+              <span
+                style={{
+                  fontSize: '22px',
+                  color: 'var(--text-muted)',
+                  marginLeft: '8px',
+                  fontWeight: 600,
+                }}
+              >
+                ml
+              </span>
+            </div>
+
+            <NumericKeypad
+              onDigit={handleKeypadDigit}
+              onBackspace={handleKeypadBackspace}
+              onClear={handleKeypadClear}
+              onConfirm={handleKeypadConfirm}
+              confirmLabel="Salvar Saldo"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Barra Inferior Fixa: Voltar (Preservando Estado para Retomada) e Encerrar Preparação (Bloqueado se houver pendências) */}
       <footer className="os-bottom-bar-minimal">
