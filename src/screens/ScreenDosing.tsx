@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, Check, RotateCcw, Layers } from 'lucide-react';
+import { AlertTriangle, Check, RotateCcw, Layers, Box } from 'lucide-react';
 import { RecipeState, Operator, OrdemServico, Receita, Lote } from '../types';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
 import { BeakerVisualizer } from '../components/ui/BeakerVisualizer';
+import { ModalBatelada3D } from '../components/ui/ModalBatelada3D';
 import { CountNumber } from '../components/ui/CountNumber';
 import { ModalCriticalExcess } from './ModalCriticalExcess';
 import { calcularFracoesMistura } from '../domain/mixture';
@@ -158,6 +159,9 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
     diff: number;
     cost: number;
   } | null>(null);
+
+  // Controle do Visualizador Volumétrico 3D (Three.js)
+  const [show3DModal, setShow3DModal] = useState<boolean>(false);
 
   // Estado de confirmação no próprio botão (Stageshow States + Check)
   const [submitState, setSubmitState] = useState<'idle' | 'saving' | 'done'>('idle');
@@ -343,6 +347,30 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
               />
               )
             </span>
+
+            {/* Botão de Visualização 3D Volumétrica da Mistura */}
+            <button
+              type="button"
+              className="os-meta-badge"
+              onClick={() => setShow3DModal(true)}
+              style={{
+                cursor: 'pointer',
+                backgroundColor: 'rgba(59, 130, 246, 0.16)',
+                border: '1px solid rgba(59, 130, 246, 0.45)',
+                color: '#93c5fd',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontWeight: 600,
+                transition: 'all 0.15s ease',
+              }}
+              title="Abrir Béquer 3D com a proporção das camadas da batelada"
+            >
+              <Box size={14} style={{ flexShrink: 0 }} />
+              <span>Visão 3D</span>
+            </button>
           </div>
         </header>
 
@@ -704,6 +732,27 @@ export const ScreenDosing: React.FC<ScreenDosingProps> = ({
           excessCost={criticalItem.cost}
         />
       )}
+
+      {/* Modal Volumétrico 3D Three.js da Batelada */}
+      <ModalBatelada3D
+        isOpen={show3DModal}
+        onClose={() => setShow3DModal(false)}
+        layers={componentes.map((c) => {
+          const val = dosingValues[c.item.id] || 0;
+          return {
+            id: c.item.id,
+            label: c.item.produtoNome,
+            volume: val,
+            target: c.metaMl,
+            role: c.item.papel,
+            isExceeded: excedeTolerancia(val, c.metaMl, 0.05),
+          };
+        })}
+        totalTargetMl={vol}
+        totalDosedMl={totalDosed}
+        receitaNome={receita.nome}
+        osNumero={os.numero.startsWith('OS') ? os.numero : `OS #${os.numero}`}
+      />
 
       {/* Barra Inferior Padronizada (Única etapa com o botão de Cancelar preparação) */}
       <footer className="os-bottom-bar-minimal">
