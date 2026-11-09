@@ -1,6 +1,5 @@
 import React from 'react';
-import { AlertTriangle, MapPin, X } from 'lucide-react';
-import { Button } from '../components/ui/Button';
+import { AlertTriangle, MapPin, X, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Lote } from '../types';
 import { MOCK_LOTES } from '../data/mock/mockData';
 import { ordenarLotesFEFO, formatarStatusValidade } from '../domain/fefo';
@@ -25,111 +24,140 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
   );
 
   return (
-    <div className="ds-modal-backdrop" role="dialog" aria-modal="true">
-      <div className="ds-modal-card ds-modal-standard" style={{ maxWidth: '720px' }}>
-        <header className="ds-modal-header" style={{ background: 'var(--card-hover)', borderBottom: '1px solid var(--border)' }}>
-          <div className="ds-modal-header-icon" style={{ background: 'var(--warn-soft)', color: 'var(--warn)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <AlertTriangle size={22} strokeWidth={2.4} />
-          </div>
-          <div className="ds-modal-header-titles">
-            <h2 className="ds-modal-title" style={{ color: 'var(--warn)' }}>
-              Latas com Prioridade de Uso ("Use Primeiro")
-            </h2>
-            <p className="ds-modal-sub">
-              Produtos já abertos no almoxarifado que precisam ser consumidos antes de abrir novas latas
-            </p>
+    <div
+      className="ds-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div
+        className="os-modal-card-apple"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '680px',
+          width: '92%',
+          padding: '22px 24px',
+          gap: '16px',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
+        }}
+      >
+        {/* Cabeçalho Apple HIG Sheet */}
+        <div className="os-modal-header-apple">
+          <div className="os-modal-header-left">
+            <div
+              className="os-modal-icon-badge"
+              aria-hidden="true"
+              style={{
+                background: 'rgba(245, 158, 11, 0.14)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                color: '#fbbf24',
+              }}
+            >
+              <AlertTriangle size={22} strokeWidth={2.4} />
+            </div>
+            <div>
+              <h3 className="os-modal-title-apple">
+                <span>Latas com Prioridade de Uso</span>
+                <span className="os-modal-count-pill">{lotesPrioritarios.length} latas</span>
+              </h3>
+              <p className="os-modal-subtitle-apple">
+                Produtos já abertos no almoxarifado que precisam ser consumidos antes de abrir novas embalagens (FEFO).
+              </p>
+            </div>
           </div>
           <button
             type="button"
-            className="ds-modal-close-btn"
+            className="os-modal-close-apple"
             onClick={onClose}
             aria-label="Fechar janela"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            <X size={20} />
+            <X size={18} strokeWidth={2.4} />
           </button>
-        </header>
+        </div>
 
-        <div className="ds-modal-body" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {lotesPrioritarios.map((lote) => {
+        {/* Lista de Latas Prioritárias em Inset Grouped Cards */}
+        <div className="os-modal-list-container" style={{ maxHeight: '52vh' }}>
+          {lotesPrioritarios.length === 0 ? (
+            <div className="os-list-empty-feedback" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+              <CheckCircle2 size={36} color="#10B981" />
+              <div style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>Nenhuma lata aberta pendente</div>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
+                Todas as embalagens no estoque estão lacradas ou dentro da validade adequada.
+              </p>
+            </div>
+          ) : (
+            lotesPrioritarios.map((lote) => {
               const statusVal = formatarStatusValidade(lote.validade, lote.diasAberto);
+              const isUrgent = statusVal.nivel === 'urgente';
 
               return (
                 <div
                   key={lote.codigo}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '14px 18px',
-                    borderRadius: '10px',
-                    background: 'var(--card)',
-                    border: `1px solid ${statusVal.nivel === 'urgente' ? 'var(--danger-border)' : 'var(--border)'}`,
-                  }}
+                  className={`usefirst-card ${isUrgent ? 'usefirst-card--urgent' : ''}`}
                 >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--text)' }}>
-                        {lote.produtoNome}
-                      </span>
+                  <div className="usefirst-info">
+                    <div className="usefirst-top-row">
+                      <span className="usefirst-prod-name">{lote.produtoNome}</span>
+                      <span className="usefirst-badge-code">{lote.codigo}</span>
                       <span
-                        style={{
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          background: 'var(--warn-soft)',
-                          color: 'var(--warn)',
-                          border: '1px solid var(--warn)',
-                        }}
-                      >
-                        {lote.codigo}
-                      </span>
-                      <span
-                        style={{
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          background: statusVal.nivel === 'urgente' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                          color: statusVal.nivel === 'urgente' ? '#f87171' : '#fbbf24',
-                          border: `1px solid ${statusVal.nivel === 'urgente' ? '#ef4444' : '#f59e0b'}`,
-                        }}
+                        className={`usefirst-badge-status ${
+                          isUrgent ? 'usefirst-badge-status--urgent' : 'usefirst-badge-status--warn'
+                        }`}
                       >
                         {statusVal.rotulo}
                       </span>
                     </div>
-                    <div style={{ fontSize: '14px', color: 'var(--text-muted)', display: 'flex', gap: '14px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                        <MapPin size={13} strokeWidth={2.4} color="var(--primary)" /> {lote.prateleira}
+                    <div className="usefirst-meta-row">
+                      <span className="usefirst-meta-shelf">
+                        <MapPin size={13} strokeWidth={2.4} color="#60a5fa" /> {lote.prateleira}
                       </span>
-                      <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Saldo: {lote.quantidadeAtual} ml restantes</span>
+                      <span className="usefirst-meta-sep">•</span>
+                      <span>
+                        Saldo: <strong className="usefirst-meta-balance">{lote.quantidadeAtual} ml</strong> restantes
+                      </span>
                     </div>
                   </div>
 
-                  <Button
-                    variant="secondary"
-                    size="md"
+                  <button
+                    type="button"
+                    className="usefirst-btn-select"
                     onClick={() => {
                       if (onSelectBatch) onSelectBatch(lote.codigo);
                       onClose();
                     }}
-                    style={{ minWidth: '120px' }}
+                    title={`Usar lote ${lote.codigo} na preparação`}
                   >
-                    Usar este lote
-                  </Button>
+                    <span>Usar este lote</span>
+                    <ArrowRight size={15} strokeWidth={2.4} />
+                  </button>
                 </div>
               );
-            })}
-          </div>
+            })
+          )}
         </div>
 
-        <footer className="ds-modal-footer" style={{ padding: '16px 20px', borderTop: '1px solid var(--border)' }}>
-          <Button variant="primary" size="md" onClick={onClose} style={{ minWidth: '160px' }}>
+        {/* Rodapé Apple Sheet */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '4px' }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              height: '42px',
+              padding: '0 22px',
+              borderRadius: '12px',
+              background: 'rgba(255, 255, 255, 0.07)',
+              border: '1px solid rgba(255, 255, 255, 0.14)',
+              color: 'var(--text)',
+              fontWeight: 600,
+              fontSize: '14px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
             Entendido, fechar
-          </Button>
-        </footer>
+          </button>
+        </div>
       </div>
     </div>
   );

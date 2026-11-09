@@ -1078,3 +1078,163 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ==========================================================================
+   Priority Cans Modal ("Use Primeiro" / FEFO) - Apple Sheet Layout
+   ========================================================================== */
+.usefirst-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.usefirst-card:hover {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.usefirst-card--urgent {
+  border-color: rgba(239, 68, 68, 0.38);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.usefirst-card--urgent:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+.usefirst-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.usefirst-top-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.usefirst-prod-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.usefirst-badge-code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.usefirst-badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.usefirst-badge-status--urgent {
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+.usefirst-badge-status--warn {
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.usefirst-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.usefirst-meta-shelf {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+}
+
+.usefirst-meta-sep {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.usefirst-meta-balance {
+  color: #60a5fa;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.usefirst-btn-select {
+  height: 38px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #090a0f;
+  border: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-font-smoothing: antialiased;
+}
+
+.usefirst-btn-select:hover {
+  background: #f4f4f5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.usefirst-btn-select:active {
+  transform: scale(0.97);
+}
+
