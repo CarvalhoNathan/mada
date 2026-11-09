@@ -12,15 +12,17 @@ export interface QrScannerModalProps {
 
 interface QuickOption {
   code: string;
-  label: string;
   badge: string;
+  badgeType: 'os' | 'lote' | 'sobra';
+  title: string;
+  desc: string;
 }
 
 const QUICK_SCAN_OPTIONS: QuickOption[] = [
-  { code: 'OS #8841', label: 'OS #8841 — Residência Fontana (Cozinha Gourmet)', badge: 'OS' },
-  { code: 'OS #8843', label: 'OS #8843 — Residência Fontana (Suíte Master)', badge: 'OS' },
-  { code: '#SY-7410', label: 'Embalagem #SY-7410 — Catalisador PU Médio (250ml)', badge: 'Embalagem' },
-  { code: '#SOBRA-SY-8821', label: 'Sobra #SY-8821 — Verniz PU 4:1 (400ml restantes)', badge: 'Sobra' },
+  { code: 'OS #8841', badge: 'OS', badgeType: 'os', title: 'OS #8841', desc: 'Residência Fontana • Cozinha' },
+  { code: 'OS #8843', badge: 'OS', badgeType: 'os', title: 'OS #8843', desc: 'Residência Fontana • Suíte' },
+  { code: '#SY-7410', badge: 'Lote', badgeType: 'lote', title: '#SY-7410', desc: 'Catalisador PU Médio (250ml)' },
+  { code: '#SOBRA-SY-8821', badge: 'Sobra', badgeType: 'sobra', title: 'Sobra #8821', desc: 'Verniz PU 4:1 (400ml)' },
 ];
 
 export const QrScannerModal: React.FC<QrScannerModalProps> = ({
@@ -301,6 +303,8 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
           width: '92%',
           padding: '22px 24px',
           gap: '14px',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
         }}
       >
         {/* Cabeçalho do Scanner no padrão Apple Sheet */}
@@ -581,47 +585,22 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
+            <div className="qr-quick-grid">
               {QUICK_SCAN_OPTIONS.map((opt) => (
                 <button
                   key={opt.code}
                   type="button"
-                  className="os-list-card"
+                  className="qr-quick-btn"
                   onClick={() => handleDetected(opt.code)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 12px',
-                    minHeight: '48px',
-                    borderRadius: '12px',
-                  }}
-                  title={opt.label}
+                  title={`${opt.title}: ${opt.desc}`}
                 >
-                  <span
-                    className="os-badge-code"
-                    style={{
-                      fontSize: '11px',
-                      padding: '2px 7px',
-                      flexShrink: 0,
-                    }}
-                  >
+                  <span className={`qr-quick-badge qr-quick-badge--${opt.badgeType}`}>
                     {opt.badge}
                   </span>
-                  <span
-                    style={{
-                      flex: 1,
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      color: 'var(--text)',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      textAlign: 'left',
-                    }}
-                  >
-                    {opt.label}
-                  </span>
+                  <div className="qr-quick-content">
+                    <span className="qr-quick-title">{opt.title}</span>
+                    <span className="qr-quick-desc">{opt.desc}</span>
+                  </div>
                 </button>
               ))}
             </div>
