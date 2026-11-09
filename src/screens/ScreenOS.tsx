@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Check, X, FileSpreadsheet } from 'lucide-react';
-import { Ambiente, OrdemServico, PieceLot } from '../types';
+import { Check, X, FileSpreadsheet, Layers } from 'lucide-react';
+import { Ambiente, AmbienteOS, OrdemServico, PieceLot } from '../types';
 import { CountNumber } from '../components/ui/CountNumber';
-import { MOCK_AMBIENTES, MOCK_ORDENS_SERVICO } from '../data/mock/mockData';
+import { MOCK_ORDENS_SERVICO } from '../data/mock/mockData';
 
 interface ScreenOSProps {
   selectedOS: string;
@@ -11,6 +11,7 @@ interface ScreenOSProps {
   selectedEnvironment: string;
   onSelectEnvironment: (env: string) => void;
   pieceLot: PieceLot;
+  onSelectPieceLot?: (lote: PieceLot, envName?: string) => void;
   onChangePieceLot: () => void;
   onChangeOS: () => void;
   onSelectOS?: (os: OrdemServico) => void;
@@ -27,24 +28,61 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
   selectedEnvironment,
   onSelectEnvironment,
   pieceLot,
+  onSelectPieceLot,
   onChangePieceLot,
   onChangeOS,
   onSelectOS,
   onScanOS,
   onNavigate,
   onOpenCancelPrep,
-  ambientes,
 }) => {
   const [isOsModalOpen, setIsOsModalOpen] = useState(false);
-  const listaAmbientes = (ambientes || MOCK_AMBIENTES).map(a => ({ name: a.nome, code: a.codigoOS }));
-  const areaNumeric = parseInt((pieceLot.area || '42').replace(/\D/g, ''), 10) || 42;
-  const volumeNumeric = parseInt((pieceLot.estVolume || pieceLot.volumeEstimado || '1050').replace(/\D/g, ''), 10) || 1050;
 
-  const handleEnvironmentClick = (envName: string) => {
-    onSelectEnvironment(envName);
-    const matchingOS = MOCK_ORDENS_SERVICO.find((o) => o.ambienteNome === envName);
-    if (matchingOS && onSelectOS) {
-      onSelectOS(matchingOS);
+  const activeOSObj =
+    MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOS) || MOCK_ORDENS_SERVICO[0];
+
+  const ambientesDaOS: AmbienteOS[] =
+    activeOSObj.ambientesObra && activeOSObj.ambientesObra.length > 0
+      ? activeOSObj.ambientesObra
+      : [
+          {
+            id: activeOSObj.ambienteId || activeOSObj.id,
+            nome: activeOSObj.ambienteNome,
+            lotesPecas: [activeOSObj.pecaLote],
+          },
+        ];
+
+  const ambienteAtual =
+    ambientesDaOS.find((a) => a.nome === selectedEnvironment) || ambientesDaOS[0];
+
+  const lotesDoAmbiente = ambienteAtual.lotesPecas;
+  const loteAtualIdx = Math.max(
+    0,
+    lotesDoAmbiente.findIndex(
+      (l) => (l.titulo || l.title) === (pieceLot.titulo || pieceLot.title)
+    )
+  );
+
+  const areaNumeric = parseInt((pieceLot.area || '42').replace(/\D/g, ''), 10) || 42;
+  const volumeNumeric =
+    parseInt((pieceLot.estVolume || pieceLot.volumeEstimado || '1050').replace(/\D/g, ''), 10) ||
+    1050;
+
+  const handleEnvironmentClick = (amb: AmbienteOS) => {
+    onSelectEnvironment(amb.nome);
+    if (amb.lotesPecas.length > 0 && onSelectPieceLot) {
+      onSelectPieceLot(amb.lotesPecas[0], amb.nome);
+    }
+  };
+
+  const handleCycleRoomLot = () => {
+    if (lotesDoAmbiente.length <= 1) return;
+    const nextIdx = (loteAtualIdx + 1) % lotesDoAmbiente.length;
+    const nextLot = lotesDoAmbiente[nextIdx];
+    if (onSelectPieceLot) {
+      onSelectPieceLot(nextLot, ambienteAtual.nome);
+    } else {
+      onChangePieceLot();
     }
   };
 
@@ -106,34 +144,56 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
             </div>
           </div>
 
-          {/* Card de Ambientes / Cômodos */}
+          {/* Card de Ambientes / Cômodos vinculados exclusivamente à O.S. selecionada */}
           <div className="os-card-surface os-env-surface">
             <div className="os-card-header-row">
-              <span className="os-section-label">Ambiente / Cômodo</span>
-              <span className="os-meta-badge os-meta-badge--neutral">{listaAmbientes.length} opções</span>
+              <span className="os-section-label">
+                {ambientesDaOS.length === 1
+                  ? 'Ambiente / Serviço desta O.S.'
+                  : 'Ambientes / Cômodos desta O.S.'}
+              </span>
+              <span className="os-meta-badge os-meta-badge--neutral">
+                {ambientesDaOS.length === 1
+                  ? '1 ambiente previsto'
+                  : `${ambientesDaOS.length} ambientes na O.S.`}
+              </span>
             </div>
 
-            <div className="os-env-grid" role="radiogroup" aria-label="Selecione o ambiente da peça">
-              {listaAmbientes.map((env) => {
-                const isSelected = env.name === selectedEnvironment;
+            <div
+              className="os-env-grid"
+              role="radiogroup"
+              aria-label="Selecione o ambiente da Ordem de Serviço"
+              style={
+                ambientesDaOS.length === 1
+                  ? { gridTemplateColumns: '1fr' }
+                  : undefined
+              }
+            >
+              {ambientesDaOS.map((amb) => {
+                const isSelected = amb.nome === ambienteAtual.nome;
+                const qtdLotes = amb.lotesPecas.length;
                 return (
                   <button
-                    key={env.name}
+                    key={amb.id}
                     type="button"
                     role="radio"
                     aria-checked={isSelected}
                     className={`os-env-chip ${isSelected ? 'is-selected' : ''}`}
-                    onClick={() => handleEnvironmentClick(env.name)}
+                    onClick={() => handleEnvironmentClick(amb)}
                   >
                     <div className="os-env-chip-header">
-                      <span className="os-env-name">{env.name}</span>
+                      <span className="os-env-name">{amb.nome}</span>
                       {isSelected && (
                         <span className="os-env-check" aria-hidden="true">
                           <Check size={17} strokeWidth={2.8} />
                         </span>
                       )}
                     </div>
-                    <span className="os-env-code">{env.code}</span>
+                    <span className="os-env-code">
+                      {qtdLotes === 1
+                        ? `1 lote • ${amb.lotesPecas[0].quantidade}`
+                        : `${qtdLotes} lotes de peças previstos`}
+                    </span>
                   </button>
                 );
               })}
@@ -143,25 +203,35 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
 
         {/* Coluna Direita: Peça & Consumo Previsto */}
         <div className="os-col-right">
-          {/* Card do Lote de Peças */}
+          {/* Card do Lote de Peças vinculado ao Ambiente selecionado */}
           <div className="os-card-surface">
             <div className="os-card-header-row">
-              <span className="os-section-label">Lote de Peças</span>
-              <span className="os-meta-badge os-meta-badge--neutral">{pieceLot.qty || pieceLot.quantidade || '12 frentes'}</span>
+              <span className="os-section-label">
+                Lote de Peças • {ambienteAtual.nome}
+              </span>
+              <span className="os-meta-badge os-meta-badge--neutral">
+                {lotesDoAmbiente.length > 1
+                  ? `Lote ${loteAtualIdx + 1}/${lotesDoAmbiente.length} • ${pieceLot.qty || pieceLot.quantidade || '12 frentes'}`
+                  : pieceLot.qty || pieceLot.quantidade || '12 frentes'}
+              </span>
             </div>
 
             <div className="os-piece-info">
-              <h3 className="os-piece-title">{pieceLot.title || pieceLot.titulo || 'Armários Superiores - Portas 18mm'}</h3>
+              <h3 className="os-piece-title">
+                {pieceLot.title || pieceLot.titulo || 'Armários Superiores - Portas 18mm'}
+              </h3>
               <div className="os-meta-badge os-meta-badge--amber" style={{ marginTop: '8px' }}>
                 <span className="os-finish-dot" aria-hidden="true" />
-                <span>Laca Branca Fosca 20 Gloss</span>
+                <span>{pieceLot.acabamentoSugerido || 'Laca Branca Fosca 20 Gloss'}</span>
               </div>
             </div>
 
             <div className="os-metrics-row">
               <div className="os-metric-box">
                 <span className="os-metric-label">Substrato Base</span>
-                <strong className="os-spec-v">{pieceLot.substrate || pieceLot.substrato || 'MDF Cru 18mm Berneck'}</strong>
+                <strong className="os-spec-v">
+                  {pieceLot.substrate || pieceLot.substrato || 'MDF Cru 18mm Berneck'}
+                </strong>
               </div>
               <div className="os-metric-divider" aria-hidden="true" />
               <div className="os-metric-box">
@@ -172,19 +242,43 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
               </div>
             </div>
 
-            <button
-              type="button"
-              className="os-action-btn os-btn-secondary os-btn-full"
-              onClick={onChangePieceLot}
-              title="Alternar lote de peças vinculado"
-              aria-label="Alternar lote de peças"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="1 4 1 10 7 10" />
-                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-              </svg>
-              <span>Alternar lote de peças</span>
-            </button>
+            {lotesDoAmbiente.length > 1 ? (
+              <button
+                type="button"
+                className="os-action-btn os-btn-secondary os-btn-full"
+                onClick={handleCycleRoomLot}
+                title="Alternar entre os lotes de peças deste ambiente"
+                aria-label="Alternar lote de peças deste ambiente"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+                <span>
+                  Alternar lote de {ambienteAtual.nome} ({loteAtualIdx + 1}/{lotesDoAmbiente.length})
+                </span>
+              </button>
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  minHeight: '48px',
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-muted)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                }}
+              >
+                <Layers size={16} />
+                <span>Lote único previsto para {ambienteAtual.nome} nesta O.S.</span>
+              </div>
+            )}
           </div>
 
           {/* Card de Métricas de Consumo com Conector Visual (Stageshow Connector + CountNumber) */}
@@ -287,7 +381,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                     Selecionar Ordem de Serviço na Fila
                   </h3>
                   <p style={{ margin: '2px 0 0', fontSize: '16px', color: 'var(--text-muted)' }}>
-                    Toque na O.S. para vincular automaticamente cliente, ambiente e lote de peças.
+                    Toque na O.S. para carregar seus ambientes e lotes de peças correspondentes.
                   </p>
                 </div>
               </div>
@@ -305,6 +399,11 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '55vh', overflowY: 'auto' }}>
               {MOCK_ORDENS_SERVICO.map((ordem) => {
                 const isCurrent = ordem.numero === selectedOS;
+                const ambientesLista =
+                  ordem.ambientesObra && ordem.ambientesObra.length > 0
+                    ? ordem.ambientesObra.map((a) => a.nome).join(' + ')
+                    : ordem.ambienteNome;
+                const qtdAmbientes = ordem.ambientesObra?.length || 1;
                 return (
                   <button
                     key={ordem.id}
@@ -336,11 +435,23 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                         <span className="os-number-tag">{ordem.numero}</span>
                         <strong style={{ fontSize: '18px', color: 'var(--text)' }}>
-                          {ordem.ambienteNome} — {ordem.clienteNome}
+                          {ordem.clienteNome}
                         </strong>
+                        <span
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            padding: '2px 8px',
+                            borderRadius: '999px',
+                            background: 'rgba(255,255,255,0.06)',
+                            color: 'var(--text-muted)',
+                          }}
+                        >
+                          {qtdAmbientes === 1 ? '1 ambiente' : `${qtdAmbientes} ambientes`}
+                        </span>
                       </div>
-                      <span style={{ fontSize: '16px', color: 'var(--text-muted)' }}>
-                        {ordem.pecaLote.titulo} • {ordem.pecaLote.quantidade} • Estimado: <strong style={{ color: 'var(--text)' }}>{ordem.pecaLote.volumeEstimado}</strong>
+                      <span style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
+                        Ambientes: <strong style={{ color: 'var(--text)' }}>{ambientesLista}</strong> • {ordem.projetoNome}
                       </span>
                     </div>
 

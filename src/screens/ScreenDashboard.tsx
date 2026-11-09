@@ -1,6 +1,16 @@
 import React from 'react';
-import { Boxes, BarChart3, AlertTriangle, FlaskConical, RotateCcw, QrCode, ArrowRight } from 'lucide-react';
-import { Operator, Lote, ScreenId } from '../types';
+import {
+  Boxes,
+  BarChart3,
+  AlertTriangle,
+  FlaskConical,
+  RotateCcw,
+  QrCode,
+  ArrowRight,
+  Clock,
+  Lock,
+} from 'lucide-react';
+import { Operator, Lote, ScreenId, Preparacao } from '../types';
 import { MOCK_LOTES, MOCK_ORDENS_SERVICO } from '../data';
 import { ordenarLotesFEFO } from '../domain/fefo';
 
@@ -10,6 +20,10 @@ interface ScreenDashboardProps {
   onOpenUseFirstModal: () => void;
   onSimulateQR: () => void;
   lotes?: Lote[];
+  preparacoesPendentes?: Preparacao[];
+  preparacoesEmConferencia?: Preparacao[];
+  preparacaoAtivaCabine?: Preparacao | null;
+  onResumePreparacao?: (prep: Preparacao) => void;
 }
 
 export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
@@ -18,6 +32,10 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
   onOpenUseFirstModal,
   onSimulateQR,
   lotes,
+  preparacoesPendentes = [],
+  preparacoesEmConferencia = [],
+  preparacaoAtivaCabine = null,
+  onResumePreparacao,
 }) => {
   const fullName = operator.nome || operator.name || 'Operador';
   const firstName = fullName.split(' ')[0];
@@ -33,6 +51,24 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
   const totalPrioritarios = lotesPrioritarios.length;
   const totalOrdensFila = MOCK_ORDENS_SERVICO.length;
   const ultimaOrdem = MOCK_ORDENS_SERVICO[0];
+
+  // Contagem estrita de embalagens realmente PENDENTES de devolução pelo operador
+  const totalItensPendentesDevolucao = preparacoesPendentes.reduce(
+    (acc, prep) =>
+      acc + prep.itensDevolucao.filter((it) => it.status === 'PENDENTE').length,
+    0
+  );
+
+  // Contagem separada de embalagens aguardando conferência técnica
+  const totalItensEmConferencia = preparacoesEmConferencia.reduce(
+    (acc, prep) =>
+      acc +
+      prep.itensDevolucao.filter((it) => it.status === 'PENDENTE_DE_CONFERENCIA').length,
+    0
+  );
+
+  const prepMaisRecentePendente = preparacoesPendentes[0];
+  const cabineOcupadaPorAplicacao = Boolean(preparacaoAtivaCabine);
 
   return (
     <div className="boardui-dash-container">
@@ -94,17 +130,28 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
         </span>
       </button>
 
-      {/* 3. Grade das 3 Ações Operacionais da Cabine (Bento Grid Limpo — Regra "Say it once" & "One Hero") */}
+      {/* 3. Grade das 3 Ações Operacionais da Cabine */}
       <div className="boardui-cards-grid" role="group" aria-label="Ações da cabine de pintura">
-        {/* Card 1 (HERO): Nova Preparação */}
+        {/* Card 1 (HERO): Nova Preparação (com bloqueio inteligente por cabine se houver aplicação ativa) */}
         <button
           type="button"
           className="boardui-card primary-card"
           onClick={() => onNavigate('os')}
+          style={
+            cabineOcupadaPorAplicacao
+              ? {
+                  borderColor: 'rgba(245, 158, 11, 0.55)',
+                }
+              : undefined
+          }
         >
           <div className="boardui-card-top">
             <div className="boardui-card-icon primary-icon" aria-hidden="true">
-              <FlaskConical size={28} strokeWidth={2.2} />
+              {cabineOcupadaPorAplicacao ? (
+                <Lock size={28} strokeWidth={2.2} />
+              ) : (
+                <FlaskConical size={28} strokeWidth={2.2} />
+              )}
             </div>
             <ArrowRight className="boardui-card-arrow" size={24} strokeWidth={2.2} aria-hidden="true" />
           </div>
@@ -112,25 +159,39 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
           <div className="boardui-card-body">
             <h2 className="boardui-card-title">Nova preparação</h2>
             <p className="boardui-card-desc">
-              Vincule a Ordem de Serviço, calcule a receita homologada e pese os componentes com trava anti-erro.
+              {cabineOcupadaPorAplicacao && preparacaoAtivaCabine
+                ? `Aplicação ativa em andamento na ${
+                    preparacaoAtivaCabine.cabineNome || 'Cabine'
+                  } (${preparacaoAtivaCabine.ordemServicoNumero}). Conclua a aplicação na pistola para liberar nova mistura.`
+                : 'Vincule a Ordem de Serviço, calcule a receita homologada e pese os componentes com trava anti-erro.'}
             </p>
           </div>
 
           <div className="boardui-card-bottom">
-            <span className="boardui-pill-badge blue-badge">
-              {totalOrdensFila} OS na fila de pintura
+            <span className={`boardui-pill-badge ${cabineOcupadaPorAplicacao ? 'amber-badge' : 'blue-badge'}`}>
+              {cabineOcupadaPorAplicacao && preparacaoAtivaCabine
+                ? `${preparacaoAtivaCabine.cabineNome || 'Cabine'} ocupada (${preparacaoAtivaCabine.ordemServicoNumero})`
+                : `${totalOrdensFila} OS na fila de pintura`}
             </span>
             <span className="boardui-card-meta">
-              Próxima: {ultimaOrdem.ambienteNome} ({ultimaOrdem.clienteNome})
+              {cabineOcupadaPorAplicacao && preparacaoAtivaCabine
+                ? `Receita ativa: ${preparacaoAtivaCabine.receitaNome}`
+                : `Próxima: ${ultimaOrdem.ambienteNome} (${ultimaOrdem.clienteNome})`}
             </span>
           </div>
         </button>
 
-        {/* Card 2: Devolver Sobras */}
+        {/* Card 2: Devolver Sobras (Central de Devoluções Pendentes) */}
         <button
           type="button"
           className="boardui-card"
-          onClick={() => onNavigate('return')}
+          onClick={() => {
+            if (prepMaisRecentePendente && onResumePreparacao && preparacoesPendentes.length === 1) {
+              onResumePreparacao(prepMaisRecentePendente);
+            } else {
+              onNavigate('return');
+            }
+          }}
         >
           <div className="boardui-card-top">
             <div className="boardui-card-icon" aria-hidden="true">
@@ -142,21 +203,30 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
           <div className="boardui-card-body">
             <h2 className="boardui-card-title">Devolver sobras</h2>
             <p className="boardui-card-desc">
-              Informe o saldo restante na lata, gere a nova etiqueta QR Code e registre o retorno na prateleira.
+              Central de pendências: recupere preparações interrompidas e registre a devolução ou descarte de cada embalagem utilizada.
             </p>
           </div>
 
           <div className="boardui-card-bottom">
-            <span className="boardui-pill-badge amber-badge">
-              {totalPrioritarios} {totalPrioritarios === 1 ? 'lata aberta em giro' : 'latas abertas em giro'}
+            <span className={`boardui-pill-badge ${totalItensPendentesDevolucao > 0 ? 'amber-badge' : 'green-badge'}`}>
+              <Clock size={14} strokeWidth={2.4} style={{ marginRight: '5px' }} />
+              {totalItensPendentesDevolucao > 0
+                ? `${totalItensPendentesDevolucao} ${totalItensPendentesDevolucao === 1 ? 'embalagem pendente' : 'embalagens pendentes'}`
+                : totalItensEmConferencia > 0
+                ? `0 pendentes • ${totalItensEmConferencia} em conferência`
+                : 'Nenhuma embalagem pendente'}
             </span>
             <span className="boardui-card-meta">
-              {loteMaisUrgente ? `Foco: ${loteMaisUrgente.produtoNome}` : 'Rastreabilidade por lote e OS'}
+              {prepMaisRecentePendente
+                ? `Retomar: ${prepMaisRecentePendente.ordemServicoNumero} (${prepMaisRecentePendente.ambienteNome})`
+                : totalItensEmConferencia > 0
+                ? 'Aguardando conferência técnica'
+                : 'Todas as devoluções em dia'}
             </span>
           </div>
         </button>
 
-        {/* Card 3: Escanear QR Code */}
+        {/* Card 3: Escanear QR Code (Mecanismo Inteligente de OS e Embalagens) */}
         <button
           type="button"
           className="boardui-card"
@@ -172,16 +242,16 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
           <div className="boardui-card-body">
             <h2 className="boardui-card-title">Escanear QR Code</h2>
             <p className="boardui-card-desc">
-              Aponte a ficha da Ordem de Serviço ou a etiqueta de uma lata para a câmera da estação.
+              Leitor inteligente: escaneie uma Ordem de Serviço para iniciar preparo ou uma etiqueta de lata para consultar saldo e devolver.
             </p>
           </div>
 
           <div className="boardui-card-bottom">
             <span className="boardui-pill-badge green-badge">
-              Câmera / Leitor pronto
+              Identifica O.S. ou Embalagem
             </span>
             <span className="boardui-card-meta">
-              Leitura óptica + simulação rápida
+              Câmera frontal + simulação rápida
             </span>
           </div>
         </button>
@@ -189,4 +259,3 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
     </div>
   );
 };
-

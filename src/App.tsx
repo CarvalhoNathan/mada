@@ -1,6 +1,21 @@
-import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense, lazy } from 'react';
 import gsap from 'gsap';
-import { Operator, PieceLot, RecipeState, ScreenId, Lote, ItemSolicitacaoCompra, Receita, Movimentacao, OrdemServico } from './types';
+import {
+  Operator,
+  PieceLot,
+  RecipeState,
+  ScreenId,
+  Lote,
+  ItemSolicitacaoCompra,
+  Receita,
+  Movimentacao,
+  OrdemServico,
+  Preparacao,
+  Produto,
+  StatusItemDevolucao,
+  LocalMistura,
+  ResiduoMisturaOcorrencia,
+} from './types';
 import { AppShell } from './components/ui/AppShell';
 import { StatusBanner } from './components/ui/StatusBanner';
 import { Toast } from './components/ui/Toast';
@@ -16,6 +31,8 @@ import { ScreenReturn } from './screens/ScreenReturn';
 
 import { ModalUseFirst } from './screens/ModalUseFirst';
 import { ModalCancelPrep } from './screens/ModalCancelPrep';
+import { ModalQrPackageResult } from './screens/ModalQrPackageResult';
+import { ModalOcorrenciaMistura } from './screens/ModalOcorrenciaMistura';
 
 const ScreenInventory = lazy(() =>
   import('./screens/ScreenInventory').then((m) => ({ default: m.ScreenInventory }))
@@ -32,13 +49,40 @@ import {
   osRepository,
   loteRepository,
   movimentacaoRepository,
+  preparacaoRepository,
+  residuoMisturaRepository,
   MOCK_OPERADORES,
   MOCK_ORDENS_SERVICO,
   MOCK_RECEITAS,
   MOCK_LOTES,
+  MOCK_PRODUTOS,
+  MOCK_CHECKLIST_SOBRAS,
 } from './data';
 import { useConnectionStatus } from './hooks/useConnectionStatus';
 import { ordenarLotesFEFO } from './domain/fefo';
+import {
+  criarPreparacaoDevolucao,
+  registrarConclusaoAplicacao,
+  registrarMovimentacaoComponente,
+  registrarImpressaoEtiquetaComponente,
+  encerrarPreparacao,
+  filtrarPreparacoesPendentesDevolucao,
+  filtrarPreparacoesEmConferencia,
+  filtrarPreparacoesHistoricoConcluido,
+  temItensPendentesDevolucao,
+} from './domain/returnFlow';
+import {
+  sincronizarEstadoPotLifePreparacao,
+  registrarOcorrenciaResiduoMistura,
+  ORIENTACAO_NEUTRA_POT_LIFE_EXPIRADO,
+} from './domain/potLife';
+import {
+  obterCabineOperador,
+  buscarAplicacaoAtivaPorCabine,
+  verificarBloqueioNovaPreparacaoCabine,
+  verificarPermissaoDevolucaoDuranteAplicacao,
+} from './domain/operationalLocks';
+import { classificarQrCode } from './domain/qrIdentification';
 
 const INITIAL_PIECE_LOT: PieceLot = MOCK_ORDENS_SERVICO[0].pecaLote;
 
@@ -66,10 +110,7 @@ export const App: React.FC = () => {
   const [operators, setOperators] = useState<Operator[]>(MOCK_OPERADORES);
   const [selectedOperator, setSelectedOperator] = useState<Operator>(MOCK_OPERADORES[0]);
 
-  // Transição calma e coreografada (Benji Taylor motion.md #55, #61, #93, #165):
-  // - Stepper permanece firme no topo enquanto a pílula desliza
-  // - Barra inferior de ações permanece fixa sem ser afetada por transform do container
-  // - Apenas os cards e blocos de conteúdo internos sobem suavemente com stagger
+  // Transição calma e coreografada
   useEffect(() => {
     const prev = prevScreenRef.current;
     prevScreenRef.current = currentScreen;
@@ -78,9 +119,6 @@ export const App: React.FC = () => {
     const stage = screenStageRef.current;
     if (!stage) return;
 
-    // IMPORTANTE: Nunca aplicar transform ou filter no `stage` inteiro, pois qualquer
-    // elemento com `position: fixed` (como a barra de rodapé) ficaria confinado à largura
-    // do container durante a animação, causando o bug de encolher e depois expandir.
     const cards = stage.querySelectorAll(
       '.boardui-card, .os-card-surface, .recipe-header-card, .recipe-volume-strip, .recipe-chem-card, .dosing-card, .ds-kpi-card'
     );
@@ -101,12 +139,21 @@ export const App: React.FC = () => {
     }
   }, [currentScreen]);
 
-  // Lotes e movimentações persistidos
+  // Lotes, movimentações, preparações e resíduos de mistura persistidos
   const [lotes, setLotes] = useState<Lote[]>([]);
   const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
+  const [preparacoes, setPreparacoes] = useState<Preparacao[]>([]);
+  const [residuosMistura, setResiduosMistura] = useState<ResiduoMisturaOcorrencia[]>([]);
+  const [activePreparacaoId, setActivePreparacaoId] = useState<string | null>(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [isOccurrenceModalOpen, setIsOccurrenceModalOpen] = useState(false);
+  const [qrPackageModalData, setQrPackageModalData] = useState<{
+    codigoLido: string;
+    lote?: Lote;
+    produto?: Produto;
+  } | null>(null);
 
-  // Carregar operadores, lotes e movimentações do repositório
+  // Carregar operadores, lotes, movimentações, preparações e resíduos do repositório
   useEffect(() => {
     operadorRepository.listar().then((list) => {
       if (list.length > 0) {
@@ -122,7 +169,57 @@ export const App: React.FC = () => {
     movimentacaoRepository.listar().then((list) => {
       setMovimentacoes(list);
     });
+
+    preparacaoRepository.listar().then((list) => {
+      setPreparacoes(list);
+    });
+
+    residuoMisturaRepository.listar().then((list) => {
+      setResiduosMistura(list);
+    });
   }, []);
+
+  // Separação estrita entre:
+  // 1. Preparações com componentes realmente pendentes de devolução (status === 'PENDENTE')
+  // 2. Preparações com componentes aguardando conferência técnica (status === 'PENDENTE_DE_CONFERENCIA')
+  // 3. Preparações com devolução concluída (histórico)
+  const preparacoesPendentes = useMemo(
+    () => filtrarPreparacoesPendentesDevolucao(preparacoes),
+    [preparacoes]
+  );
+
+  const preparacoesEmConferencia = useMemo(
+    () => filtrarPreparacoesEmConferencia(preparacoes),
+    [preparacoes]
+  );
+
+  const preparacoesHistorico = useMemo(
+    () => filtrarPreparacoesHistoricoConcluido(preparacoes),
+    [preparacoes]
+  );
+
+  // Preparação em foco na tela de devolução:
+  // Somente mantém uma preparação em foco automático se ela ainda possuir itens PENDENTE
+  const activePreparacao = useMemo(() => {
+    if (activePreparacaoId) {
+      const encontrada = preparacoes.find((p) => p.id === activePreparacaoId);
+      if (encontrada && temItensPendentesDevolucao(encontrada)) {
+        return encontrada;
+      }
+    }
+    return preparacoesPendentes[0] || null;
+  }, [preparacoes, activePreparacaoId, preparacoesPendentes]);
+
+  // Identificação da cabine do operador atual e verificação de aplicação ativa na cabine
+  const cabineOperador = useMemo(
+    () => obterCabineOperador(selectedOperator),
+    [selectedOperator]
+  );
+
+  const preparacaoAtivaCabine = useMemo(
+    () => buscarAplicacaoAtivaPorCabine(preparacoes, cabineOperador.cabineId) || null,
+    [preparacoes, cabineOperador.cabineId]
+  );
 
   // Dados da OS e Lote
   const [selectedOSNumber, setSelectedOSNumber] = useState(MOCK_ORDENS_SERVICO[0].numero);
@@ -130,19 +227,6 @@ export const App: React.FC = () => {
   const [projectName, setProjectName] = useState(MOCK_ORDENS_SERVICO[0].projetoNome);
   const [selectedEnvironment, setSelectedEnvironment] = useState(MOCK_ORDENS_SERVICO[0].ambienteNome);
   const [pieceLot, setPieceLot] = useState<PieceLot>(INITIAL_PIECE_LOT);
-
-  const handleSelectOS = (os: OrdemServico) => {
-    setSelectedOSNumber(os.numero);
-    setClientName(os.clienteNome);
-    setProjectName(os.projetoNome);
-    setSelectedEnvironment(os.ambienteNome);
-    setPieceLot(os.pecaLote);
-    const parsedVol = parseInt((os.pecaLote.volumeEstimado || '').replace(/\D/g, ''), 10);
-    if (parsedVol >= 100 && parsedVol <= 5000) {
-      setRecipe((prev) => ({ ...prev, totalVolume: parsedVol }));
-    }
-    showToast(`✓ ${os.numero} (${os.ambienteNome}) vinculada • Meta ajustada para ${os.pecaLote.volumeEstimado}!`, 'success');
-  };
 
   // Receita de Mistura Homologada (Dinâmica)
   const [selectedRecipe, setSelectedRecipe] = useState<Receita>(MOCK_RECEITAS[0]);
@@ -152,45 +236,214 @@ export const App: React.FC = () => {
   const [isUseFirstModalOpen, setIsUseFirstModalOpen] = useState(false);
   const [isCancelPrepModalOpen, setIsCancelPrepModalOpen] = useState(false);
 
-  // Controle de Pot Life (Vida Útil da Mistura Catalisada - 20 minutos)
-  const [potLife, setPotLife] = useState<PotLifeState | null>(() => {
-    try {
-      const saved = localStorage.getItem('mada_active_pot_life');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Se ainda não expirou há mais de 1 hora, mantém o timer visível
-        if (Date.now() - parsed.startTime < 3600 * 1000) {
-          return parsed;
+  // Toast
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'info' | 'ok' | 'warn' | 'danger';
+    key: number;
+  } | null>(null);
+
+  const showToast = useCallback(
+    (message: string, type: 'info' | 'success' | 'warn' | 'danger' = 'info') => {
+      const mappedType: 'info' | 'ok' | 'warn' | 'danger' = type === 'success' ? 'ok' : type;
+      setToast({ message, type: mappedType, key: Date.now() });
+    },
+    []
+  );
+
+  // Estado de Pot Life derivado da aplicação ativa na cabine (usando timestamps absolutos persistidos)
+  const potLife: PotLifeState | null = useMemo(() => {
+    const prepComAplicacao =
+      preparacaoAtivaCabine ||
+      preparacoes.find(
+        (p) =>
+          Boolean(p.dosagemConcluidaEm) &&
+          !p.aplicacaoConcluidaEm &&
+          p.status !== 'PREPARACAO_ENCERRADA'
+      );
+
+    if (!prepComAplicacao || !prepComAplicacao.dosagemConcluidaEm || !prepComAplicacao.potLifeMinutos) {
+      return null;
+    }
+
+    const startMs = new Date(prepComAplicacao.dosagemConcluidaEm).getTime();
+    const receitaRef = MOCK_RECEITAS.find((r) => r.id === prepComAplicacao.receitaId);
+
+    return {
+      preparacaoId: prepComAplicacao.id,
+      dosagemConcluidaEm: prepComAplicacao.dosagemConcluidaEm,
+      startTime: startMs,
+      potLifeMinutos: prepComAplicacao.potLifeMinutos,
+      durationSeconds: prepComAplicacao.potLifeMinutos * 60,
+      recipeName: prepComAplicacao.receitaNome,
+      osNumber: prepComAplicacao.ordemServicoNumero,
+      volumeTotal: prepComAplicacao.volumeTotal,
+      cabineNome: prepComAplicacao.cabineNome || 'Cabine 01',
+      procedimentoOficialValidado: receitaRef?.procedimentoOficialPotLifeExpirado,
+    };
+  }, [preparacaoAtivaCabine, preparacoes]);
+
+  // Navegação protegida pelos bloqueios inteligentes de cabine/equipamento
+  const handleNavigate = useCallback(
+    (targetScreen: ScreenId) => {
+      setIsOccurrenceModalOpen(false);
+
+      // Ao voltar ao Dashboard, limpa o ID de preparação em foco caso ela já esteja concluída
+      if (targetScreen === 'dashboard') {
+        setActivePreparacaoId((prevId) => {
+          if (!prevId) return null;
+          const prep = preparacoes.find((p) => p.id === prevId);
+          return prep && temItensPendentesDevolucao(prep) ? prevId : null;
+        });
+      }
+
+      // Bloqueio inteligente: impede iniciar nova preparação na mesma cabine enquanto houver aplicação ativa
+      if (targetScreen === 'os' || targetScreen === 'recipe' || targetScreen === 'dosing') {
+        const verificacao = verificarBloqueioNovaPreparacaoCabine(
+          preparacoes,
+          cabineOperador.cabineId,
+          cabineOperador.cabineNome
+        );
+        if (!verificacao.permitido) {
+          showToast(
+            verificacao.motivoBloqueio ||
+              'Existe uma aplicação em andamento nesta cabine. Conclua a aplicação antes de iniciar outra preparação.',
+            'warn'
+          );
+          return;
         }
       }
-    } catch {
-      // Ignora erro de parsing
-    }
-    return null;
-  });
 
-  const handleFinishApplication = () => {
-    setPotLife(null);
-    localStorage.removeItem('mada_active_pot_life');
-    showToast('✓ Aplicação do acabamento finalizada com sucesso dentro do prazo!', 'success');
+      setCurrentScreen(targetScreen);
+    },
+    [preparacoes, cabineOperador, showToast]
+  );
+
+  const handleSelectPieceLot = (lote: PieceLot, envName?: string) => {
+    if (envName) {
+      setSelectedEnvironment(envName);
+    }
+    setPieceLot(lote);
+    const parsedVol = parseInt(
+      (lote.volumeEstimado || lote.estVolume || '').replace(/\D/g, ''),
+      10
+    );
+    if (parsedVol >= 100 && parsedVol <= 5000) {
+      setRecipe((prev) => ({ ...prev, totalVolume: parsedVol }));
+    }
+    const labelEnv = envName || selectedEnvironment;
+    showToast(
+      `✓ ${labelEnv}: ${lote.titulo || lote.title} selecionado • Volume previsto: ${lote.volumeEstimado || lote.estVolume}`,
+      'info'
+    );
   };
 
-  const handleDiscardHardened = async () => {
-    if (potLife) {
-      await movimentacaoRepository.registrar({
-        tipo: 'DESCARTE',
-        loteId: 1,
-        operadorId: selectedOperator.id,
-        quantidade: potLife.volumeTotal,
-        justificativa: `Descarte obrigatório por cura/endurecimento (>20 min pot life esgotado)`,
-        registradaEm: new Date().toISOString(),
-      });
-      const movsAtualizadas = await movimentacaoRepository.listar();
-      setMovimentacoes(movsAtualizadas);
-      setPotLife(null);
-      localStorage.removeItem('mada_active_pot_life');
-      showToast(`Refugo químico de ${potLife.volumeTotal}ml registrado no tambor de descarte.`, 'warn');
+  const handleSelectOS = (os: OrdemServico) => {
+    const primeiroAmbiente = os.ambientesObra?.[0];
+    const envInicial = primeiroAmbiente?.nome || os.ambienteNome;
+    const loteInicial = primeiroAmbiente?.lotesPecas?.[0] || os.pecaLote;
+
+    setSelectedOSNumber(os.numero);
+    setClientName(os.clienteNome);
+    setProjectName(os.projetoNome);
+    setSelectedEnvironment(envInicial);
+    setPieceLot(loteInicial);
+    const parsedVol = parseInt((loteInicial.volumeEstimado || '').replace(/\D/g, ''), 10);
+    if (parsedVol >= 100 && parsedVol <= 5000) {
+      setRecipe((prev) => ({ ...prev, totalVolume: parsedVol }));
     }
+    showToast(
+      `✓ ${os.numero} (${envInicial}) vinculada • Meta ajustada para ${loteInicial.volumeEstimado}!`,
+      'success'
+    );
+  };
+
+  // Quando o Pot Life expira: altera o estado da preparação para POT_LIFE_EXPIRADO e registra o horário,
+  // sem encerrar automaticamente a aplicação nem determinar descarte/limpeza não validados.
+  const handlePotLifeExpired = useCallback(
+    async (expiredIso: string) => {
+      const alvoId = potLife?.preparacaoId;
+      if (!alvoId) return;
+      const prepAlvo = preparacoes.find((p) => p.id === alvoId);
+      if (!prepAlvo || prepAlvo.statusPotLife === 'POT_LIFE_EXPIRADO') return;
+
+      const atualizada = sincronizarEstadoPotLifePreparacao(
+        {
+          ...prepAlvo,
+          potLifeExpiradoEm: prepAlvo.potLifeExpiradoEm || expiredIso,
+        },
+        Date.now()
+      );
+      await preparacaoRepository.salvar(atualizada);
+      const lista = await preparacaoRepository.listar();
+      setPreparacoes(lista);
+      showToast(ORIENTACAO_NEUTRA_POT_LIFE_EXPIRADO, 'warn');
+    },
+    [potLife?.preparacaoId, preparacoes, showToast]
+  );
+
+  // Conclusão da aplicação na pistola: libera imediatamente o bloqueio da cabine, mantendo devoluções pendentes
+  const handleFinishApplication = async () => {
+    localStorage.removeItem('mada_active_pot_life');
+
+    const alvo =
+      preparacaoAtivaCabine ||
+      (potLife?.preparacaoId
+        ? preparacoes.find((p) => p.id === potLife.preparacaoId)
+        : activePreparacao);
+
+    if (alvo) {
+      const prepComAplicacaoConcluida = registrarConclusaoAplicacao(alvo);
+      await preparacaoRepository.salvar(prepComAplicacaoConcluida);
+      const listaAtualizada = await preparacaoRepository.listar();
+      setPreparacoes(listaAtualizada);
+    }
+
+    showToast(
+      `✓ Aplicação concluída! ${cabineOperador.cabineNome} liberada para novas operações. As embalagens permanecem pendentes de devolução.`,
+      'success'
+    );
+  };
+
+  // Registro de Ocorrência / Resíduo da Mistura Pronta (separado da devolução de embalagens originais)
+  const handleRegisterMixtureOccurrence = async (dados: {
+    localMistura: LocalMistura;
+    quantidadeRestanteMl?: number;
+    ocorrenciaRelacionada: string;
+    procedimentoAdotado?: string;
+  }) => {
+    const alvo =
+      preparacaoAtivaCabine ||
+      (potLife?.preparacaoId
+        ? preparacoes.find((p) => p.id === potLife.preparacaoId)
+        : activePreparacao) ||
+      preparacoes[0];
+
+    if (!alvo) return;
+
+    const resultado = registrarOcorrenciaResiduoMistura({
+      preparacao: alvo,
+      operador: selectedOperator,
+      localMistura: dados.localMistura,
+      quantidadeRestanteMl: dados.quantidadeRestanteMl,
+      ocorrenciaRelacionada: dados.ocorrenciaRelacionada,
+      procedimentoAdotado: dados.procedimentoAdotado,
+    });
+
+    await residuoMisturaRepository.registrar(resultado.ocorrencia);
+    await preparacaoRepository.salvar(resultado.preparacaoAtualizada);
+
+    const [prepsAtualizadas, residuosAtualizados] = await Promise.all([
+      preparacaoRepository.listar(),
+      residuoMisturaRepository.listar(),
+    ]);
+    setPreparacoes(prepsAtualizadas);
+    setResiduosMistura(residuosAtualizados);
+
+    showToast(
+      `✓ Ocorrência da mistura registrada (${dados.localMistura.toUpperCase()}) no histórico da ${alvo.ordemServicoNumero}.`,
+      'info'
+    );
   };
 
   // Solicitações de Compras (Gestão de Insumos da Cabine)
@@ -241,53 +494,61 @@ export const App: React.FC = () => {
   };
   const { isOnline, isServerLocal, isOffline } = useConnectionStatus();
 
-  // Toast
-  const [toast, setToast] = useState<{
-    message: string;
-    type: 'info' | 'ok' | 'warn' | 'danger';
-    key: number;
-  } | null>(null);
-
-  const showToast = useCallback((message: string, type: 'info' | 'success' | 'warn' | 'danger' = 'info') => {
-    const mappedType: 'info' | 'ok' | 'warn' | 'danger' = type === 'success' ? 'ok' : type;
-    setToast({ message, type: mappedType, key: Date.now() });
-  }, [setToast]);
-
   // Ações de Receita
   const handleSetTotalVolume = (vol: number) => {
-    setRecipe(prev => ({ ...prev, totalVolume: vol }));
+    setRecipe((prev) => ({ ...prev, totalVolume: vol }));
   };
 
   const handleAdjustVolume = (delta: number) => {
-    setRecipe(prev => ({
+    setRecipe((prev) => ({
       ...prev,
       totalVolume: Math.max(100, Math.min(5000, prev.totalVolume + delta)),
     }));
   };
 
-  // Scanner de QR Code Real / Atalho
+  // Scanner de QR Code Real / Atalho (Permite consultas que não interferem na operação ativa)
   const handleOpenQR = () => {
     setIsQrModalOpen(true);
   };
 
   const handleQrScanSuccess = (code: string) => {
-    if (code.startsWith('OS-') || code.includes('1084') || code.includes('1085')) {
-      const foundOS = MOCK_ORDENS_SERVICO.find((o) =>
-        code.includes(o.numero.replace('#', '')) || code.includes(o.numero)
-      ) || MOCK_ORDENS_SERVICO[0];
-      setClientName(foundOS.clienteNome);
-      setProjectName(foundOS.projetoNome);
-      setSelectedEnvironment(foundOS.ambienteNome);
-      setPieceLot(foundOS.pecaLote);
-      showToast(`✓ QR Code lido: ${foundOS.numero} (${foundOS.clienteNome})`, 'success');
-      setCurrentScreen('recipe');
-    } else if (code.includes('SOBRA') || code.startsWith('L-')) {
-      showToast(`✓ Insumo químico identificado: ${code}. Lote priorizado!`, 'success');
-      setCurrentScreen('recipe');
-    } else {
-      showToast(`✓ Código identificado: ${code}`, 'success');
-      setCurrentScreen('recipe');
+    const resultado = classificarQrCode(
+      code,
+      MOCK_ORDENS_SERVICO,
+      lotes.length > 0 ? lotes : MOCK_LOTES,
+      MOCK_PRODUTOS
+    );
+
+    if (resultado.tipo === 'ORDEM_SERVICO' && resultado.ordemServico) {
+      const verificacao = verificarBloqueioNovaPreparacaoCabine(
+        preparacoes,
+        cabineOperador.cabineId,
+        cabineOperador.cabineNome
+      );
+      if (!verificacao.permitido) {
+        showToast(
+          `Consulta OS ${resultado.ordemServico.numero}: ${resultado.ordemServico.clienteNome} (${resultado.ordemServico.ambienteNome}). Nova preparação aguardando liberação da ${cabineOperador.cabineNome}.`,
+          'info'
+        );
+        return;
+      }
+      handleSelectOS(resultado.ordemServico);
+      showToast(`✓ ${resultado.mensagemResumo}`, 'success');
+      setCurrentScreen('os');
+      return;
     }
+
+    if (resultado.tipo === 'EMBALAGEM_LOTE') {
+      showToast(`✓ ${resultado.mensagemResumo}`, 'success');
+      setQrPackageModalData({
+        codigoLido: code,
+        lote: resultado.lote,
+        produto: resultado.produto,
+      });
+      return;
+    }
+
+    showToast(`✓ ${resultado.mensagemResumo}`, 'info');
   };
 
   const handleStartDosing = () => {
@@ -298,56 +559,275 @@ export const App: React.FC = () => {
     dosingValues: Record<number, number>,
     wasteJustification?: string
   ) => {
+    const verificacao = verificarBloqueioNovaPreparacaoCabine(
+      preparacoes,
+      cabineOperador.cabineId,
+      cabineOperador.cabineNome
+    );
+    if (!verificacao.permitido) {
+      showToast(
+        verificacao.motivoBloqueio ||
+          'Existe uma aplicação em andamento nesta cabine. Conclua a aplicação antes de finalizar nova dosagem.',
+        'warn'
+      );
+      return;
+    }
+
     const receita = selectedRecipe;
-    const osAtiva = MOCK_ORDENS_SERVICO.find(o => o.clienteNome === clientName) || MOCK_ORDENS_SERVICO[0];
+    const osAtiva =
+      MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOSNumber) ||
+      MOCK_ORDENS_SERVICO.find((o) => o.clienteNome === clientName) ||
+      MOCK_ORDENS_SERVICO[0];
+    const lotesBase = lotes.length > 0 ? lotes : MOCK_LOTES;
+    const dosagemConcluidaIso = new Date().toISOString();
+
+    // Cria a entidade Preparacao com:
+    // - dosagemConcluidaEm (referência absoluta para início do Pot Life)
+    // - potLifeMinutos homologado da receita/produto
+    // - cabineId vinculada ao operador/equipamento
+    const novaPreparacao = criarPreparacaoDevolucao({
+      id: `PREP-${osAtiva.numero.replace(/\D/g, '')}-${Date.now().toString().slice(-4)}`,
+      ordemServico: osAtiva,
+      receita,
+      operador: selectedOperator,
+      volumeTotal: recipe.totalVolume,
+      valoresDosados: dosingValues,
+      lotesDisponiveis: lotesBase,
+      produtosDisponiveis: MOCK_PRODUTOS,
+      criadaEm: dosagemConcluidaIso,
+      dosagemConcluidaEm: dosagemConcluidaIso,
+      cabineId: cabineOperador.cabineId,
+      cabineNome: cabineOperador.cabineNome,
+    });
 
     // Registra uma Movimentacao do tipo RETIRADA por componente via MovimentacaoRepository
-    // vinculada à OS e ao operador logado
     for (const item of receita.itens) {
       const quantidade = dosingValues[item.id] || 0;
       if (quantidade > 0) {
-        const lotesOrdenados = ordenarLotesFEFO(lotes.filter(l => l.produtoId === item.produtoId));
+        const lotesOrdenados = ordenarLotesFEFO(
+          lotesBase.filter((l) => l.produtoId === item.produtoId)
+        );
         const loteId = lotesOrdenados[0]?.id || item.id;
 
-        // Deduz quantidade do lote se existir
         if (lotesOrdenados[0]) {
           const novoSaldo = Math.max(0, lotesOrdenados[0].quantidadeAtual - quantidade);
           await loteRepository.atualizarQuantidade(lotesOrdenados[0].id, novoSaldo);
         }
 
         await movimentacaoRepository.registrar({
+          preparacaoId: novaPreparacao.id,
           tipo: 'RETIRADA',
           loteId,
           ordemServicoId: osAtiva.id,
           operadorId: selectedOperator.id,
           quantidade,
           justificativa: wasteJustification,
-          registradaEm: new Date().toISOString(),
+          registradaEm: dosagemConcluidaIso,
         });
       }
     }
+
+    await preparacaoRepository.salvar(novaPreparacao);
+    const prepsAtualizadas = await preparacaoRepository.listar();
+    setPreparacoes(prepsAtualizadas);
+    setActivePreparacaoId(novaPreparacao.id);
 
     const lotesAtualizados = await loteRepository.listar();
     setLotes(lotesAtualizados);
     const movsAtualizadas = await movimentacaoRepository.listar();
     setMovimentacoes(movsAtualizadas);
 
-    // Inicia o cronômetro estrito de 20 minutos (Pot Life)
-    const newPotLife: PotLifeState = {
-      startTime: Date.now(),
-      durationSeconds: 20 * 60, // 20 minutos
-      recipeName: receita.nome,
-      osNumber: osAtiva.numero,
-      volumeTotal: recipe.totalVolume,
-    };
-    setPotLife(newPotLife);
-    localStorage.setItem('mada_active_pot_life', JSON.stringify(newPotLife));
-
-    showToast('✓ Dosagem concluída! Cronômetro de 20 min (Pot Life) iniciado.', 'success');
+    showToast(
+      `✓ Dosagem concluída! Pot Life (${novaPreparacao.potLifeMinutos || 20} min) iniciado na ${
+        cabineOperador.cabineNome
+      }. Registre as ${novaPreparacao.itensDevolucao.length} embalagens.`,
+      'success'
+    );
     setCurrentScreen('return');
   };
 
+  const handleRegisterItemReturn = async (params: {
+    preparacaoId: string;
+    itemId: string;
+    saldoRestanteMl: number;
+    destino: Exclude<StatusItemDevolucao, 'PENDENTE'>;
+    checklistAprovado: Record<string, boolean>;
+    motivoManual?: string;
+    aprovacaoConferenciaTecnica?: boolean;
+  }) => {
+    const permissao = verificarPermissaoDevolucaoDuranteAplicacao(
+      preparacoes,
+      cabineOperador.cabineId,
+      params.preparacaoId,
+      cabineOperador.cabineNome
+    );
+    if (!permissao.permitido && !params.aprovacaoConferenciaTecnica) {
+      showToast(
+        permissao.motivoBloqueio ||
+          'Conclua a aplicação ativa antes de registrar devoluções de outra preparação.',
+        'warn'
+      );
+      return;
+    }
+
+    const prepAlvo = preparacoes.find((p) => p.id === params.preparacaoId);
+    if (!prepAlvo) return;
+
+    const itemAlvo = prepAlvo.itensDevolucao.find((i) => i.id === params.itemId);
+    if (!itemAlvo) return;
+
+    const produtoRef = MOCK_PRODUTOS.find((pr) => pr.id === itemAlvo.produtoId);
+    const criteriosAplicaveis =
+      produtoRef?.criteriosDevolucao && produtoRef.criteriosDevolucao.length > 0
+        ? produtoRef.criteriosDevolucao
+        : MOCK_CHECKLIST_SOBRAS;
+
+    const resultado = registrarMovimentacaoComponente({
+      preparacao: prepAlvo,
+      itemId: params.itemId,
+      saldoRestanteMl: params.saldoRestanteMl,
+      destino: params.destino,
+      checklistAprovado: params.checklistAprovado,
+      operador: selectedOperator,
+      criteriosAplicaveis,
+      motivoManual: params.motivoManual,
+      aprovacaoConferenciaTecnica: params.aprovacaoConferenciaTecnica,
+    });
+
+    if (!resultado.sucesso || !resultado.itemAtualizado) {
+      showToast(resultado.erro || 'Não foi possível registrar este componente.', 'warn');
+      return;
+    }
+
+    const itemResolvido = resultado.itemAtualizado;
+
+    if (params.destino === 'DEVOLVIDO_AO_ESTOQUE') {
+      await movimentacaoRepository.registrar({
+        preparacaoId: prepAlvo.id,
+        componenteItemId: itemResolvido.id,
+        ordemServicoId: prepAlvo.ordemServicoId,
+        operadorId: selectedOperator.id,
+        loteId: itemResolvido.loteId,
+        tipo: 'DEVOLUCAO',
+        quantidade: itemResolvido.saldoRestanteInformadoMl,
+        justificativa: `Devolução de sobra (${itemResolvido.produtoNome}): ${itemResolvido.saldoRestanteInformadoMl}ml`,
+        registradaEm: itemResolvido.registradoEm || new Date().toISOString(),
+      });
+
+      const dataValidade = new Date();
+      dataValidade.setDate(dataValidade.getDate() + 30);
+      const validadeStr = dataValidade.toISOString().split('T')[0];
+
+      await loteRepository.adicionarSobra({
+        produtoId: itemResolvido.produtoId,
+        produtoNome: `${itemResolvido.produtoNome.replace(/^[0-9]+[º°]?\s*/, '')} (Sobra)`,
+        codigo: itemResolvido.loteSobraGeradoCodigo || `${itemResolvido.loteCodigo}-SOBRA`,
+        validade: validadeStr,
+        diasAberto: 1,
+        quantidadeAtual: itemResolvido.saldoRestanteInformadoMl,
+        statusUrgencia: 'alta',
+        prateleira: itemResolvido.prateleiraOrigem || 'A-01 (Prateleira de Sobras)',
+      });
+
+      showToast(
+        `✓ ${itemResolvido.produtoNome}: ${itemResolvido.saldoRestanteInformadoMl}ml devolvidos ao estoque!`,
+        'success'
+      );
+    } else if (params.destino === 'EMBALAGEM_ESGOTADA') {
+      // Zera o saldo residual do lote no repositório para que a lata vazia saia do alerta FEFO
+      await loteRepository.atualizarQuantidade(itemResolvido.loteId, 0);
+
+      showToast(
+        `✓ ${itemResolvido.produtoNome}: baixa de embalagem esgotada (0 ml de sobra) confirmada!`,
+        'success'
+      );
+    } else if (params.destino === 'DESCARTADO_COMO_REFUGO') {
+      await movimentacaoRepository.registrar({
+        preparacaoId: prepAlvo.id,
+        componenteItemId: itemResolvido.id,
+        ordemServicoId: prepAlvo.ordemServicoId,
+        operadorId: selectedOperator.id,
+        loteId: itemResolvido.loteId,
+        tipo: 'DESCARTE',
+        quantidade: itemResolvido.saldoRestanteInformadoMl,
+        justificativa: `Descarte de refugo (${itemResolvido.produtoNome}): ${
+          itemResolvido.motivoReprovacao || 'Refugo químico'
+        }`,
+        registradaEm: itemResolvido.registradoEm || new Date().toISOString(),
+      });
+
+      showToast(
+        `Refugo registrado para ${itemResolvido.produtoNome} (${itemResolvido.saldoRestanteInformadoMl}ml).`,
+        'warn'
+      );
+    } else {
+      showToast(
+        `Embalagem de ${itemResolvido.produtoNome} marcada como Pendente de Conferência Técnica.`,
+        'info'
+      );
+    }
+
+    await preparacaoRepository.salvar(resultado.preparacaoAtualizada);
+    const prepsAtualizadas = await preparacaoRepository.listar();
+    setPreparacoes(prepsAtualizadas);
+
+    // Se todos os componentes pendentes desta preparação foram resolvidos, limpa activePreparacaoId
+    // caso o operador retorne ao painel, evitando que a preparação concluída reapareça como pendente.
+    if (!temItensPendentesDevolucao(resultado.preparacaoAtualizada)) {
+      setActivePreparacaoId(null);
+    }
+
+    const lotesAtualizados = await loteRepository.listar();
+    setLotes(lotesAtualizados);
+    const movsAtualizadas = await movimentacaoRepository.listar();
+    setMovimentacoes(movsAtualizadas);
+  };
+
+  const handleMarkStickerPrinted = async (preparacaoId: string, itemId: string) => {
+    const prepAlvo = preparacoes.find((p) => p.id === preparacaoId);
+    if (!prepAlvo) return;
+    const prepAtualizada = registrarImpressaoEtiquetaComponente(prepAlvo, itemId);
+    await preparacaoRepository.salvar(prepAtualizada);
+    const prepsAtualizadas = await preparacaoRepository.listar();
+    setPreparacoes(prepsAtualizadas);
+  };
+
+  const handleFinishPreparacao = async (preparacaoId: string) => {
+    const prepAlvo = preparacoes.find((p) => p.id === preparacaoId);
+    if (!prepAlvo) return;
+    const res = encerrarPreparacao(prepAlvo);
+    if (!res.sucesso) {
+      showToast(res.erro || 'Ainda existem pendências nesta preparação.', 'warn');
+      return;
+    }
+
+    await preparacaoRepository.salvar(res.preparacaoAtualizada);
+    const prepsAtualizadas = await preparacaoRepository.listar();
+    setPreparacoes(prepsAtualizadas);
+    setActivePreparacaoId(null);
+
+    showToast(
+      `✓ Preparação ${prepAlvo.ordemServicoNumero} encerrada com todas as embalagens rastreadas!`,
+      'success'
+    );
+    setCurrentScreen('dashboard');
+  };
+
   const handleSelectBatch = (batchCode: string) => {
+    const verificacao = verificarBloqueioNovaPreparacaoCabine(
+      preparacoes,
+      cabineOperador.cabineId,
+      cabineOperador.cabineNome
+    );
+    if (!verificacao.permitido) {
+      showToast(
+        verificacao.motivoBloqueio ||
+          'Conclua a aplicação ativa nesta cabine antes de iniciar nova preparação.',
+        'warn'
+      );
+      return;
+    }
+
     const loteSelecionado = lotes.find((l) => l.codigo === batchCode);
     const nomeLower = (loteSelecionado?.produtoNome || '').toLowerCase();
 
@@ -371,278 +851,361 @@ export const App: React.FC = () => {
     setCurrentScreen('recipe');
   };
 
+  const preparacaoAlvoModalOcorrencia =
+    preparacaoAtivaCabine ||
+    (potLife?.preparacaoId ? preparacoes.find((p) => p.id === potLife.preparacaoId) : null) ||
+    activePreparacao ||
+    preparacoes[0] ||
+    null;
+
   return (
     <>
       <AppShell
         appName="Cabine de Pintura"
-      currentScreen={currentScreen}
-      onNavigate={(screen) => setCurrentScreen(screen)}
-      operator={
-        currentScreen !== 'auth'
-          ? {
-              name: selectedOperator.nome,
-              avatarUrl: selectedOperator.avatar,
-              role: selectedOperator.papel,
-            }
-          : undefined
-      }
-      isWifiConnected={isOnline}
-      isServerLocal={isServerLocal}
-      onOperatorClick={() => {
-        if (currentScreen !== 'auth') {
-          setCurrentScreen('auth');
-          showToast('Sessão encerrada. Selecione o operador.', 'info');
+        currentScreen={currentScreen}
+        onNavigate={handleNavigate}
+        operator={
+          currentScreen !== 'auth'
+            ? {
+                name: selectedOperator.nome,
+                avatarUrl: selectedOperator.avatar,
+                role: selectedOperator.papel,
+              }
+            : undefined
         }
-      }}
-    >
-      {/* Banner de Estado Offline Crítico */}
-      {isOffline && (
-        <div style={{ marginBottom: '12px' }}>
-          <StatusBanner
-            variant="danger"
-            title="SISTEMA OFFLINE"
-            description="Sem comunicação com o sistema. Salvamento de dados e dosagens bloqueados para evitar divergência de estoque."
-          />
-        </div>
-      )}
-
-      {/* Banner de Cronômetro de Vida Útil da Mistura (Pot Life - 20 min) */}
-      {currentScreen !== 'auth' && potLife && (
-        <PotLifeTimerBanner
-          potLife={potLife}
-          onFinishApplication={handleFinishApplication}
-          onDiscardHardened={handleDiscardHardened}
-        />
-      )}
-
-      {/* Stepper Persistente nas 3 etapas da Cabine (Benji Taylor motion.md #93: Keep header steady while content changes inside) */}
-      {(currentScreen === 'os' || currentScreen === 'recipe' || currentScreen === 'dosing') && (
-        <PrepStepperBar
-          currentScreen={currentScreen}
-          onNavigate={(screen) => setCurrentScreen(screen)}
-        />
-      )}
-
-      {/* Roteamento de Telas com Transição Coreografada GSAP */}
-      <div
-        ref={screenStageRef}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          flex: 1,
-          minHeight: 0,
+        isWifiConnected={isOnline}
+        isServerLocal={isServerLocal}
+        onOperatorClick={() => {
+          if (currentScreen !== 'auth') {
+            setCurrentScreen('auth');
+            showToast('Sessão encerrada. Selecione o operador.', 'info');
+          }
         }}
       >
-      {currentScreen === 'auth' && (
-        <ScreenAuth
-          operators={operators}
-          selectedOperator={selectedOperator}
-          onSelectOperator={setSelectedOperator}
-          onSuccessAuth={() => {
-            showToast(`Bem-vindo(a), ${selectedOperator.nome}!`, 'success');
+        {/* Banner de Estado Offline Crítico */}
+        {isOffline && (
+          <div style={{ marginBottom: '12px' }}>
+            <StatusBanner
+              variant="danger"
+              title="SISTEMA OFFLINE"
+              description="Sem comunicação com o sistema. Salvamento de dados e dosagens bloqueados para evitar divergência de estoque."
+            />
+          </div>
+        )}
+
+        {/* Banner de Cronômetro de Vida Útil da Mistura (Pot Life persistente via timestamp absoluto) */}
+        {currentScreen !== 'auth' && potLife && (
+          <PotLifeTimerBanner
+            potLife={potLife}
+            onFinishApplication={handleFinishApplication}
+            onOpenOccurrenceModal={() => setIsOccurrenceModalOpen(true)}
+            onPotLifeExpired={handlePotLifeExpired}
+          />
+        )}
+
+        {/* Stepper Persistente nas 3 etapas da Cabine */}
+        {(currentScreen === 'os' || currentScreen === 'recipe' || currentScreen === 'dosing') && (
+          <PrepStepperBar currentScreen={currentScreen} onNavigate={handleNavigate} />
+        )}
+
+        {/* Roteamento de Telas com Transição Coreografada GSAP */}
+        <div
+          ref={screenStageRef}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
+          {currentScreen === 'auth' && (
+            <ScreenAuth
+              operators={operators}
+              selectedOperator={selectedOperator}
+              onSelectOperator={setSelectedOperator}
+              onSuccessAuth={() => {
+                showToast(`Bem-vindo(a), ${selectedOperator.nome}!`, 'success');
+                setCurrentScreen('dashboard');
+              }}
+              onNavigateToManager={() => {
+                showToast('Acesso de Gestor (Fábio) liberado!', 'success');
+                setCurrentScreen('manager');
+              }}
+              isOffline={isOffline}
+              showToast={showToast}
+            />
+          )}
+
+          {currentScreen === 'dashboard' && (
+            <ScreenDashboard
+              operator={selectedOperator}
+              onNavigate={handleNavigate}
+              onOpenUseFirstModal={() => setIsUseFirstModalOpen(true)}
+              onSimulateQR={handleOpenQR}
+              lotes={lotes}
+              preparacoesPendentes={preparacoesPendentes}
+              preparacoesEmConferencia={preparacoesEmConferencia}
+              preparacaoAtivaCabine={preparacaoAtivaCabine}
+              onResumePreparacao={(prep) => {
+                const permissao = verificarPermissaoDevolucaoDuranteAplicacao(
+                  preparacoes,
+                  cabineOperador.cabineId,
+                  prep.id,
+                  cabineOperador.cabineNome
+                );
+                if (!permissao.permitido) {
+                  showToast(
+                    permissao.motivoBloqueio ||
+                      'Conclua a aplicação ativa nesta cabine antes de iniciar devoluções de outra preparação.',
+                    'warn'
+                  );
+                  return;
+                }
+                setActivePreparacaoId(prep.id);
+                setCurrentScreen('return');
+                showToast(
+                  `Retomando devolução de ${prep.ordemServicoNumero} (${prep.ambienteNome})...`,
+                  'info'
+                );
+              }}
+            />
+          )}
+
+          {currentScreen === 'os' && (
+            <ScreenOS
+              selectedOS={selectedOSNumber}
+              clientName={clientName}
+              projectName={projectName}
+              selectedEnvironment={selectedEnvironment}
+              onSelectEnvironment={setSelectedEnvironment}
+              pieceLot={pieceLot}
+              onSelectPieceLot={handleSelectPieceLot}
+              onChangePieceLot={() => {
+                const activeOSObj =
+                  MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOSNumber) ||
+                  MOCK_ORDENS_SERVICO[0];
+                const amb =
+                  activeOSObj.ambientesObra?.find((a) => a.nome === selectedEnvironment) ||
+                  activeOSObj.ambientesObra?.[0];
+                const lotesAmb = amb?.lotesPecas || [activeOSObj.pecaLote];
+                if (lotesAmb.length > 1) {
+                  const idx = lotesAmb.findIndex(
+                    (l) => (l.titulo || l.title) === (pieceLot.titulo || pieceLot.title)
+                  );
+                  const nextLot = lotesAmb[(idx + 1) % lotesAmb.length];
+                  handleSelectPieceLot(nextLot, amb?.nome || selectedEnvironment);
+                }
+              }}
+              onChangeOS={() => {
+                osRepository.listar().then((ordens) => {
+                  const currentIdx = ordens.findIndex((o) => o.numero === selectedOSNumber);
+                  const alternada = ordens[(currentIdx + 1) % ordens.length] || ordens[0];
+                  handleSelectOS(alternada);
+                });
+              }}
+              onSelectOS={handleSelectOS}
+              onScanOS={handleOpenQR}
+              onNavigate={handleNavigate}
+              onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
+            />
+          )}
+
+          {currentScreen === 'recipe' && (
+            <ScreenRecipe
+              recipe={recipe}
+              activeRecipe={selectedRecipe}
+              lotes={lotes}
+              onSelectRecipe={setSelectedRecipe}
+              onSetTotalVolume={handleSetTotalVolume}
+              onAdjustVolume={handleAdjustVolume}
+              onConfirmWeighing={handleStartDosing}
+              onNavigate={handleNavigate}
+              onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
+            />
+          )}
+
+          {currentScreen === 'dosing' && (
+            <ScreenDosing
+              recipe={recipe}
+              activeRecipe={selectedRecipe}
+              operator={selectedOperator}
+              activeOS={
+                MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOSNumber) ||
+                MOCK_ORDENS_SERVICO[0]
+              }
+              lotes={lotes}
+              onNavigate={handleNavigate}
+              onCompleteDosing={handleCompleteDosing}
+              onSetTotalVolume={handleSetTotalVolume}
+              onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
+              showToast={showToast}
+            />
+          )}
+
+          {currentScreen === 'return' && (
+            <ScreenReturn
+              operator={selectedOperator}
+              lotes={lotes}
+              activeOS={
+                MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOSNumber) ||
+                MOCK_ORDENS_SERVICO[0]
+              }
+              activePreparacao={activePreparacao}
+              preparacoesPendentes={preparacoesPendentes}
+              preparacoesEmConferencia={preparacoesEmConferencia}
+              preparacoesHistorico={preparacoesHistorico}
+              residuosMistura={residuosMistura}
+              preparacaoAtivaCabine={preparacaoAtivaCabine}
+              onSelectPreparacao={(prep) => setActivePreparacaoId(prep.id)}
+              onRegisterItemReturn={handleRegisterItemReturn}
+              onMarkStickerPrinted={handleMarkStickerPrinted}
+              onFinishPreparacao={handleFinishPreparacao}
+              onOpenOccurrenceModal={() => setIsOccurrenceModalOpen(true)}
+              onNavigate={handleNavigate}
+              showToast={showToast}
+            />
+          )}
+
+          {currentScreen === 'inventory' && (
+            <Suspense
+              fallback={
+                <div style={{ padding: '24px', color: 'var(--text-muted)' }}>
+                  Carregando estoque...
+                </div>
+              }
+            >
+              <ScreenInventory
+                lotes={lotes}
+                operator={selectedOperator}
+                onNavigate={handleNavigate}
+                showToast={showToast}
+                solicitacoes={solicitacoesCompras}
+                onAdicionarSolicitacao={handleAdicionarSolicitacao}
+                onRemoverSolicitacao={handleRemoverSolicitacao}
+                onReceberNovoLote={async (novoLote) => {
+                  await loteRepository.adicionarSobra(novoLote);
+                  const lotesAtualizados = await loteRepository.listar();
+                  setLotes(lotesAtualizados);
+                }}
+              />
+            </Suspense>
+          )}
+
+          {currentScreen === 'manager' && (
+            <Suspense
+              fallback={
+                <div style={{ padding: '24px', color: 'var(--text-muted)' }}>
+                  Carregando painel do gestor...
+                </div>
+              }
+            >
+              <ScreenManager
+                operator={selectedOperator}
+                onNavigate={handleNavigate}
+                showToast={showToast}
+                movimentacoes={movimentacoes}
+                lotes={lotes}
+                preparacoesEmConferencia={preparacoesEmConferencia}
+                residuosMistura={residuosMistura}
+                onResolveConferenceItem={handleRegisterItemReturn}
+                onResetDemoData={async () => {
+                  await loteRepository.resetar();
+                  await movimentacaoRepository.resetar();
+                  await preparacaoRepository.resetar();
+                  await residuoMisturaRepository.resetar();
+                  const lotesReset = await loteRepository.listar();
+                  const movsReset = await movimentacaoRepository.listar();
+                  const prepsReset = await preparacaoRepository.listar();
+                  const residuosReset = await residuoMisturaRepository.listar();
+                  setLotes(lotesReset);
+                  setMovimentacoes(movsReset);
+                  setPreparacoes(prepsReset);
+                  setResiduosMistura(residuosReset);
+                  setActivePreparacaoId(null);
+                  showToast(
+                    '✓ Saldos de estoque, preparações e histórico restaurados para o estado inicial!',
+                    'success'
+                  );
+                }}
+              />
+            </Suspense>
+          )}
+        </div>
+
+        {/* Modal de Latas que vencem primeiro ("Use Primeiro") */}
+        <ModalUseFirst
+          isOpen={isUseFirstModalOpen}
+          onClose={() => setIsUseFirstModalOpen(false)}
+          onSelectBatch={handleSelectBatch}
+          lotes={lotes}
+        />
+
+        {/* Modal de Registro de Ocorrência / Resíduo da Mistura Pronta */}
+        {isOccurrenceModalOpen && (
+          <ModalOcorrenciaMistura
+            isOpen={isOccurrenceModalOpen}
+            onClose={() => setIsOccurrenceModalOpen(false)}
+            preparacao={preparacaoAlvoModalOcorrencia}
+            historicoOcorrencias={residuosMistura.filter(
+              (r) => r.preparacaoId === preparacaoAlvoModalOcorrencia?.id
+            )}
+            onConfirmarRegistro={handleRegisterMixtureOccurrence}
+          />
+        )}
+
+        {/* Modal de Resultado de QR Code de Embalagem / Lote */}
+        <ModalQrPackageResult
+          isOpen={Boolean(qrPackageModalData)}
+          onClose={() => setQrPackageModalData(null)}
+          codigoLido={qrPackageModalData?.codigoLido || ''}
+          lote={qrPackageModalData?.lote}
+          produto={qrPackageModalData?.produto}
+          movimentacoes={movimentacoes}
+          preparacaoPendente={preparacoesPendentes.find((p) =>
+            p.itensDevolucao.some(
+              (it) => it.loteId === qrPackageModalData?.lote?.id && it.status === 'PENDENTE'
+            )
+          )}
+          onIrParaEstoque={() => {
+            setQrPackageModalData(null);
+            setCurrentScreen('inventory');
+          }}
+          onRegistrarDevolucao={() => {
+            const loteAlvo = qrPackageModalData?.lote;
+            setQrPackageModalData(null);
+            if (loteAlvo) {
+              const prepComLote = preparacoesPendentes.find((p) =>
+                p.itensDevolucao.some((it) => it.loteId === loteAlvo.id && it.status === 'PENDENTE')
+              );
+              if (prepComLote) {
+                setActivePreparacaoId(prepComLote.id);
+              }
+            }
+            setCurrentScreen('return');
+          }}
+        />
+
+        {/* Modal Scanner Real de QR Code (WebRTC / Câmera) */}
+        {isQrModalOpen && (
+          <Suspense fallback={null}>
+            <QrScannerModal
+              isOpen={isQrModalOpen}
+              onClose={() => setIsQrModalOpen(false)}
+              onScanSuccess={handleQrScanSuccess}
+            />
+          </Suspense>
+        )}
+
+        {/* Modal de Cancelar Preparação */}
+        <ModalCancelPrep
+          isOpen={isCancelPrepModalOpen}
+          onClose={() => setIsCancelPrepModalOpen(false)}
+          onConfirmCancel={() => {
+            setIsCancelPrepModalOpen(false);
             setCurrentScreen('dashboard');
-          }}
-          onNavigateToManager={() => {
-            showToast('Acesso de Gestor (Fábio) liberado!', 'success');
-            setCurrentScreen('manager');
-          }}
-          isOffline={isOffline}
-          showToast={showToast}
-        />
-      )}
-
-      {currentScreen === 'dashboard' && (
-        <ScreenDashboard
-          operator={selectedOperator}
-          onNavigate={(screen) => setCurrentScreen(screen)}
-          onOpenUseFirstModal={() => setIsUseFirstModalOpen(true)}
-          onSimulateQR={handleOpenQR}
-          lotes={lotes}
-        />
-      )}
-
-      {currentScreen === 'os' && (
-        <ScreenOS
-          selectedOS={selectedOSNumber}
-          clientName={clientName}
-          projectName={projectName}
-          selectedEnvironment={selectedEnvironment}
-          onSelectEnvironment={setSelectedEnvironment}
-          pieceLot={pieceLot}
-          onChangePieceLot={() => {
-            const currentIdx = MOCK_ORDENS_SERVICO.findIndex(o => o.pecaLote.titulo === pieceLot.titulo);
-            const nextIdx = (currentIdx + 1) % MOCK_ORDENS_SERVICO.length;
-            const nextOS = MOCK_ORDENS_SERVICO[nextIdx];
-            handleSelectOS(nextOS);
-          }}
-          onChangeOS={() => {
-            osRepository.listar().then((ordens) => {
-              const currentIdx = ordens.findIndex(o => o.numero === selectedOSNumber);
-              const alternada = ordens[(currentIdx + 1) % ordens.length] || ordens[0];
-              handleSelectOS(alternada);
-            });
-          }}
-          onSelectOS={handleSelectOS}
-          onScanOS={handleOpenQR}
-          onNavigate={(screen) => setCurrentScreen(screen)}
-          onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
-        />
-      )}
-
-      {currentScreen === 'recipe' && (
-        <ScreenRecipe
-          recipe={recipe}
-          activeRecipe={selectedRecipe}
-          lotes={lotes}
-          onSelectRecipe={setSelectedRecipe}
-          onSetTotalVolume={handleSetTotalVolume}
-          onAdjustVolume={handleAdjustVolume}
-          onConfirmWeighing={handleStartDosing}
-          onNavigate={(screen) => setCurrentScreen(screen)}
-          onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
-        />
-      )}
-
-      {currentScreen === 'dosing' && (
-        <ScreenDosing
-          recipe={recipe}
-          activeRecipe={selectedRecipe}
-          operator={selectedOperator}
-          activeOS={MOCK_ORDENS_SERVICO.find(o => o.numero === selectedOSNumber) || MOCK_ORDENS_SERVICO[0]}
-          lotes={lotes}
-          onNavigate={(screen) => setCurrentScreen(screen)}
-          onCompleteDosing={handleCompleteDosing}
-          onSetTotalVolume={handleSetTotalVolume}
-          onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
-          showToast={showToast}
-        />
-      )}
-
-      {currentScreen === 'return' && (
-        <ScreenReturn
-          operator={selectedOperator}
-          lotes={lotes}
-          activeOS={MOCK_ORDENS_SERVICO.find(o => o.numero === selectedOSNumber) || MOCK_ORDENS_SERVICO[0]}
-          onNavigate={(screen) => setCurrentScreen(screen)}
-          showToast={showToast}
-          onConfirmReturn={async (dados) => {
-            // 1. Registra movimentação do tipo DEVOLUCAO
-            await movimentacaoRepository.registrar({
-              tipo: 'DEVOLUCAO',
-              loteId: 1,
-              operadorId: selectedOperator.id,
-              quantidade: dados.volume,
-              justificativa: `Devolução formal ao estoque: ${dados.volume}ml (${dados.produtoNome})`,
-              registradaEm: new Date().toISOString(),
-            });
-
-            // 2. Adiciona o lote de sobra ao estoque
-            const dataValidade = new Date();
-            dataValidade.setDate(dataValidade.getDate() + 30);
-            const validadeStr = dataValidade.toISOString().split('T')[0];
-
-            await loteRepository.adicionarSobra({
-              produtoId: dados.produtoId,
-              produtoNome: `${dados.produtoNome} (Sobra)`,
-              codigo: dados.loteGeradoCodigo,
-              validade: validadeStr,
-              diasAberto: 1,
-              quantidadeAtual: dados.volume,
-              statusUrgencia: 'alta',
-              prateleira: 'A-01 (Prateleira de Sobras)',
-            });
-
-            const lotesAtualizados = await loteRepository.listar();
-            setLotes(lotesAtualizados);
-            const movsAtualizadas = await movimentacaoRepository.listar();
-            setMovimentacoes(movsAtualizadas);
-          }}
-          onDiscardWaste={async (volume) => {
-            await movimentacaoRepository.registrar({
-              tipo: 'DESCARTE',
-              loteId: 1,
-              operadorId: selectedOperator.id,
-              quantidade: volume,
-              justificativa: `Descarte de refugo químico (${volume}ml)`,
-              registradaEm: new Date().toISOString(),
-            });
-            const movsAtualizadas = await movimentacaoRepository.listar();
-            setMovimentacoes(movsAtualizadas);
+            showToast('Preparação cancelada.', 'info');
           }}
         />
-      )}
-
-      {currentScreen === 'inventory' && (
-        <Suspense fallback={<div style={{ padding: '24px', color: 'var(--text-muted)' }}>Carregando estoque...</div>}>
-          <ScreenInventory
-            lotes={lotes}
-            operator={selectedOperator}
-            onNavigate={(screen) => setCurrentScreen(screen)}
-            showToast={showToast}
-            solicitacoes={solicitacoesCompras}
-            onAdicionarSolicitacao={handleAdicionarSolicitacao}
-            onRemoverSolicitacao={handleRemoverSolicitacao}
-            onReceberNovoLote={async (novoLote) => {
-              await loteRepository.adicionarSobra(novoLote);
-              const lotesAtualizados = await loteRepository.listar();
-              setLotes(lotesAtualizados);
-            }}
-          />
-        </Suspense>
-      )}
-
-      {currentScreen === 'manager' && (
-        <Suspense fallback={<div style={{ padding: '24px', color: 'var(--text-muted)' }}>Carregando painel do gestor...</div>}>
-          <ScreenManager
-            operator={selectedOperator}
-            onNavigate={(screen) => setCurrentScreen(screen)}
-            showToast={showToast}
-            movimentacoes={movimentacoes}
-            lotes={lotes}
-            onResetDemoData={async () => {
-              await loteRepository.resetar();
-              await movimentacaoRepository.resetar();
-              const lotesReset = await loteRepository.listar();
-              const movsReset = await movimentacaoRepository.listar();
-              setLotes(lotesReset);
-              setMovimentacoes(movsReset);
-              showToast('✓ Saldos de estoque e histórico restaurados para o estado inicial!', 'success');
-            }}
-          />
-        </Suspense>
-      )}
-      </div>
-
-      {/* Modal de Latas que vencem primeiro ("Use Primeiro") */}
-      <ModalUseFirst
-        isOpen={isUseFirstModalOpen}
-        onClose={() => setIsUseFirstModalOpen(false)}
-        onSelectBatch={handleSelectBatch}
-        lotes={lotes}
-      />
-
-      {/* Modal Scanner Real de QR Code (WebRTC / Câmera) */}
-      {isQrModalOpen && (
-        <Suspense fallback={null}>
-          <QrScannerModal
-            isOpen={isQrModalOpen}
-            onClose={() => setIsQrModalOpen(false)}
-            onScanSuccess={handleQrScanSuccess}
-          />
-        </Suspense>
-      )}
-
-      {/* Modal de Cancelar Preparação */}
-      <ModalCancelPrep
-        isOpen={isCancelPrepModalOpen}
-        onClose={() => setIsCancelPrepModalOpen(false)}
-        onConfirmCancel={() => {
-          setIsCancelPrepModalOpen(false);
-          setCurrentScreen('dashboard');
-          showToast('Preparação cancelada.', 'info');
-        }}
-      />
-
       </AppShell>
 
       {/* Toast Notificações no topo da raiz da aplicação */}
