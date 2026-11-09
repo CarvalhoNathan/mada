@@ -44,6 +44,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   preparacoes = [],
 }) => {
   const [hasPickedOperator, setHasPickedOperator] = useState<boolean>(false);
+  const [isManagerAuthMode, setIsManagerAuthMode] = useState<boolean>(false);
   const [pinEntered, setPinEntered] = useState<string>('');
   const [hasError, setHasError] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
@@ -68,15 +69,17 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   }, [isSuccess]);
 
   const handleBackspace = useCallback(() => {
-    if (isSuccess || !hasPickedOperator) return;
+    if (isSuccess || (!hasPickedOperator && !isManagerAuthMode)) return;
     if (hasError) setHasError(false);
     setPinEntered((prev) => prev.slice(0, -1));
-  }, [hasError, isSuccess, hasPickedOperator]);
+  }, [hasError, isSuccess, hasPickedOperator, isManagerAuthMode]);
 
   const handleSubmit = useCallback(
-    (candidatePin?: string, forceOperator?: Operator) => {
+    (candidatePin?: string, forceOperator?: Operator, forceManagerMode?: boolean) => {
       if (isSuccess) return;
-      if (!hasPickedOperator && !forceOperator) {
+      const managerMode = forceManagerMode ?? isManagerAuthMode;
+
+      if (!hasPickedOperator && !managerMode && !forceOperator) {
         showToast('Selecione primeiro seu perfil de operador na lista à esquerda.', 'warn');
         return;
       }
@@ -88,6 +91,31 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
       }
       if (pin.length < 4) {
         showToast('Por favor, digite os 4 dígitos do seu PIN.', 'warn');
+        return;
+      }
+
+      if (managerMode) {
+        const isManagerPinValid =
+          pin === MOCK_SUPERVISOR.pin || pin === MOCK_SUPERVISOR.pinAlternativo;
+        if (!isManagerPinValid || pin === PIN_ERRO_SIMULADO) {
+          setHasError(true);
+          setTimeout(() => {
+            setPinEntered('');
+            setHasError(false);
+          }, 800);
+          return;
+        }
+
+        setIsSuccess(true);
+        setTimeout(() => {
+          if (onNavigateToManager) {
+            onNavigateToManager();
+          } else {
+            onSuccessAuth();
+          }
+          setIsSuccess(false);
+          setPinEntered('');
+        }, 280);
         return;
       }
 
@@ -124,18 +152,20 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
     [
       isSuccess,
       hasPickedOperator,
+      isManagerAuthMode,
       selectedOperator,
       pinEntered,
       isOffline,
       showToast,
       onSuccessAuth,
+      onNavigateToManager,
     ]
   );
 
   const handleDigit = useCallback(
     (digit: string) => {
       if (hasError || isSuccess) return;
-      if (!hasPickedOperator) {
+      if (!hasPickedOperator && !isManagerAuthMode) {
         showToast('Toque primeiro no seu nome na lista ao lado para liberar o PIN.', 'info');
         return;
       }
@@ -149,7 +179,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
         }
       }
     },
-    [hasError, isSuccess, hasPickedOperator, pinEntered, handleSubmit, showToast]
+    [hasError, isSuccess, hasPickedOperator, isManagerAuthMode, pinEntered, handleSubmit, showToast]
   );
 
   // Suporte a teclado físico para conveniência e acessibilidade
@@ -176,10 +206,10 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   const selectedName = selectedOperator.nome || selectedOperator.name || 'Operador';
   const firstName = selectedName.split(' ')[0];
 
-  // Status ao vivo da Cabine 01 (se houver aplicação real em andamento)
+  // Status ao vivo da Cabine 01 e Cabine 02 (a partir das preparações reais)
   const prepAtivaCabine1 = preparacoes.find(
     (p) =>
-      (p.cabineId === 'cabine-01' || !p.cabineId) &&
+      (p.cabineId || 'CABINE-01').toUpperCase() === 'CABINE-01' &&
       Boolean(p.dosagemConcluidaEm) &&
       !p.aplicacaoConcluidaEm &&
       p.status !== 'PREPARACAO_ENCERRADA'
@@ -191,6 +221,21 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           Math.floor((nowMs - new Date(prepAtivaCabine1.dosagemConcluidaEm).getTime()) / 1000)
       )
     : null;
+
+  const prepAtivaCabine2 = preparacoes.find(
+    (p) =>
+      (p.cabineId || '').toUpperCase() === 'CABINE-02' &&
+      Boolean(p.dosagemConcluidaEm) &&
+      !p.aplicacaoConcluidaEm &&
+      p.status !== 'PREPARACAO_ENCERRADA'
+  );
+  const cabine2RealSec = prepAtivaCabine2?.dosagemConcluidaEm
+    ? Math.max(
+        0,
+        (prepAtivaCabine2.potLifeMinutos || 25) * 60 -
+          Math.floor((nowMs - new Date(prepAtivaCabine2.dosagemConcluidaEm).getTime()) / 1000)
+      )
+    : cabine2SecRestantes;
 
   // Quantidade de latas abertas/sobras prioritárias FEFO para exibir no card do auxiliar
   const lotesBase = lotes.length > 0 ? lotes : MOCK_LOTES;
@@ -214,18 +259,26 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
               const opRole = op.papel || op.role || 'Operador de Pintura';
               const isSelected =
                 hasPickedOperator &&
+                !isManagerAuthMode &&
                 (op.id ? op.id === selectedOperator.id : opName === selectedName);
 
               // Status operacional ao vivo por operador
               const isAna = opName.toLowerCase().includes('ana');
               const isCarlos = opName.toLowerCase().includes('carlos');
 
-              let liveStatusLabel = '';
-              let liveStatusTone: 'active-green' | 'info-blue' | 'warn-amber' = 'info-blue';
+              let liveStatusLabel: string;
+              let liveStatusTone: 'active-green' | 'info-blue' | 'warn-amber';
 
               if (isAna) {
-                liveStatusLabel = `● Aplicando OS #8842 • Verniz PU (${formatMmSs(cabine2SecRestantes)})`;
-                liveStatusTone = 'active-green';
+                if (prepAtivaCabine2) {
+                  liveStatusLabel = `● Aplicando ${prepAtivaCabine2.ordemServicoNumero} • Verniz PU (${formatMmSs(
+                    cabine2RealSec
+                  )})`;
+                  liveStatusTone = 'active-green';
+                } else {
+                  liveStatusLabel = '● Cabine 02 livre p/ nova O.S.';
+                  liveStatusTone = 'info-blue';
+                }
               } else if (isCarlos) {
                 if (prepAtivaCabine1 && cabine1RemainingSec !== null) {
                   liveStatusLabel = `● Aplicando ${prepAtivaCabine1.ordemServicoNumero} (${formatMmSs(
@@ -268,6 +321,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                   aria-checked={isSelected}
                   className={`operator-card-apple ${isSelected ? 'is-active' : ''}`}
                   onClick={() => {
+                    setIsManagerAuthMode(false);
                     setHasPickedOperator(true);
                     onSelectOperator(op);
                     handleClear();
@@ -320,13 +374,20 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
               type="button"
               className="auth-supervisor-btn"
               onClick={() => {
-                if (onNavigateToManager) {
-                  onNavigateToManager();
-                } else {
-                  handleSubmit(MOCK_SUPERVISOR.pin, selectedOperator);
-                }
+                setIsManagerAuthMode(true);
+                setHasPickedOperator(false);
+                handleClear();
               }}
-              title="Acesso direto ao painel gerencial do Fábio"
+              style={
+                isManagerAuthMode
+                  ? {
+                      borderColor: 'rgba(245, 158, 11, 0.65)',
+                      background: 'rgba(245, 158, 11, 0.14)',
+                      color: '#FBBF24',
+                    }
+                  : undefined
+              }
+              title="Requer PIN do Gestor Fábio (9999)"
             >
               <Shield size={16} strokeWidth={2.4} color="currentColor" />
               <span>Painel do Gestor (Fábio)</span>
@@ -348,12 +409,33 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           <div
             className="auth-pin-card-apple"
             style={{
-              opacity: hasPickedOperator ? 1 : 0.72,
+              opacity: hasPickedOperator || isManagerAuthMode ? 1 : 0.72,
               transition: 'opacity 0.2s ease',
             }}
           >
             <div className="auth-pin-card-header">
-              {hasPickedOperator ? (
+              {isManagerAuthMode ? (
+                <>
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 12px',
+                      borderRadius: '999px',
+                      background: 'rgba(245, 158, 11, 0.14)',
+                      border: '1px solid rgba(245, 158, 11, 0.4)',
+                      color: '#FBBF24',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      marginBottom: '6px',
+                    }}
+                  >
+                    <Shield size={13} strokeWidth={2.4} /> Acesso Restrito • Gestão & Estoque
+                  </div>
+                  <h2 className="auth-pin-title">PIN do Gestor, Fábio</h2>
+                </>
+              ) : hasPickedOperator ? (
                 <h2 className="auth-pin-title">Digite seu PIN, {firstName}</h2>
               ) : (
                 <>
@@ -394,7 +476,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
               onDigit={handleDigit}
               onBackspace={handleBackspace}
               onClear={handleClear}
-              disabled={!hasPickedOperator || isOffline}
+              disabled={(!hasPickedOperator && !isManagerAuthMode) || isOffline}
             />
           </div>
         </section>
@@ -488,9 +570,10 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                 className="os-list-card"
                 onClick={() => {
                   setIsHelpModalOpen(false);
-                  setHasPickedOperator(true);
+                  setIsManagerAuthMode(true);
+                  setHasPickedOperator(false);
                   setPinEntered('9999');
-                  setTimeout(() => handleSubmit('9999', selectedOperator), 120);
+                  setTimeout(() => handleSubmit('9999', selectedOperator, true), 120);
                 }}
                 style={{ padding: '14px 16px' }}
               >

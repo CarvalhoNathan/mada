@@ -150,8 +150,8 @@ export const AppShell: React.FC<AppShellProps> = ({
             <span>Limpar tela</span>
           </button>
 
-          {/* Botão Interativo: Operador Logado ou Slot Aguardando Login */}
-          {operator ? (
+          {/* Botão Interativo: Operador Logado (oculto na tela de login para evitar redundância) */}
+          {operator && (
             <button
               type="button"
               className="boardui-operator-pill"
@@ -167,16 +167,6 @@ export const AppShell: React.FC<AppShellProps> = ({
                 <ChevronsUpDown size={14} />
               </span>
             </button>
-          ) : (
-            <div
-              className="boardui-operator-pill boardui-operator-pill--auth"
-              title="Aguardando identificação do operador"
-            >
-              <div className="boardui-operator-avatar boardui-operator-avatar--auth">
-                PIN
-              </div>
-              <span className="boardui-operator-name" style={{ color: 'var(--text-muted)' }}>Identificar-se</span>
-            </div>
           )}
         </div>
       </header>

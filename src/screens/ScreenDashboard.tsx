@@ -1,7 +1,5 @@
 import React from 'react';
 import {
-  Boxes,
-  BarChart3,
   AlertTriangle,
   FlaskConical,
   RotateCcw,
@@ -67,12 +65,18 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
     0
   );
 
-  const prepMaisRecentePendente = preparacoesPendentes[0];
+  const prepDaCabineOperador = preparacoesPendentes.find(
+    (p) =>
+      (p.cabineId || 'CABINE-01').toUpperCase() ===
+      (operator.cabineId || 'CABINE-01').toUpperCase()
+  );
+  const prepMaisRecentePendente =
+    preparacaoAtivaCabine || prepDaCabineOperador || preparacoesPendentes[0];
   const cabineOcupadaPorAplicacao = Boolean(preparacaoAtivaCabine);
 
   return (
     <div className="boardui-dash-container">
-      {/* 1. Cabeçalho Operacional + Atalhos Secundários Ergonômicos (>= 64px touch target) */}
+      {/* 1. Cabeçalho Operacional Focado na Cabine */}
       <div className="boardui-dash-header">
         <div className="boardui-dash-greeting">
           <h1 className="boardui-dash-title">
@@ -81,26 +85,6 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
           <p className="boardui-dash-subtitle">
             {operatorRole} • Selecione a operação na bancada abaixo
           </p>
-        </div>
-
-        <div className="boardui-dash-quick-nav" role="navigation" aria-label="Acessos de gestão e estoque">
-          <button
-            type="button"
-            className="boardui-nav-action-btn"
-            onClick={() => onNavigate('inventory')}
-          >
-            <Boxes size={20} strokeWidth={2.2} aria-hidden="true" />
-            <span>Estoque & Compras</span>
-          </button>
-
-          <button
-            type="button"
-            className="boardui-nav-action-btn is-manager"
-            onClick={() => onNavigate('manager')}
-          >
-            <BarChart3 size={20} strokeWidth={2.2} aria-hidden="true" />
-            <span>Painel do Gestor</span>
-          </button>
         </div>
       </div>
 
