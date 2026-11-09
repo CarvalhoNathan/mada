@@ -66,13 +66,17 @@ export function SegmentedControl<T extends string | number>({
   const btnRefs = useRef<Map<T, HTMLButtonElement>>(new Map());
   const firstRender = useRef(true);
 
-  const activeOpt = options.find((o) => o.id === value) || options[0];
+  const activeOpt = options.find((o) => o.id === value);
   const activeTone = TONE_STYLES[activeOpt?.tone || 'primary'];
 
   useEffect(() => {
     const pill = pillRef.current;
     const btn = btnRefs.current.get(value);
-    if (!pill || !btn) return;
+    if (!pill) return;
+    if (!btn) {
+      gsap.set(pill, { opacity: 0 });
+      return;
+    }
 
     const targetX = btn.offsetLeft;
     const targetW = btn.offsetWidth;

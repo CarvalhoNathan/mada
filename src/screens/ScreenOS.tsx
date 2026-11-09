@@ -17,7 +17,7 @@ interface ScreenOSProps {
   onSelectOS?: (os: OrdemServico) => void;
   onScanOS: () => void;
   onNavigate: (screen: 'dashboard' | 'recipe') => void;
-  onOpenCancelPrep: () => void;
+  onOpenCancelPrep?: () => void;
   ambientes?: Ambiente[];
 }
 
@@ -34,7 +34,6 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
   onSelectOS,
   onScanOS,
   onNavigate,
-  onOpenCancelPrep,
 }) => {
   const [isOsModalOpen, setIsOsModalOpen] = useState(false);
 
@@ -316,7 +315,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
         </div>
       </div>
 
-      {/* 3. Barra Inferior Padronizada */}
+      {/* 3. Barra Inferior Padronizada (Cancelar preparação aparece apenas na Dosagem em Béquer) */}
       <footer className="os-bottom-bar-minimal">
         <div className="os-bottom-left">
           <button
@@ -325,13 +324,6 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
             onClick={() => onNavigate('dashboard')}
           >
             ← Voltar
-          </button>
-          <button
-            type="button"
-            className="os-bar-btn os-btn-cancel"
-            onClick={onOpenCancelPrep}
-          >
-            ✕ Cancelar preparação
           </button>
         </div>
 
