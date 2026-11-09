@@ -17,10 +17,10 @@ interface QuickOption {
 }
 
 const QUICK_SCAN_OPTIONS: QuickOption[] = [
-  { code: 'OS-1084', label: 'OS #1084 — Residência Alphaville (Laca PU)', badge: 'OS' },
-  { code: 'OS-1085', label: 'OS #1085 — Cozinha Jardins (Verniz Natural)', badge: 'OS' },
-  { code: 'L-PU-2026-088', label: 'Lote L-PU-2026-088 — Sayerlack PU Branco', badge: 'Lote' },
-  { code: 'SOBRA-PU-8821', label: 'Sobra #SOBRA-PU-8821 — 400ml restantes', badge: 'Sobra' },
+  { code: 'OS #8841', label: 'OS #8841 — Residência Fontana (Cozinha Gourmet)', badge: 'OS' },
+  { code: 'OS #8843', label: 'OS #8843 — Residência Fontana (Suíte Master)', badge: 'OS' },
+  { code: '#SY-7410', label: 'Embalagem #SY-7410 — Catalisador PU Médio (250ml)', badge: 'Embalagem' },
+  { code: '#SOBRA-SY-8821', label: 'Sobra #SY-8821 — Verniz PU 4:1 (400ml restantes)', badge: 'Sobra' },
 ];
 
 export const QrScannerModal: React.FC<QrScannerModalProps> = ({

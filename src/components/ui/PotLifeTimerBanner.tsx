@@ -1,33 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { AlertOctagon, AlertTriangle, Clock, Check, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { AlertOctagon, AlertTriangle, Clock, Check, ClipboardList } from 'lucide-react';
 import { CountNumber } from './CountNumber';
+import {
+  calcularEstadoPotLife,
+  ORIENTACAO_NEUTRA_POT_LIFE_EXPIRADO,
+} from '../../domain/potLife';
 
 export interface PotLifeState {
-  startTime: number; // timestamp em ms
-  durationSeconds: number; // padrão: 20 * 60 = 1200
+  preparacaoId?: string;
+  dosagemConcluidaEm?: string; // ISO timestamp absoluto
+  startTime: number; // timestamp absoluto em ms
+  durationSeconds: number; // derivado de potLifeMinutos homologado na receita
+  potLifeMinutos?: number;
   recipeName: string;
   osNumber: string;
   volumeTotal: number;
+  cabineNome?: string;
+  procedimentoOficialValidado?: string;
 }
 
 interface PotLifeTimerBannerProps {
   potLife: PotLifeState | null;
   onFinishApplication: () => void;
-  onDiscardHardened: () => void;
+  onDiscardHardened?: () => void;
+  onOpenOccurrenceModal?: () => void;
+  onPotLifeExpired?: (expiredIso: string) => void;
 }
 
-function getInitialRemaining(potLife: PotLifeState | null): number {
-  if (!potLife) return 0;
-  const elapsedSeconds = Math.floor((Date.now() - potLife.startTime) / 1000);
-  return Math.max(0, potLife.durationSeconds - elapsedSeconds);
+function computeCalculation(potLife: PotLifeState | null) {
+  if (!potLife) return null;
+  const isoStart = potLife.dosagemConcluidaEm || new Date(potLife.startTime).toISOString();
+  const minutos = potLife.potLifeMinutos || Math.max(1, Math.round(potLife.durationSeconds / 60));
+  return calcularEstadoPotLife(
+    isoStart,
+    minutos,
+    Date.now(),
+    potLife.procedimentoOficialValidado
+  );
 }
 
 export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
   potLife,
   onFinishApplication,
   onDiscardHardened,
+  onOpenOccurrenceModal,
+  onPotLifeExpired,
 }) => {
-  const [secondsRemaining, setSecondsRemaining] = useState<number>(() => getInitialRemaining(potLife));
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+  const notifiedPrepIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!potLife) {
@@ -35,26 +55,41 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
     }
 
     const interval = setInterval(() => {
-      const elapsedSeconds = Math.floor((Date.now() - potLife.startTime) / 1000);
-      const remaining = Math.max(0, potLife.durationSeconds - elapsedSeconds);
-      setSecondsRemaining(remaining);
+      setNowMs(Date.now());
     }, 1000);
 
     return () => clearInterval(interval);
   }, [potLife]);
 
-  if (!potLife) return null;
+  const calc = potLife
+    ? calcularEstadoPotLife(
+        potLife.dosagemConcluidaEm || new Date(potLife.startTime).toISOString(),
+        potLife.potLifeMinutos || Math.max(1, Math.round(potLife.durationSeconds / 60)),
+        nowMs,
+        potLife.procedimentoOficialValidado
+      )
+    : computeCalculation(null);
 
+  useEffect(() => {
+    if (!potLife || !calc) return;
+    const key = potLife.preparacaoId || String(potLife.startTime);
+    if (calc.expirado && notifiedPrepIdRef.current !== key) {
+      notifiedPrepIdRef.current = key;
+      if (onPotLifeExpired) {
+        onPotLifeExpired(calc.expiraEmIso);
+      }
+    }
+  }, [potLife, calc, onPotLifeExpired]);
+
+  if (!potLife || !calc) return null;
+
+  const secondsRemaining = calc.segundosRestantes;
   const minutes = Math.floor(secondsRemaining / 60);
   const seconds = secondsRemaining % 60;
 
-  const isExpired = secondsRemaining <= 0;
-  const isUrgent = secondsRemaining > 0 && secondsRemaining <= 5 * 60; // menos de 5 min
-
-  const progressPercent = Math.min(
-    100,
-    Math.max(0, ((potLife.durationSeconds - secondsRemaining) / potLife.durationSeconds) * 100)
-  );
+  const isExpired = calc.expirado;
+  const isUrgent = calc.proximoLimite;
+  const progressPercent = calc.percentualConsumido;
 
   return (
     <aside
@@ -82,7 +117,7 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
       }}
     >
       {/* Esquerda: Informação e Status */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '1 1 360px' }}>
         <div
           style={{
             width: '44px',
@@ -123,9 +158,14 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
                 color: isExpired ? '#FCA5A5' : isUrgent ? '#FDE68A' : '#6EE7B7',
               }}
             >
-              {isExpired ? 'Mistura Endurecida' : isUrgent ? 'Tempo Crítico' : 'Mistura Ativa (Pot Life)'}
+              {isExpired
+                ? 'POT_LIFE_EXPIRADO'
+                : isUrgent
+                ? 'Alerta Preventivo • Próximo do Limite'
+                : 'Mistura Ativa (Pot Life)'}
             </span>
             <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 600 }}>
+              {potLife.cabineNome ? `${potLife.cabineNome} • ` : ''}
               {potLife.osNumber} • {potLife.recipeName} • {potLife.volumeTotal} ml
             </span>
           </div>
@@ -133,20 +173,19 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
           <h4
             style={{
               margin: '4px 0 0',
-              fontSize: '15px',
+              fontSize: '14px',
               fontWeight: 700,
-              color: isExpired ? '#EF4444' : 'var(--text)',
+              color: isExpired ? '#FCA5A5' : isUrgent ? '#FDE68A' : 'var(--text)',
+              lineHeight: 1.35,
             }}
           >
-            {isExpired
-              ? 'Tempo de cura (20 min) esgotado! Descarte obrigatório no tambor de refugo.'
-              : 'Aplique na pistola antes de endurecer'}
+            {isExpired ? ORIENTACAO_NEUTRA_POT_LIFE_EXPIRADO : calc.mensagemContextual}
           </h4>
         </div>
       </div>
 
       {/* Centro: Cronômetro com Rolagem Numérica + Barra de Progresso */}
-      <div style={{ minWidth: '180px', flex: 1, maxWidth: '260px' }}>
+      <div style={{ minWidth: '170px', flex: '0 1 230px' }}>
         <div
           style={{
             display: 'flex',
@@ -190,36 +229,15 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
         </div>
       </div>
 
-      {/* Direita: Ação Única Direta */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {!isExpired ? (
+      {/* Direita: Ação Direta (Concluir Aplicação ou Registrar Ocorrência se Expirado) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        {isExpired && (onOpenOccurrenceModal || onDiscardHardened) && (
           <button
             type="button"
-            onClick={onFinishApplication}
+            onClick={onOpenOccurrenceModal || onDiscardHardened}
             style={{
               minHeight: '44px',
-              padding: '0 16px',
-              background: '#10B981',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '10px',
-              fontSize: '14px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
-            <Check size={16} strokeWidth={2.6} /> Concluir Aplicação
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onDiscardHardened}
-            style={{
-              minHeight: '44px',
-              padding: '0 16px',
+              padding: '0 14px',
               background: '#EF4444',
               color: '#fff',
               border: 'none',
@@ -232,9 +250,31 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
               gap: '8px',
             }}
           >
-            <Trash2 size={16} strokeWidth={2.4} /> Descartar Refugo ({potLife.volumeTotal}ml)
+            <ClipboardList size={16} strokeWidth={2.4} />
+            <span>Registrar Ocorrência</span>
           </button>
         )}
+
+        <button
+          type="button"
+          onClick={onFinishApplication}
+          style={{
+            minHeight: '44px',
+            padding: '0 16px',
+            background: '#10B981',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <Check size={16} strokeWidth={2.6} /> Concluir Aplicação
+        </button>
       </div>
     </aside>
   );
