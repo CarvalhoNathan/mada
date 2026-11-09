@@ -49,6 +49,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   const [hasError, setHasError] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
+  const [shakeOperatorList, setShakeOperatorList] = useState<boolean>(false);
 
   // Relógio de simulação em tempo real (1Hz) para mostrar o chão de fábrica vivo
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
@@ -166,6 +167,8 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
     (digit: string) => {
       if (hasError || isSuccess) return;
       if (!hasPickedOperator && !isManagerAuthMode) {
+        setShakeOperatorList(true);
+        setTimeout(() => setShakeOperatorList(false), 500);
         showToast('Toque primeiro no seu nome na lista ao lado para liberar o PIN.', 'info');
         return;
       }
@@ -253,7 +256,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
             </p>
           </div>
 
-          <div className="auth-operators-vertical" role="radiogroup" aria-label="Operadores disponíveis">
+          <div className={`auth-operators-vertical ${shakeOperatorList ? 'shake' : ''}`} role="radiogroup" aria-label="Operadores disponíveis">
             {operators.map((op) => {
               const opName = op.nome || op.name || '';
               const opRole = op.papel || op.role || 'Operador de Pintura';
@@ -265,6 +268,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
               // Status operacional ao vivo por operador
               const isAna = opName.toLowerCase().includes('ana');
               const isCarlos = opName.toLowerCase().includes('carlos');
+              const opAvatarKey = isCarlos ? 'carlos' : isAna ? 'ana' : 'marcos';
 
               let liveStatusLabel: string;
               let liveStatusTone: 'active-green' | 'info-blue' | 'warn-amber';
@@ -327,41 +331,24 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                     handleClear();
                   }}
                 >
-                  <div className="operator-avatar-circle" aria-hidden="true">
+                  <div
+                    className={`operator-avatar-circle operator-avatar-circle--${opAvatarKey}`}
+                    aria-hidden="true"
+                  >
                     {getInitials(opName)}
                   </div>
                   <div className="operator-info-apple">
                     <span className="operator-name-apple">{opName}</span>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '8px',
-                        marginTop: '3px',
-                      }}
-                    >
-                      <span className="operator-role-apple">{opRole}</span>
-                      <span
-                        style={{
-                          ...badgeStyles,
-                          padding: '2px 8px',
-                          borderRadius: '999px',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          fontVariantNumeric: 'tabular-nums',
-                          letterSpacing: '0.01em',
-                        }}
-                      >
-                        {liveStatusLabel}
-                      </span>
-                    </div>
+                    <span className="operator-role-apple">{opRole}</span>
+                    <span className="operator-status-pill" style={badgeStyles}>
+                      {liveStatusLabel}
+                    </span>
                   </div>
                   <div
                     className={`operator-select-indicator ${isSelected ? 'is-selected' : ''}`}
                     aria-hidden="true"
                   >
-                    {isSelected && <Check size={20} strokeWidth={3} />}
+                    {isSelected && <Check size={18} strokeWidth={3} />}
                   </div>
                 </button>
               );
@@ -381,15 +368,18 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
               style={
                 isManagerAuthMode
                   ? {
-                      borderColor: 'rgba(245, 158, 11, 0.65)',
-                      background: 'rgba(245, 158, 11, 0.14)',
-                      color: '#FBBF24',
+                      borderColor: 'rgba(245, 158, 11, 0.75)',
+                      background: 'rgba(245, 158, 11, 0.18)',
+                      color: '#FEF08A',
+                      boxShadow: '0 0 16px rgba(245, 158, 11, 0.25)',
                     }
                   : undefined
               }
               title="Requer PIN do Gestor Fábio (9999)"
             >
-              <Shield size={16} strokeWidth={2.4} color="currentColor" />
+              <div className="auth-supervisor-icon-box" aria-hidden="true">
+                <Shield size={13} strokeWidth={2.4} />
+              </div>
               <span>Painel do Gestor (Fábio)</span>
             </button>
 
@@ -397,8 +387,9 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
               type="button"
               className="auth-help-btn"
               onClick={() => setIsHelpModalOpen(true)}
+              title="Ver PINs para demonstração e suporte"
             >
-              <HelpCircle size={17} aria-hidden="true" />
+              <KeyRound size={15} strokeWidth={2.2} aria-hidden="true" />
               <span>PINs Demo</span>
             </button>
           </div>
@@ -409,8 +400,8 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           <div
             className="auth-pin-card-apple"
             style={{
-              opacity: hasPickedOperator || isManagerAuthMode ? 1 : 0.72,
-              transition: 'opacity 0.2s ease',
+              opacity: hasPickedOperator || isManagerAuthMode ? 1 : 0.78,
+              transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
             <div className="auth-pin-card-header">
@@ -434,9 +425,34 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                     <Shield size={13} strokeWidth={2.4} /> Acesso Restrito • Gestão & Estoque
                   </div>
                   <h2 className="auth-pin-title">PIN do Gestor, Fábio</h2>
+                  <p className="auth-pin-hint">
+                    Autorização mestra para auditoria e gestão
+                  </p>
                 </>
               ) : hasPickedOperator ? (
-                <h2 className="auth-pin-title">Digite seu PIN, {firstName}</h2>
+                <>
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 12px',
+                      borderRadius: '999px',
+                      background: 'rgba(59, 130, 246, 0.12)',
+                      border: '1px solid rgba(59, 130, 246, 0.32)',
+                      color: '#93C5FD',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      marginBottom: '6px',
+                    }}
+                  >
+                    <KeyRound size={13} strokeWidth={2.4} /> Terminal Liberado
+                  </div>
+                  <h2 className="auth-pin-title">Digite seu PIN, {firstName}</h2>
+                  <p className="auth-pin-hint">
+                    Insira seus 4 dígitos para autorizar a estação
+                  </p>
+                </>
               ) : (
                 <>
                   <div
