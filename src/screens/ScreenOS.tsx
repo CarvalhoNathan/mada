@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, X, FileSpreadsheet, Layers } from 'lucide-react';
+import { Check, X, FileSpreadsheet, Layers, Search } from 'lucide-react';
 import { Ambiente, AmbienteOS, OrdemServico, PieceLot } from '../types';
 import { CountNumber } from '../components/ui/CountNumber';
 import { MOCK_ORDENS_SERVICO } from '../data/mock/mockData';
@@ -36,6 +36,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
   onNavigate,
 }) => {
   const [isOsModalOpen, setIsOsModalOpen] = useState(false);
+  const [osSearchQuery, setOsSearchQuery] = useState('');
 
   const activeOSObj =
     MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOS) || MOCK_ORDENS_SERVICO[0];
@@ -342,37 +343,33 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
         </div>
       </footer>
 
-      {/* Modal Tátil Seletor de Ordem de Serviço */}
+      {/* Modal Tátil Seletor de Ordem de Serviço (Apple HIG / Inset Grouped) */}
       {isOsModalOpen && (
         <div
           className="ds-modal-overlay active"
           role="dialog"
           aria-modal="true"
           aria-label="Selecionar Ordem de Serviço"
+          onClick={() => setIsOsModalOpen(false)}
         >
-          <div className="ds-modal-card" style={{ maxWidth: '720px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '14px',
-                    background: 'var(--primary-soft)',
-                    border: '1.5px solid var(--primary-border)',
-                    color: 'var(--primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <FileSpreadsheet size={24} strokeWidth={2.2} />
+          <div
+            className="os-modal-card-apple"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Cabeçalho do Modal no padrão Apple Sheet */}
+            <div className="os-modal-header-apple">
+              <div className="os-modal-header-left">
+                <div className="os-modal-icon-badge" aria-hidden="true">
+                  <FileSpreadsheet size={22} strokeWidth={2.2} />
                 </div>
                 <div>
-                  <h3 className="ds-modal-title" style={{ fontSize: '22px', margin: 0 }}>
-                    Selecionar Ordem de Serviço na Fila
+                  <h3 className="os-modal-title-apple">
+                    <span>Selecionar Ordem de Serviço</span>
+                    <span className="os-modal-count-pill">
+                      {MOCK_ORDENS_SERVICO.length} na fila
+                    </span>
                   </h3>
-                  <p style={{ margin: '2px 0 0', fontSize: '16px', color: 'var(--text-muted)' }}>
+                  <p className="os-modal-subtitle-apple">
                     Toque na O.S. para carregar seus ambientes e lotes de peças correspondentes.
                   </p>
                 </div>
@@ -380,92 +377,111 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
               <button
                 type="button"
                 onClick={() => setIsOsModalOpen(false)}
-                className="os-bar-btn os-btn-back"
-                style={{ minHeight: '52px', padding: '0 16px' }}
+                className="os-modal-close-apple"
                 aria-label="Fechar seletor de O.S."
               >
-                <X size={20} />
+                <X size={18} strokeWidth={2.4} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '55vh', overflowY: 'auto' }}>
-              {MOCK_ORDENS_SERVICO.map((ordem) => {
-                const isCurrent = ordem.numero === selectedOS;
-                const ambientesLista =
-                  ordem.ambientesObra && ordem.ambientesObra.length > 0
-                    ? ordem.ambientesObra.map((a) => a.nome).join(' + ')
-                    : ordem.ambienteNome;
-                const qtdAmbientes = ordem.ambientesObra?.length || 1;
-                return (
-                  <button
-                    key={ordem.id}
-                    type="button"
-                    onClick={() => {
-                      if (onSelectOS) {
-                        onSelectOS(ordem);
-                      }
-                      setIsOsModalOpen(false);
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '16px',
-                      width: '100%',
-                      minHeight: '84px',
-                      padding: '16px 20px',
-                      borderRadius: '16px',
-                      border: isCurrent ? '2px solid var(--primary)' : '1.5px solid var(--border)',
-                      background: isCurrent ? 'var(--primary-soft)' : 'var(--bg)',
-                      color: 'var(--text)',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      fontFamily: 'inherit',
-                    }}
-                  >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                        <span className="os-number-tag">{ordem.numero}</span>
-                        <strong style={{ fontSize: '18px', color: 'var(--text)' }}>
-                          {ordem.clienteNome}
-                        </strong>
-                        <span
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            padding: '2px 8px',
-                            borderRadius: '999px',
-                            background: 'rgba(255,255,255,0.06)',
-                            color: 'var(--text-muted)',
-                          }}
-                        >
+            {/* Campo de Busca Estilo Apple Spotlight */}
+            <div className="os-modal-search-box">
+              <span className="os-modal-search-icon" aria-hidden="true">
+                <Search size={18} strokeWidth={2.2} />
+              </span>
+              <input
+                type="text"
+                className="os-modal-search-input"
+                placeholder="Buscar cliente, número de O.S. ou ambiente..."
+                value={osSearchQuery}
+                onChange={(e) => setOsSearchQuery(e.target.value)}
+                autoFocus
+              />
+              {osSearchQuery && (
+                <button
+                  type="button"
+                  className="os-modal-search-clear"
+                  onClick={() => setOsSearchQuery('')}
+                  aria-label="Limpar busca"
+                >
+                  <X size={12} strokeWidth={2.8} />
+                </button>
+              )}
+            </div>
+
+            {/* Lista de Ordens de Serviço (Cartões Inset Apple com Micro-chips) */}
+            <div className="os-modal-list-container">
+              {(() => {
+                const query = osSearchQuery.trim().toLowerCase();
+                const filtered = MOCK_ORDENS_SERVICO.filter((ordem) => {
+                  if (!query) return true;
+                  const matchNumero = ordem.numero.toLowerCase().includes(query);
+                  const matchCliente = ordem.clienteNome.toLowerCase().includes(query);
+                  const matchProjeto = (ordem.projetoNome || '').toLowerCase().includes(query);
+                  const matchAmbientes = ordem.ambientesObra?.some((a) =>
+                    a.nome.toLowerCase().includes(query)
+                  );
+                  return matchNumero || matchCliente || matchProjeto || matchAmbientes;
+                });
+
+                if (filtered.length === 0) {
+                  return (
+                    <div className="os-list-empty-feedback">
+                      Nenhuma Ordem de Serviço encontrada para &ldquo;{osSearchQuery}&rdquo;.
+                    </div>
+                  );
+                }
+
+                return filtered.map((ordem) => {
+                  const isCurrent = ordem.numero === selectedOS;
+                  const ambientes = ordem.ambientesObra || [
+                    { id: ordem.ambienteId || ordem.id, nome: ordem.ambienteNome, lotesPecas: [ordem.pecaLote] },
+                  ];
+                  const qtdAmbientes = ambientes.length;
+
+                  return (
+                    <button
+                      key={ordem.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={isCurrent}
+                      className={`os-list-card ${isCurrent ? 'is-active' : ''}`}
+                      onClick={() => {
+                        if (onSelectOS) {
+                          onSelectOS(ordem);
+                        }
+                        setIsOsModalOpen(false);
+                      }}
+                    >
+                      {/* Linha Superior: Nome do Cliente e Metadados Técnicos à Direita */}
+                      <div className="os-list-card-row">
+                        <h4 className="os-list-client-name">{ordem.clienteNome}</h4>
+                        <div className="os-list-right-meta">
+                          <span className="os-badge-code">{ordem.numero}</span>
+                          <div className="os-list-radio-apple" aria-hidden="true">
+                            {isCurrent && <Check size={17} strokeWidth={2.8} />}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Linha Central: Subtítulo do Projeto / Arquiteto */}
+                      <p className="os-list-subtitle-text">{ordem.projetoNome}</p>
+
+                      {/* Linha Inferior: Micro-chips de Ambientes Táteis */}
+                      <div className="os-list-chips-container">
+                        {ambientes.map((amb) => (
+                          <span key={amb.id} className="os-list-env-chip">
+                            {amb.nome}
+                          </span>
+                        ))}
+                        <span className="os-modal-count-pill" style={{ marginLeft: '4px' }}>
                           {qtdAmbientes === 1 ? '1 ambiente' : `${qtdAmbientes} ambientes`}
                         </span>
                       </div>
-                      <span style={{ fontSize: '15px', color: 'var(--text-muted)' }}>
-                        Ambientes: <strong style={{ color: 'var(--text)' }}>{ambientesLista}</strong> • {ordem.projetoNome}
-                      </span>
-                    </div>
-
-                    <div
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '50%',
-                        border: isCurrent ? '2px solid var(--primary)' : '2px solid var(--border)',
-                        background: isCurrent ? 'var(--primary)' : 'var(--card)',
-                        color: isCurrent ? 'var(--primary-foreground)' : '#fff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      {isCurrent && <Check size={18} strokeWidth={2.8} />}
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                });
+              })()}
             </div>
           </div>
         </div>
