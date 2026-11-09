@@ -8,6 +8,8 @@ export interface Operador {
   papel: string;
   avatar: string;
   pin: string;
+  cabineId?: string;
+  cabineNome?: string;
   name?: string;
   role?: string;
 }
@@ -36,10 +38,17 @@ export interface PecaLote {
   substrato: string;
   area: string;
   volumeEstimado: string;
+  acabamentoSugerido?: string;
   title?: string;
   qty?: string;
   substrate?: string;
   estVolume?: string;
+}
+
+export interface AmbienteOS {
+  id: number;
+  nome: string;
+  lotesPecas: PecaLote[];
 }
 
 export interface OrdemServico {
@@ -52,6 +61,7 @@ export interface OrdemServico {
   projetoNome: string;
   ambienteNome: string;
   pecaLote: PecaLote;
+  ambientesObra?: AmbienteOS[];
 }
 
 export interface Marca {
@@ -69,6 +79,9 @@ export interface Produto {
   densidade: number; // g/ml
   preco?: number;
   prateleiraPadrao: string;
+  criteriosDevolucao?: CriterioChecklistProduto[];
+  configuracaoTecnicaHomologada?: boolean;
+  potLifeMinutos?: number;
 }
 
 export interface Lote {
@@ -102,23 +115,138 @@ export interface Receita {
   codigoFormula: string;
   nome: string;
   descricao: string;
+  potLifeMinutos?: number; // Tempo técnico homologado para a mistura catalisada
+  procedimentoOficialPotLifeExpirado?: string; // Estrutura preparada para futuro procedimento validado pela empresa
   itens: ReceitaItem[];
 }
 
-export interface Preparacao {
-  id?: number;
+export type StatusPreparacao =
+  | 'PREPARACAO_EM_ANDAMENTO'
+  | 'APLICACAO_CONCLUIDA'
+  | 'POT_LIFE_EXPIRADO'
+  | 'DEVOLUCAO_PENDENTE'
+  | 'DEVOLUCAO_EM_ANDAMENTO'
+  | 'DEVOLUCAO_CONCLUIDA'
+  | 'PREPARACAO_ENCERRADA'
+  | 'OCORRENCIA_REGISTRADA';
+
+export type StatusAplicacao =
+  | 'PREPARACAO_EM_ANDAMENTO'
+  | 'POT_LIFE_EXPIRADO'
+  | 'OCORRENCIA_REGISTRADA'
+  | 'APLICACAO_CONCLUIDA';
+
+export type StatusPotLife =
+  | 'NORMAL'
+  | 'PROXIMO_LIMITE'
+  | 'POT_LIFE_EXPIRADO';
+
+export type StatusDevolucaoPreparacao =
+  | 'DEVOLUCAO_PENDENTE'
+  | 'DEVOLUCAO_EM_ANDAMENTO'
+  | 'AGUARDANDO_CONFERENCIA'
+  | 'DEVOLUCAO_CONCLUIDA';
+
+export type StatusItemDevolucao =
+  | 'PENDENTE'
+  | 'DEVOLVIDO_AO_ESTOQUE'
+  | 'EMBALAGEM_ESGOTADA'
+  | 'DESCARTADO_COMO_REFUGO'
+  | 'PENDENTE_DE_CONFERENCIA';
+
+export type LocalMistura = 'bequer' | 'pistola' | 'outro_recipiente';
+
+export interface ResiduoMisturaOcorrencia {
+  id: string;
+  preparacaoId: string;
   ordemServicoId: number;
+  ordemServicoNumero: string;
   receitaId: number;
+  receitaNome: string;
   operadorId: number;
+  operadorNome: string;
+  cabineId: string;
+  quantidadeRestanteMl?: number;
+  localMistura: LocalMistura;
+  registradaEm: string;
+  situacaoPotLife: StatusPotLife;
+  ocorrenciaRelacionada: string;
+  procedimentoAdotado?: string;
+}
+
+export interface CriterioChecklistProduto {
+  id: string;
+  label: string;
+  shortLabel: string;
+  obrigatorio: boolean;
+  motivoReprovacao: string;
+}
+
+export interface ItemDevolucaoComponente {
+  id: string;
+  preparacaoId: string;
+  receitaItemId: number;
+  produtoId: number;
+  produtoNome: string;
+  codigoProduto: string;
+  papel: 'base' | 'catalisador' | 'diluidor' | 'retardador';
+  loteId: number;
+  loteCodigo: string;
+  embalagemId?: string;
+  prateleiraOrigem: string;
+  quantidadeRetiradaMl: number;
+  saldoInicialLataMl: number;
+  saldoRestanteInformadoMl: number;
+  destino?: StatusItemDevolucao;
+  status: StatusItemDevolucao;
+  checklistAprovado: Record<string, boolean>;
+  motivoReprovacao?: string;
+  avaliadoPorId?: number;
+  avaliadoPorNome?: string;
+  responsavelMovimentacaoId?: number;
+  responsavelMovimentacaoNome?: string;
+  registradoEm?: string;
+  codigoEtiquetaGerada?: string;
+  loteSobraGeradoCodigo?: string;
+  etiquetaImpressa?: boolean;
+}
+
+export interface Preparacao {
+  id: string;
+  ordemServicoId: number;
+  ordemServicoNumero: string;
+  clienteNome: string;
+  projetoNome: string;
+  ambienteNome: string;
+  receitaId: number;
+  receitaNome: string;
+  operadorId: number;
+  operadorNome: string;
+  cabineId?: string;
+  cabineNome?: string;
   volumeTotal: number;
   criadaEm: string;
+  dosagemConcluidaEm?: string;
+  potLifeMinutos?: number;
+  potLifeExpiradoEm?: string;
+  aplicacaoIniciadaEm?: string;
+  aplicacaoConcluidaEm?: string;
+  encerradaEm?: string;
+  status: StatusPreparacao;
+  statusAplicacao?: StatusAplicacao;
+  statusPotLife?: StatusPotLife;
+  statusDevolucao?: StatusDevolucaoPreparacao;
+  itensDevolucao: ItemDevolucaoComponente[];
+  ocorrenciasMistura?: ResiduoMisturaOcorrencia[];
 }
 
 export type TipoMovimentacao = 'RETIRADA' | 'DEVOLUCAO' | 'DESCARTE';
 
 export interface Movimentacao {
   id?: number;
-  preparacaoId?: number;
+  identificadorUnico?: string;
+  preparacaoId?: string;
+  componenteItemId?: string;
   ordemServicoId?: number;
   operadorId?: number;
   loteId: number;
