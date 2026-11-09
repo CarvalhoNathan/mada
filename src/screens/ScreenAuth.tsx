@@ -1,10 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Check, HelpCircle, ShieldCheck, KeyRound, Shield } from 'lucide-react';
-import { Operator } from '../types';
-import { PIN_ERRO_SIMULADO, MOCK_SUPERVISOR } from '../data';
+import { Check, HelpCircle, KeyRound, Shield, X, Lock } from 'lucide-react';
+import { Operator, Lote, Preparacao } from '../types';
+import { PIN_ERRO_SIMULADO, MOCK_SUPERVISOR, MOCK_LOTES } from '../data';
 import { PinInput } from '../components/ui/PinInput';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
-import { Button } from '../components/ui/Button';
 
 interface ScreenAuthProps {
   operators: Operator[];
@@ -14,6 +13,8 @@ interface ScreenAuthProps {
   onNavigateToManager?: () => void;
   showToast: (msg: string, type?: 'info' | 'success' | 'warn' | 'danger') => void;
   isOffline?: boolean;
+  lotes?: Lote[];
+  preparacoes?: Preparacao[];
 }
 
 function getInitials(name: string): string {
@@ -24,6 +25,13 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
+function formatMmSs(totalSec: number): string {
+  const safe = Math.max(0, Math.floor(totalSec));
+  const mm = String(Math.floor(safe / 60)).padStart(2, '0');
+  const ss = String(safe % 60).padStart(2, '0');
+  return `${mm}:${ss}`;
+}
+
 export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   operators,
   selectedOperator,
@@ -32,11 +40,26 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   onNavigateToManager,
   showToast,
   isOffline = false,
+  lotes = [],
+  preparacoes = [],
 }) => {
+  const [hasPickedOperator, setHasPickedOperator] = useState<boolean>(false);
   const [pinEntered, setPinEntered] = useState<string>('');
   const [hasError, setHasError] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
+
+  // Relógio de simulação em tempo real (1Hz) para mostrar o chão de fábrica vivo
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+  const [cabine2SecRestantes, setCabine2SecRestantes] = useState<number>(14 * 60 + 25);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNowMs(Date.now());
+      setCabine2SecRestantes((prev) => (prev > 60 ? prev - 1 : 14 * 60 + 25));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleClear = useCallback(() => {
     if (isSuccess) return;
@@ -45,66 +68,89 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   }, [isSuccess]);
 
   const handleBackspace = useCallback(() => {
-    if (isSuccess) return;
+    if (isSuccess || !hasPickedOperator) return;
     if (hasError) setHasError(false);
-    setPinEntered(prev => prev.slice(0, -1));
-  }, [hasError, isSuccess]);
+    setPinEntered((prev) => prev.slice(0, -1));
+  }, [hasError, isSuccess, hasPickedOperator]);
 
-  const handleSubmit = useCallback((candidatePin?: string) => {
-    if (isSuccess) return;
-    const pin = candidatePin ?? pinEntered;
-    if (isOffline) {
-      showToast('Ação indisponível: Sistema offline.', 'danger');
-      return;
-    }
-    if (pin.length < 4) {
-      showToast('Por favor, digite os 4 dígitos do seu PIN.', 'warn');
-      return;
-    }
-
-    const isSupervisorOverride = pin === MOCK_SUPERVISOR.pin;
-    const isValid = isSupervisorOverride
-      ? true
-      : selectedOperator.pin
-      ? pin === selectedOperator.pin
-      : pin !== PIN_ERRO_SIMULADO;
-
-    if (!isValid || pin === PIN_ERRO_SIMULADO) {
-      setHasError(true);
-      setTimeout(() => {
-        setPinEntered('');
-        setHasError(false);
-      }, 800);
-      return;
-    }
-
-    // Microinteração de Sucesso: acende os 4 dots em verde luminoso antes da transição
-    setIsSuccess(true);
-    setTimeout(() => {
-      onSuccessAuth();
-      if (isSupervisorOverride) {
-        showToast(
-          `✓ Acesso liberado pelo Supervisor ${MOCK_SUPERVISOR.nome} para ${selectedOperator.nome || 'Operador'}!`,
-          'success'
-        );
+  const handleSubmit = useCallback(
+    (candidatePin?: string, forceOperator?: Operator) => {
+      if (isSuccess) return;
+      if (!hasPickedOperator && !forceOperator) {
+        showToast('Selecione primeiro seu perfil de operador na lista à esquerda.', 'warn');
+        return;
       }
-      setIsSuccess(false);
-      setPinEntered('');
-    }, 280);
-  }, [isSuccess, pinEntered, isOffline, selectedOperator.pin, selectedOperator.nome, showToast, onSuccessAuth]);
+      const targetOp = forceOperator || selectedOperator;
+      const pin = candidatePin ?? pinEntered;
+      if (isOffline) {
+        showToast('Ação indisponível: Sistema offline.', 'danger');
+        return;
+      }
+      if (pin.length < 4) {
+        showToast('Por favor, digite os 4 dígitos do seu PIN.', 'warn');
+        return;
+      }
 
-  const handleDigit = useCallback((digit: string) => {
-    if (hasError || isSuccess) return;
-    if (pinEntered.length < 4) {
-      const nextPin = pinEntered + digit;
-      setPinEntered(nextPin);
-      if (nextPin.length === 4) {
+      const isSupervisorOverride = pin === MOCK_SUPERVISOR.pin;
+      const isValid = isSupervisorOverride
+        ? true
+        : targetOp.pin
+        ? pin === targetOp.pin
+        : pin !== PIN_ERRO_SIMULADO;
+
+      if (!isValid || pin === PIN_ERRO_SIMULADO) {
+        setHasError(true);
         setTimeout(() => {
-          handleSubmit(nextPin);
-        }, 120);
+          setPinEntered('');
+          setHasError(false);
+        }, 800);
+        return;
       }
-    }
-  }, [hasError, isSuccess, pinEntered, handleSubmit]);
+
+      // Microinteração de Sucesso: acende os 4 dots em verde luminoso antes da transição
+      setIsSuccess(true);
+      setTimeout(() => {
+        onSuccessAuth();
+        if (isSupervisorOverride) {
+          showToast(
+            `✓ Acesso liberado pelo Supervisor ${MOCK_SUPERVISOR.nome} para ${targetOp.nome || 'Operador'}!`,
+            'success'
+          );
+        }
+        setIsSuccess(false);
+        setPinEntered('');
+      }, 280);
+    },
+    [
+      isSuccess,
+      hasPickedOperator,
+      selectedOperator,
+      pinEntered,
+      isOffline,
+      showToast,
+      onSuccessAuth,
+    ]
+  );
+
+  const handleDigit = useCallback(
+    (digit: string) => {
+      if (hasError || isSuccess) return;
+      if (!hasPickedOperator) {
+        showToast('Toque primeiro no seu nome na lista ao lado para liberar o PIN.', 'info');
+        return;
+      }
+      if (pinEntered.length < 4) {
+        const nextPin = pinEntered + digit;
+        setPinEntered(nextPin);
+        if (nextPin.length === 4) {
+          setTimeout(() => {
+            handleSubmit(nextPin);
+          }, 120);
+        }
+      }
+    },
+    [hasError, isSuccess, hasPickedOperator, pinEntered, handleSubmit, showToast]
+  );
 
   // Suporte a teclado físico para conveniência e acessibilidade
   useEffect(() => {
@@ -128,7 +174,27 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   }, [isSuccess, handleDigit, handleBackspace, handleClear, handleSubmit]);
 
   const selectedName = selectedOperator.nome || selectedOperator.name || 'Operador';
-  const selectedRole = selectedOperator.papel || selectedOperator.role || 'Operador de Pintura';
+  const firstName = selectedName.split(' ')[0];
+
+  // Status ao vivo da Cabine 01 (se houver aplicação real em andamento)
+  const prepAtivaCabine1 = preparacoes.find(
+    (p) =>
+      (p.cabineId === 'cabine-01' || !p.cabineId) &&
+      Boolean(p.dosagemConcluidaEm) &&
+      !p.aplicacaoConcluidaEm &&
+      p.status !== 'PREPARACAO_ENCERRADA'
+  );
+  const cabine1RemainingSec = prepAtivaCabine1?.dosagemConcluidaEm
+    ? Math.max(
+        0,
+        (prepAtivaCabine1.potLifeMinutos || 20) * 60 -
+          Math.floor((nowMs - new Date(prepAtivaCabine1.dosagemConcluidaEm).getTime()) / 1000)
+      )
+    : null;
+
+  // Quantidade de latas abertas/sobras prioritárias FEFO para exibir no card do auxiliar
+  const lotesBase = lotes.length > 0 ? lotes : MOCK_LOTES;
+  const totalSobrasFefo = lotesBase.filter((l) => l.diasAberto > 0 && l.quantidadeAtual > 0).length;
 
   return (
     <div className="auth-screen-shell">
@@ -138,7 +204,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           <div className="auth-column-header">
             <h1 className="auth-title-minimal">Quem está pintando?</h1>
             <p className="auth-subtitle-minimal">
-              Toque no seu nome e digite o PIN de 4 dígitos para liberar a cabine.
+              Selecione seu perfil e digite o PIN para liberar a cabine.
             </p>
           </div>
 
@@ -146,7 +212,53 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
             {operators.map((op) => {
               const opName = op.nome || op.name || '';
               const opRole = op.papel || op.role || 'Operador de Pintura';
-              const isSelected = op.id ? op.id === selectedOperator.id : opName === selectedName;
+              const isSelected =
+                hasPickedOperator &&
+                (op.id ? op.id === selectedOperator.id : opName === selectedName);
+
+              // Status operacional ao vivo por operador
+              const isAna = opName.toLowerCase().includes('ana');
+              const isCarlos = opName.toLowerCase().includes('carlos');
+
+              let liveStatusLabel = '';
+              let liveStatusTone: 'active-green' | 'info-blue' | 'warn-amber' = 'info-blue';
+
+              if (isAna) {
+                liveStatusLabel = `● Aplicando OS #8842 • Verniz PU (${formatMmSs(cabine2SecRestantes)})`;
+                liveStatusTone = 'active-green';
+              } else if (isCarlos) {
+                if (prepAtivaCabine1 && cabine1RemainingSec !== null) {
+                  liveStatusLabel = `● Aplicando ${prepAtivaCabine1.ordemServicoNumero} (${formatMmSs(
+                    cabine1RemainingSec
+                  )})`;
+                  liveStatusTone = 'active-green';
+                } else {
+                  liveStatusLabel = '● Cabine 01 livre p/ nova O.S.';
+                  liveStatusTone = 'info-blue';
+                }
+              } else {
+                liveStatusLabel = `● ${totalSobrasFefo} sobras prioritárias FEFO na bancada`;
+                liveStatusTone = 'warn-amber';
+              }
+
+              const badgeStyles =
+                liveStatusTone === 'active-green'
+                  ? {
+                      background: 'rgba(16, 185, 129, 0.14)',
+                      border: '1px solid rgba(16, 185, 129, 0.38)',
+                      color: '#34D399',
+                    }
+                  : liveStatusTone === 'warn-amber'
+                  ? {
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.32)',
+                      color: '#FBBF24',
+                    }
+                  : {
+                      background: 'rgba(59, 130, 246, 0.12)',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                      color: '#60A5FA',
+                    };
 
               return (
                 <button
@@ -156,6 +268,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                   aria-checked={isSelected}
                   className={`operator-card-apple ${isSelected ? 'is-active' : ''}`}
                   onClick={() => {
+                    setHasPickedOperator(true);
                     onSelectOperator(op);
                     handleClear();
                   }}
@@ -165,14 +278,35 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                   </div>
                   <div className="operator-info-apple">
                     <span className="operator-name-apple">{opName}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                        marginTop: '3px',
+                      }}
+                    >
                       <span className="operator-role-apple">{opRole}</span>
-                      {isSelected && (
-                        <span className="operator-shift-badge">● No turno</span>
-                      )}
+                      <span
+                        style={{
+                          ...badgeStyles,
+                          padding: '2px 8px',
+                          borderRadius: '999px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          fontVariantNumeric: 'tabular-nums',
+                          letterSpacing: '0.01em',
+                        }}
+                      >
+                        {liveStatusLabel}
+                      </span>
                     </div>
                   </div>
-                  <div className={`operator-select-indicator ${isSelected ? 'is-selected' : ''}`} aria-hidden="true">
+                  <div
+                    className={`operator-select-indicator ${isSelected ? 'is-selected' : ''}`}
+                    aria-hidden="true"
+                  >
                     {isSelected && <Check size={20} strokeWidth={3} />}
                   </div>
                 </button>
@@ -189,7 +323,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                 if (onNavigateToManager) {
                   onNavigateToManager();
                 } else {
-                  handleSubmit(MOCK_SUPERVISOR.pin);
+                  handleSubmit(MOCK_SUPERVISOR.pin, selectedOperator);
                 }
               }}
               title="Acesso direto ao painel gerencial do Fábio"
@@ -211,14 +345,41 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
 
         {/* Coluna da Direita: Teclado Numérico & PIN estilo Apple */}
         <section className="auth-right-column" aria-label="Autenticação com PIN">
-          <div className="auth-pin-card-apple">
+          <div
+            className="auth-pin-card-apple"
+            style={{
+              opacity: hasPickedOperator ? 1 : 0.72,
+              transition: 'opacity 0.2s ease',
+            }}
+          >
             <div className="auth-pin-card-header">
-              <div className="auth-pin-operator-chip">
-                <ShieldCheck size={18} aria-hidden="true" />
-                <span>{selectedRole}</span>
-              </div>
-              <h2 className="auth-pin-title">PIN de {selectedName}</h2>
-              <p className="auth-pin-hint">Digite os 4 dígitos para iniciar o turno</p>
+              {hasPickedOperator ? (
+                <h2 className="auth-pin-title">Digite seu PIN, {firstName}</h2>
+              ) : (
+                <>
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 12px',
+                      borderRadius: '999px',
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.35)',
+                      color: '#FBBF24',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      marginBottom: '6px',
+                    }}
+                  >
+                    <Lock size={13} strokeWidth={2.4} /> Aguardando seleção de operador
+                  </div>
+                  <h2 className="auth-pin-title">Selecione seu perfil</h2>
+                  <p className="auth-pin-hint">
+                    Toque no seu nome na lista ao lado para liberar o teclado
+                  </p>
+                </>
+              )}
             </div>
 
             <PinInput
@@ -233,7 +394,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
               onDigit={handleDigit}
               onBackspace={handleBackspace}
               onClear={handleClear}
-              disabled={isOffline}
+              disabled={!hasPickedOperator || isOffline}
             />
           </div>
         </section>
@@ -247,211 +408,164 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           aria-modal="true"
           aria-labelledby="auth-help-modal-title"
           onClick={() => setIsHelpModalOpen(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.78)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '16px',
-          }}
         >
           <div
-            className="ds-modal-card ds-modal-standard"
+            className="os-modal-card-apple"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: '520px',
-              width: '100%',
-              backgroundColor: 'var(--card)',
-              border: '1.5px solid var(--border-strong)',
-              borderRadius: '20px',
-              padding: '24px',
-              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.65)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-            }}
+            style={{ maxWidth: '540px' }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div
-                  style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '12px',
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: '#FAFAFA',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <KeyRound size={22} />
+            {/* Cabeçalho Apple Sheet */}
+            <div className="os-modal-header-apple">
+              <div className="os-modal-header-left">
+                <div className="os-modal-icon-badge" aria-hidden="true">
+                  <KeyRound size={22} strokeWidth={2.2} />
                 </div>
                 <div>
-                  <h2 id="auth-help-modal-title" style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--text)' }}>
-                    Suporte da Cabine & PINs Demo
-                  </h2>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '15px', color: 'var(--text-muted)' }}>
-                    Credenciais homologadas para avaliação do terminal
+                  <h3 id="auth-help-modal-title" className="os-modal-title-apple">
+                    <span>Suporte da Cabine & PINs</span>
+                    <span className="os-modal-count-pill">3 perfis</span>
+                  </h3>
+                  <p className="os-modal-subtitle-apple">
+                    Toque em uma credencial para testar ou autenticar de imediato.
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsHelpModalOpen(false)}
-                aria-label="Fechar ajuda"
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '10px',
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-muted)',
-                  fontSize: '18px',
-                  cursor: 'pointer',
-                }}
+                className="os-modal-close-apple"
+                aria-label="Fechar suporte de PINs"
               >
-                ✕
+                <X size={18} strokeWidth={2.4} />
               </button>
             </div>
 
+            {/* Inset Cards Táteis e Interativos */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div
-                style={{
-                  padding: '14px 16px',
-                  borderRadius: '12px',
-                  background: 'rgba(34, 197, 94, 0.08)',
-                  border: '1px solid rgba(34, 197, 94, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '12px',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>
-                    Pintores (Carlos, Ana, Marcos)
-                  </div>
-                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-                    Acesso padrão para preparação, dosagem e devolução
-                  </div>
-                </div>
-                <span
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: '8px',
-                    background: 'rgba(34, 197, 94, 0.2)',
-                    color: '#4ade80',
-                    fontSize: '18px',
-                    fontWeight: 800,
-                    letterSpacing: '2px',
-                  }}
-                >
-                  1234
-                </span>
-              </div>
-
-              <div
-                style={{
-                  padding: '14px 16px',
-                  borderRadius: '12px',
-                  background: 'rgba(245, 158, 11, 0.08)',
-                  border: '1px solid rgba(245, 158, 11, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '12px',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>
-                    Supervisor de Cabine (Fábio)
-                  </div>
-                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-                    PIN Mestre: libera o terminal se o pintor esquecer a senha ou autoriza excesso (&gt;5%)
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsHelpModalOpen(false);
-                    setPinEntered('9999');
-                    setTimeout(() => handleSubmit('9999'), 120);
-                  }}
-                  title="Toque para liberar com o PIN Mestre 9999"
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: '8px',
-                    background: 'rgba(245, 158, 11, 0.2)',
-                    border: '1px solid rgba(245, 158, 11, 0.45)',
-                    color: '#fbbf24',
-                    fontSize: '18px',
-                    fontWeight: 800,
-                    letterSpacing: '2px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  9999
-                </button>
-              </div>
-
-              <div
-                style={{
-                  padding: '14px 16px',
-                  borderRadius: '12px',
-                  background: 'rgba(239, 68, 68, 0.08)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '12px',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>
-                    Simular Bloqueio de PIN Incorreto
-                  </div>
-                  <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-                    Testa o feedback visual de erro na autenticação
-                  </div>
-                </div>
-                <span
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: '8px',
-                    background: 'rgba(239, 68, 68, 0.2)',
-                    color: '#f87171',
-                    fontSize: '18px',
-                    fontWeight: 800,
-                    letterSpacing: '2px',
-                  }}
-                >
-                  0000
-                </span>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '4px' }}>
-              <Button variant="secondary" size="md" onClick={() => setIsHelpModalOpen(false)}>
-                Fechar
-              </Button>
-              <Button
-                variant="primary"
-                size="md"
+              {/* Card 1: Pintor */}
+              <button
+                type="button"
+                className="os-list-card"
                 onClick={() => {
                   setIsHelpModalOpen(false);
+                  setHasPickedOperator(true);
                   setPinEntered('1234');
-                  setTimeout(() => handleSubmit('1234'), 120);
+                  setTimeout(() => handleSubmit('1234', selectedOperator), 120);
                 }}
+                style={{ padding: '14px 16px' }}
               >
-                Entrar agora com PIN 1234 →
-              </Button>
+                <div className="os-list-card-row">
+                  <div>
+                    <h4 className="os-list-client-name" style={{ fontSize: '16px' }}>
+                      Pintores (Carlos, Ana, Marcos)
+                    </h4>
+                    <p className="os-list-subtitle-text" style={{ fontSize: '13px', marginTop: '2px' }}>
+                      Acesso operacional padrão para preparação, dosagem e devolução
+                    </p>
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '16px',
+                      fontWeight: 800,
+                      letterSpacing: '2px',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      background: 'rgba(16, 185, 129, 0.14)',
+                      border: '1px solid rgba(16, 185, 129, 0.32)',
+                      color: '#34d399',
+                      flexShrink: 0,
+                    }}
+                  >
+                    1234
+                  </span>
+                </div>
+              </button>
+
+              {/* Card 2: Supervisor */}
+              <button
+                type="button"
+                className="os-list-card"
+                onClick={() => {
+                  setIsHelpModalOpen(false);
+                  setHasPickedOperator(true);
+                  setPinEntered('9999');
+                  setTimeout(() => handleSubmit('9999', selectedOperator), 120);
+                }}
+                style={{ padding: '14px 16px' }}
+              >
+                <div className="os-list-card-row">
+                  <div>
+                    <h4 className="os-list-client-name" style={{ fontSize: '16px' }}>
+                      Supervisor de Cabine (Fábio)
+                    </h4>
+                    <p className="os-list-subtitle-text" style={{ fontSize: '13px', marginTop: '2px' }}>
+                      PIN Mestre: libera terminal, desbloqueia erros e autoriza excesso (&gt;5%)
+                    </p>
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '16px',
+                      fontWeight: 800,
+                      letterSpacing: '2px',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      background: 'rgba(245, 158, 11, 0.14)',
+                      border: '1px solid rgba(245, 158, 11, 0.32)',
+                      color: '#fbbf24',
+                      flexShrink: 0,
+                    }}
+                  >
+                    9999
+                  </span>
+                </div>
+              </button>
+
+              {/* Card 3: Erro */}
+              <button
+                type="button"
+                className="os-list-card"
+                onClick={() => {
+                  setIsHelpModalOpen(false);
+                  setHasPickedOperator(true);
+                  setPinEntered('0000');
+                  setTimeout(() => handleSubmit('0000', selectedOperator), 120);
+                }}
+                style={{ padding: '14px 16px' }}
+              >
+                <div className="os-list-card-row">
+                  <div>
+                    <h4 className="os-list-client-name" style={{ fontSize: '16px' }}>
+                      Simular Bloqueio (PIN Incorreto)
+                    </h4>
+                    <p className="os-list-subtitle-text" style={{ fontSize: '13px', marginTop: '2px' }}>
+                      Testa a animação de vibração e feedback visual de erro no tablet
+                    </p>
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '16px',
+                      fontWeight: 800,
+                      letterSpacing: '2px',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      background: 'rgba(239, 68, 68, 0.14)',
+                      border: '1px solid rgba(239, 68, 68, 0.32)',
+                      color: '#f87171',
+                      flexShrink: 0,
+                    }}
+                  >
+                    0000
+                  </span>
+                </div>
+              </button>
             </div>
+
+            <p style={{ margin: '4px 0 0', textAlign: 'center', fontSize: '13px', color: 'var(--text-tertiary)' }}>
+              Toque diretamente em qualquer cartão acima para preencher e validar.
+            </p>
           </div>
         </div>
       )}

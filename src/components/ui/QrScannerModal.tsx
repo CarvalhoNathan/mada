@@ -284,96 +284,68 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="ds-modal-backdrop" role="dialog" aria-modal="true">
+    <div
+      className="ds-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      onClick={() => {
+        stopCamera();
+        onClose();
+      }}
+    >
       <div
-        className="ds-modal-card ds-modal-standard"
+        className="os-modal-card-apple"
+        onClick={(e) => e.stopPropagation()}
         style={{
-          maxWidth: '620px',
+          maxWidth: '640px',
           width: '92%',
-          padding: 0,
-          backgroundColor: '#141519',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '18px',
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.7)',
-          overflow: 'hidden',
+          padding: '22px 24px',
+          gap: '14px',
         }}
       >
-        {/* Cabeçalho do Scanner */}
-        <header
-          style={{
-            padding: '16px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            background: 'rgba(255, 255, 255, 0.02)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div
-              style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '10px',
-                background: 'rgba(43, 127, 255, 0.14)',
-                color: '#2b7fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '18px',
-              }}
-            >
-              📷
+        {/* Cabeçalho do Scanner no padrão Apple Sheet */}
+        <div className="os-modal-header-apple">
+          <div className="os-modal-header-left">
+            <div className="os-modal-icon-badge" aria-hidden="true">
+              <Camera size={22} strokeWidth={2.2} />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '17px', color: '#ededed', fontWeight: 700 }}>
-                {title}
+              <h3 className="os-modal-title-apple">
+                <span>{title}</span>
               </h3>
-              <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#a1a1aa' }}>
+              <p className="os-modal-subtitle-apple">
                 {description}
               </p>
             </div>
           </div>
           <button
             type="button"
-            className="ds-modal-close-btn"
+            className="os-modal-close-apple"
             onClick={() => {
               stopCamera();
               onClose();
             }}
             aria-label="Fechar scanner"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#a1a1aa',
-              cursor: 'pointer',
-              minWidth: '48px',
-              minHeight: '48px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '8px',
-            }}
           >
-            <X size={20} />
+            <X size={18} strokeWidth={2.4} />
           </button>
-        </header>
+        </div>
 
-        {/* Visor de Câmera */}
-        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {/* Visor de Câmera Apple HIG */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           <div
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '480px',
-              height: '240px',
+              height: '210px',
               background: '#090a0d',
-              borderRadius: '14px',
+              borderRadius: '16px',
               overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1.5px solid rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              boxShadow: 'inset 0 0 20px rgba(0, 0, 0, 0.8)',
             }}
           >
             {/* O elemento de vídeo SEMPRE existe no DOM */}
@@ -461,7 +433,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                 style={{
                   padding: '20px',
                   textAlign: 'center',
-                  color: '#a1a1aa',
+                  color: 'var(--text-muted)',
                   fontSize: '14px',
                   zIndex: 2,
                   maxWidth: '380px',
@@ -469,23 +441,24 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               >
                 <div
                   style={{
-                    width: '52px',
-                    height: '52px',
-                    borderRadius: '14px',
-                    background: 'rgba(59, 130, 246, 0.15)',
-                    color: '#60a5fa',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    color: 'var(--text)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 10px auto',
                   }}
                 >
-                  <Camera size={26} strokeWidth={2.2} />
+                  <Camera size={24} strokeWidth={2.2} />
                 </div>
-                <strong style={{ color: '#ededed', display: 'block', marginBottom: '4px' }}>
+                <strong style={{ color: 'var(--text)', display: 'block', marginBottom: '4px' }}>
                   Câmera em modo de bancada
                 </strong>
-                <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: cameraError ? '#f87171' : '#71717a' }}>
+                <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: cameraError ? '#f87171' : 'var(--text-tertiary)' }}>
                   {cameraError || 'Aponte o código QR ou clique em uma das etiquetas abaixo para teste rápido.'}
                 </p>
 
@@ -493,19 +466,16 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   type="button"
                   onClick={startCamera}
                   disabled={isRetrying}
+                  className="os-action-btn"
                   style={{
-                    padding: '8px 16px',
-                    backgroundColor: 'rgba(43, 127, 255, 0.15)',
-                    border: '1px solid rgba(43, 127, 255, 0.4)',
-                    color: '#60a5fa',
+                    height: '36px',
+                    minHeight: '36px',
+                    padding: '0 14px',
                     borderRadius: '8px',
                     fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: 'var(--text)',
                   }}
                 >
                   <RefreshCw size={14} className={isRetrying ? 'spin' : ''} />
@@ -518,8 +488,8 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             <div
               style={{
                 position: 'absolute',
-                bottom: '12px',
-                right: '12px',
+                bottom: '10px',
+                right: '10px',
                 display: 'flex',
                 gap: '8px',
                 zIndex: 3,
@@ -530,20 +500,23 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                 onClick={() => setCameraFacing((prev) => (prev === 'user' ? 'environment' : 'user'))}
                 title="Alternar entre câmera frontal (tablet na parede) e traseira"
                 style={{
-                  background: 'rgba(0,0,0,0.7)',
-                  color: '#60a5fa',
-                  border: '1px solid rgba(96, 165, 250, 0.4)',
+                  background: 'rgba(18, 18, 22, 0.78)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  color: 'var(--text)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
                   borderRadius: '20px',
-                  padding: '6px 12px',
+                  padding: '5px 12px',
                   fontSize: '12px',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                <FlipHorizontal size={14} strokeWidth={2.4} /> {cameraFacing === 'user' ? 'Frontal (Parede)' : 'Traseira'}
+                <FlipHorizontal size={13} strokeWidth={2.4} /> {cameraFacing === 'user' ? 'Frontal (Parede)' : 'Traseira'}
               </button>
 
               {hasTorch && cameraActive && cameraFacing === 'environment' && (
@@ -551,93 +524,102 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   type="button"
                   onClick={toggleTorch}
                   style={{
-                    background: torchOn ? '#f59e0b' : 'rgba(0,0,0,0.7)',
-                    color: torchOn ? '#000' : '#fff',
-                    border: 'none',
+                    background: torchOn ? '#f59e0b' : 'rgba(18, 18, 22, 0.78)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    color: torchOn ? '#000' : 'var(--text)',
+                    border: torchOn ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
                     borderRadius: '20px',
-                    padding: '6px 14px',
+                    padding: '5px 12px',
                     fontSize: '12px',
-                    fontWeight: 700,
+                    fontWeight: 600,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
                   }}
                 >
-                  <Flashlight size={14} strokeWidth={2.4} /> {torchOn ? 'Ligada' : 'Lanterna'}
+                  <Flashlight size={13} strokeWidth={2.4} /> {torchOn ? 'Ligada' : 'Lanterna'}
                 </button>
               )}
             </div>
           </div>
 
-          {/* Indicador de Status do Scanner */}
+          {/* Indicador de Status do Sensor */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
             <span
               style={{
                 display: 'inline-block',
-                width: '8px',
-                height: '8px',
+                width: '7px',
+                height: '7px',
                 borderRadius: '50%',
                 backgroundColor: cameraActive ? 'var(--ok)' : 'var(--warn)',
                 boxShadow: cameraActive ? '0 0 8px var(--ok)' : 'none',
               }}
             />
-            <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
               {cameraActive ? 'Sensor de leitura ativo (Universal iPad/Android)' : 'Aguardando câmera...'}
             </span>
           </div>
 
-          {/* Atalhos Rápidos de Simulação */}
-          <div style={{ width: '100%', marginTop: '16px' }}>
-            <span
-              style={{
-                fontSize: '13px',
-                fontWeight: 700,
-                color: '#71717a',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                display: 'block',
-                marginBottom: '8px',
-              }}
-            >
-              Etiquetas de Teste Rápido (Clique para ler):
-            </span>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          {/* Atalhos Rápidos de Simulação em Inset Cards */}
+          <div style={{ width: '100%', marginTop: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                Etiquetas de Teste Rápido (toque para simular)
+              </span>
+              <span className="os-modal-count-pill">
+                {QUICK_SCAN_OPTIONS.length} opções
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
               {QUICK_SCAN_OPTIONS.map((opt) => (
                 <button
                   key={opt.code}
                   type="button"
+                  className="os-list-card"
                   onClick={() => handleDetected(opt.code)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
-                    padding: '12px 14px',
-                    background: '#1a1b20',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    gap: '8px',
+                    padding: '10px 12px',
+                    minHeight: '48px',
                     borderRadius: '12px',
-                    color: '#ededed',
-                    fontSize: 'var(--fs-small)',
-                    fontWeight: 600,
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    minHeight: '56px',
-                    transition: 'all 0.15s ease',
                   }}
+                  title={opt.label}
                 >
                   <span
+                    className="os-badge-code"
                     style={{
-                      padding: '3px 8px',
-                      borderRadius: '6px',
-                      background: 'rgba(43, 127, 255, 0.15)',
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      color: '#60a5fa',
+                      fontSize: '11px',
+                      padding: '2px 7px',
+                      flexShrink: 0,
                     }}
                   >
                     {opt.badge}
                   </span>
-                  <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span
+                    style={{
+                      flex: 1,
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: 'var(--text)',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      textAlign: 'left',
+                    }}
+                  >
                     {opt.label}
                   </span>
                 </button>
@@ -645,38 +627,6 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Rodapé */}
-        <footer
-          style={{
-            padding: '14px 20px',
-            background: 'rgba(255, 255, 255, 0.02)',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            display: 'flex',
-            justifyContent: 'flex-end',
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              stopCamera();
-              onClose();
-            }}
-            style={{
-              minHeight: 'var(--touch-min)',
-              padding: '0 28px',
-              borderRadius: '12px',
-              backgroundColor: '#202127',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              color: '#ededed',
-              fontSize: 'var(--fs-small)',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            Cancelar
-          </button>
-        </footer>
       </div>
     </div>
   );
