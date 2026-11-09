@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown, Clock, Wifi, WifiOff, Sparkles } from 'lucide-react';
 import { ScreenId } from '../../types';
 
 export interface OperatorInfo {
@@ -42,8 +42,8 @@ function getInitials(name: string): string {
  * Cabeçalho Superior Fixo (58px) + Área Central de Conteúdo Sem Rolagem + Barra Inferior Fixa
  */
 export const AppShell: React.FC<AppShellProps> = ({
-  appName = 'Cabine de Pintura',
-  subTitle,
+  appName = 'Mada Marcenaria • Cabine de Pintura',
+  subTitle = 'Terminal de Dosagem Homologada & Controle FEFO',
   operator,
   isWifiConnected = true,
   isServerLocal = true,
@@ -54,6 +54,25 @@ export const AppShell: React.FC<AppShellProps> = ({
 }) => {
   const [isCleaning, setIsCleaning] = React.useState(false);
   const [countdown, setCountdown] = React.useState(15);
+
+  // Relógio Industrial em Tempo Real (Permanente em todas as telas)
+  const [currentTime, setCurrentTime] = React.useState<string>(() => {
+    const now = new Date();
+    return now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  });
+  const [currentDate, setCurrentDate] = React.useState<string>(() => {
+    const now = new Date();
+    return now.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
+  });
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setCurrentDate(now.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', ''));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleStartCleaning = () => {
     setCountdown(15);
@@ -75,24 +94,13 @@ export const AppShell: React.FC<AppShellProps> = ({
     return () => clearInterval(timer);
   }, [isCleaning]);
 
-  // Se estiver na tela de autenticação, renderiza limpo sem cabeçalho
-  if (currentScreen === 'auth') {
-    return (
-      <div className="ds-app-shell auth-shell-layout">
-        <main className="ds-shell-main" style={{ padding: 0 }}>
-          {children}
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div className="ds-app-shell">
-      {/* 1. Cabeçalho Estilo BoardUI (58px fixo, fosco com borda sutil) */}
+    <div className={`ds-app-shell ${currentScreen === 'auth' ? 'auth-shell-layout' : ''}`}>
+      {/* 1. Cabeçalho Padronizado Único (58px fixo, compartilhado antes e depois do login) */}
       <header className="boardui-top-header">
         {/* Marca / Estação */}
         <div className="boardui-header-brand">
-          <div className="boardui-brand-icon">
+          <div className="boardui-brand-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10 2v7.31L4.14 20a2 2 0 0 0 1.72 3h12.28a2 2 0 0 0 1.72-3L14 9.31V2"/>
               <path d="M8.5 2h7"/>
@@ -105,22 +113,30 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
         </div>
 
-        {/* Lado Direito: Status Passivo (sem borda de botão) | Ações Interativas (com borda de botão padronizada) */}
+        {/* Lado Direito Padronizado: Relógio em Tempo Real | Status Opção B (Chip Verde) | Limpar Tela | Operador */}
         <div className="boardui-header-right">
-          {/* Indicador Único de Status (Não-clicável: sem caixa de botão para não competir com ações) */}
-          <div
-            className={`boardui-status-indicator ${isWifiConnected && isServerLocal ? 'online' : 'offline'}`}
-            title={
-              isWifiConnected && isServerLocal
-                ? 'Wi-Fi e banco sincronizados'
-                : 'Falha de conexão Wi-Fi ou servidor local'
-            }
-          >
-            <span className="boardui-chip-dot" aria-hidden="true" />
-            <span>{isWifiConnected && isServerLocal ? 'Sistema online' : 'Sem conexão'}</span>
+          {/* Relógio Industrial em Tempo Real */}
+          <div className="boardui-header-clock" title="Horário oficial da estação de pintura">
+            <Clock size={15} strokeWidth={2.2} />
+            <span>{currentTime} • {currentDate}</span>
           </div>
 
-          <span className="boardui-header-divider" aria-hidden="true" />
+          {/* Status de Telemetria Padronizado (Opção B - Chip Verde Suave com Wi-Fi) */}
+          <div
+            className={`boardui-status-pill ${isWifiConnected && isServerLocal ? 'is-online' : 'is-offline'}`}
+            title={
+              isWifiConnected && isServerLocal
+                ? 'Balança, Wi-Fi e banco local sincronizados'
+                : 'Falha de conexão com balança ou servidor'
+            }
+          >
+            {isWifiConnected && isServerLocal ? (
+              <Wifi size={17} strokeWidth={2.2} aria-hidden="true" />
+            ) : (
+              <WifiOff size={17} strokeWidth={2.2} aria-hidden="true" />
+            )}
+            <span>{isWifiConnected && isServerLocal ? 'Balança & Estoque Online' : 'Terminal Offline'}</span>
+          </div>
 
           {/* Botão Interativo: Limpeza de Tela */}
           <button
@@ -130,14 +146,12 @@ export const AppShell: React.FC<AppShellProps> = ({
             title="Limpar tela (bloqueia o toque por 15 segundos)"
             aria-label="Limpar tela"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
-            </svg>
+            <Sparkles size={15} strokeWidth={2.2} />
             <span>Limpar tela</span>
           </button>
 
-          {/* Botão Interativo: Operador Logado */}
-          {operator && (
+          {/* Botão Interativo: Operador Logado ou Slot Aguardando Login */}
+          {operator ? (
             <button
               type="button"
               className="boardui-operator-pill"
@@ -153,6 +167,16 @@ export const AppShell: React.FC<AppShellProps> = ({
                 <ChevronsUpDown size={14} />
               </span>
             </button>
+          ) : (
+            <div
+              className="boardui-operator-pill boardui-operator-pill--auth"
+              title="Aguardando identificação do operador"
+            >
+              <div className="boardui-operator-avatar boardui-operator-avatar--auth">
+                PIN
+              </div>
+              <span className="boardui-operator-name" style={{ color: 'var(--text-muted)' }}>Identificar-se</span>
+            </div>
           )}
         </div>
       </header>

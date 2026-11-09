@@ -59,7 +59,7 @@ import {
   MOCK_CHECKLIST_SOBRAS,
 } from './data';
 import { useConnectionStatus } from './hooks/useConnectionStatus';
-import { ordenarLotesFEFO } from './domain/fefo';
+import { ordenarLotesFEFO, alocarConsumoMultiLoteFEFO } from './domain/fefo';
 import {
   criarPreparacaoDevolucao,
   registrarConclusaoAplicacao,
@@ -232,6 +232,30 @@ export const App: React.FC = () => {
   const [selectedRecipe, setSelectedRecipe] = useState<Receita>(MOCK_RECEITAS[0]);
   const [recipe, setRecipe] = useState<RecipeState>(INITIAL_RECIPE);
 
+  // Procedimentos oficiais homologados pelo gestor p/ Pot Life Expirado (por receitaId)
+  const [procedimentosPotLife, setProcedimentosPotLife] = useState<Record<number, string>>(() => {
+    try {
+      const saved = localStorage.getItem('mada_pot_life_procedimentos');
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // Ignora erro de parse
+    }
+    return {};
+  });
+
+  const handleSaveProcedimentoPotLife = useCallback((receitaId: number, procedimento: string) => {
+    setProcedimentosPotLife((prev) => {
+      const atualizado = { ...prev };
+      if (procedimento.trim()) {
+        atualizado[receitaId] = procedimento.trim();
+      } else {
+        delete atualizado[receitaId];
+      }
+      localStorage.setItem('mada_pot_life_procedimentos', JSON.stringify(atualizado));
+      return atualizado;
+    });
+  }, []);
+
   // Modais
   const [isUseFirstModalOpen, setIsUseFirstModalOpen] = useState(false);
   const [isCancelPrepModalOpen, setIsCancelPrepModalOpen] = useState(false);
@@ -279,9 +303,11 @@ export const App: React.FC = () => {
       osNumber: prepComAplicacao.ordemServicoNumero,
       volumeTotal: prepComAplicacao.volumeTotal,
       cabineNome: prepComAplicacao.cabineNome || 'Cabine 01',
-      procedimentoOficialValidado: receitaRef?.procedimentoOficialPotLifeExpirado,
+      procedimentoOficialValidado:
+        procedimentosPotLife[prepComAplicacao.receitaId] ||
+        receitaRef?.procedimentoOficialPotLifeExpirado,
     };
-  }, [preparacaoAtivaCabine, preparacoes]);
+  }, [preparacaoAtivaCabine, preparacoes, procedimentosPotLife]);
 
   // Navegação protegida pelos bloqueios inteligentes de cabine/equipamento
   const handleNavigate = useCallback(
@@ -492,6 +518,57 @@ export const App: React.FC = () => {
     });
     showToast('Item removido da lista de compras.', 'info');
   };
+
+  // Gatilho automático de reposição de compras quando o saldo total do insumo cai abaixo de 1.000 ml
+  const verificarReposicaoAutomaticaEstoque = useCallback(
+    (lotesAtuais: Lote[]) => {
+      const saldosPorProduto: Record<number, number> = {};
+      MOCK_PRODUTOS.forEach((p) => {
+        saldosPorProduto[p.id] = 0;
+      });
+      lotesAtuais.forEach((l) => {
+        saldosPorProduto[l.produtoId] = (saldosPorProduto[l.produtoId] || 0) + l.quantidadeAtual;
+      });
+
+      const novosAlertas: string[] = [];
+      setSolicitacoesCompras((prev) => {
+        let atualizada = [...prev];
+        for (const prod of MOCK_PRODUTOS) {
+          const saldoTotal = saldosPorProduto[prod.id] || 0;
+          const jaSolicitado = atualizada.some((s) => s.produtoId === prod.id);
+          if (saldoTotal < 1000 && !jaSolicitado) {
+            const novaSolicitacao: ItemSolicitacaoCompra = {
+              id: `sc-auto-${prod.id}-${Date.now()}`,
+              produtoId: prod.id,
+              produtoNome: prod.nome,
+              codigoProduto: prod.codigo,
+              quantidadeSugerida: saldoTotal === 0 ? '3 galões de 3,6L (Urgente)' : '2 galões de 3,6L',
+              motivo: 'estoque_critico',
+              urgencia: 'alta',
+              solicitadoEm: new Date().toISOString(),
+              solicitadoPor: `Automático (${selectedOperator.nome})`,
+            };
+            atualizada = [novaSolicitacao, ...atualizada];
+            novosAlertas.push(`${prod.nome} (${saldoTotal} ml)`);
+          }
+        }
+        if (atualizada.length !== prev.length) {
+          localStorage.setItem('mada_solicitacoes_compras', JSON.stringify(atualizada));
+        }
+        return atualizada;
+      });
+
+      if (novosAlertas.length > 0) {
+        setTimeout(() => {
+          showToast(
+            `⚠ Estoque crítico (< 1.000 ml): Solicitação de compra gerada automaticamente para ${novosAlertas.join(', ')}.`,
+            'warn'
+          );
+        }, 400);
+      }
+    },
+    [selectedOperator.nome, showToast]
+  );
   const { isOnline, isServerLocal, isOffline } = useConnectionStatus();
 
   // Ações de Receita
@@ -600,30 +677,48 @@ export const App: React.FC = () => {
       cabineNome: cabineOperador.cabineNome,
     });
 
-    // Registra uma Movimentacao do tipo RETIRADA por componente via MovimentacaoRepository
+    // Registra uma Movimentacao do tipo RETIRADA por componente (suportando alocação multi-lote FEFO)
     for (const item of receita.itens) {
       const quantidade = dosingValues[item.id] || 0;
       if (quantidade > 0) {
-        const lotesOrdenados = ordenarLotesFEFO(
-          lotesBase.filter((l) => l.produtoId === item.produtoId)
+        const lotesProduto = lotesBase.filter(
+          (l) => l.produtoId === item.produtoId && l.quantidadeAtual > 0
         );
-        const loteId = lotesOrdenados[0]?.id || item.id;
+        const planoMultiLote = alocarConsumoMultiLoteFEFO(lotesProduto, quantidade);
 
-        if (lotesOrdenados[0]) {
-          const novoSaldo = Math.max(0, lotesOrdenados[0].quantidadeAtual - quantidade);
-          await loteRepository.atualizarQuantidade(lotesOrdenados[0].id, novoSaldo);
+        if (planoMultiLote.alocacoes.length > 0) {
+          for (const aloc of planoMultiLote.alocacoes) {
+            await loteRepository.atualizarQuantidade(aloc.lote.id, aloc.saldoRestanteLoteMl);
+            await movimentacaoRepository.registrar({
+              preparacaoId: novaPreparacao.id,
+              tipo: 'RETIRADA',
+              loteId: aloc.lote.id,
+              ordemServicoId: osAtiva.id,
+              operadorId: selectedOperator.id,
+              quantidade: aloc.volumeAlocadoMl,
+              justificativa:
+                planoMultiLote.precisaComplementar
+                  ? `${wasteJustification ? `${wasteJustification} • ` : ''}Complemento multi-lote FEFO (${aloc.lote.codigo})`
+                  : wasteJustification,
+              registradaEm: dosagemConcluidaIso,
+            });
+          }
+        } else {
+          const lotesOrdenados = ordenarLotesFEFO(
+            lotesBase.filter((l) => l.produtoId === item.produtoId)
+          );
+          const loteId = lotesOrdenados[0]?.id || item.id;
+          await movimentacaoRepository.registrar({
+            preparacaoId: novaPreparacao.id,
+            tipo: 'RETIRADA',
+            loteId,
+            ordemServicoId: osAtiva.id,
+            operadorId: selectedOperator.id,
+            quantidade,
+            justificativa: wasteJustification,
+            registradaEm: dosagemConcluidaIso,
+          });
         }
-
-        await movimentacaoRepository.registrar({
-          preparacaoId: novaPreparacao.id,
-          tipo: 'RETIRADA',
-          loteId,
-          ordemServicoId: osAtiva.id,
-          operadorId: selectedOperator.id,
-          quantidade,
-          justificativa: wasteJustification,
-          registradaEm: dosagemConcluidaIso,
-        });
       }
     }
 
@@ -634,6 +729,7 @@ export const App: React.FC = () => {
 
     const lotesAtualizados = await loteRepository.listar();
     setLotes(lotesAtualizados);
+    verificarReposicaoAutomaticaEstoque(lotesAtualizados);
     const movsAtualizadas = await movimentacaoRepository.listar();
     setMovimentacoes(movsAtualizadas);
 
@@ -779,6 +875,7 @@ export const App: React.FC = () => {
 
     const lotesAtualizados = await loteRepository.listar();
     setLotes(lotesAtualizados);
+    verificarReposicaoAutomaticaEstoque(lotesAtualizados);
     const movsAtualizadas = await movimentacaoRepository.listar();
     setMovimentacoes(movsAtualizadas);
   };
@@ -861,7 +958,8 @@ export const App: React.FC = () => {
   return (
     <>
       <AppShell
-        appName="Cabine de Pintura"
+        appName="Mada Marcenaria • Cabine de Pintura"
+        subTitle="Terminal de Dosagem Homologada & Controle FEFO"
         currentScreen={currentScreen}
         onNavigate={handleNavigate}
         operator={
@@ -1014,6 +1112,7 @@ export const App: React.FC = () => {
             <ScreenRecipe
               recipe={recipe}
               activeRecipe={selectedRecipe}
+              suggestedFinish={pieceLot.acabamentoSugerido}
               lotes={lotes}
               onSelectRecipe={setSelectedRecipe}
               onSetTotalVolume={handleSetTotalVolume}
@@ -1060,6 +1159,7 @@ export const App: React.FC = () => {
               onRegisterItemReturn={handleRegisterItemReturn}
               onMarkStickerPrinted={handleMarkStickerPrinted}
               onFinishPreparacao={handleFinishPreparacao}
+              onFinishApplication={handleFinishApplication}
               onOpenOccurrenceModal={() => setIsOccurrenceModalOpen(true)}
               onNavigate={handleNavigate}
               showToast={showToast}
@@ -1076,6 +1176,7 @@ export const App: React.FC = () => {
             >
               <ScreenInventory
                 lotes={lotes}
+                preparacoes={preparacoes}
                 operator={selectedOperator}
                 onNavigate={handleNavigate}
                 showToast={showToast}
@@ -1108,6 +1209,8 @@ export const App: React.FC = () => {
                 preparacoesEmConferencia={preparacoesEmConferencia}
                 residuosMistura={residuosMistura}
                 onResolveConferenceItem={handleRegisterItemReturn}
+                procedimentosPotLife={procedimentosPotLife}
+                onSaveProcedimentoPotLife={handleSaveProcedimentoPotLife}
                 onResetDemoData={async () => {
                   await loteRepository.resetar();
                   await movimentacaoRepository.resetar();
@@ -1201,6 +1304,7 @@ export const App: React.FC = () => {
           isOpen={isCancelPrepModalOpen}
           onClose={() => setIsCancelPrepModalOpen(false)}
           onConfirmCancel={() => {
+            localStorage.removeItem('mada_active_dosing_draft');
             setIsCancelPrepModalOpen(false);
             setCurrentScreen('dashboard');
             showToast('Preparação cancelada.', 'info');

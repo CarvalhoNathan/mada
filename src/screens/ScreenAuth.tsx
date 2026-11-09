@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Check, HelpCircle, ShieldCheck, Wifi, WifiOff, KeyRound, Sparkles, Clock, Shield } from 'lucide-react';
+import { Check, HelpCircle, ShieldCheck, KeyRound, Shield } from 'lucide-react';
 import { Operator } from '../types';
 import { PIN_ERRO_SIMULADO, MOCK_SUPERVISOR } from '../data';
 import { PinInput } from '../components/ui/PinInput';
@@ -37,49 +37,6 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   const [hasError, setHasError] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
-
-  // Relógio Industrial em Tempo Real
-  const [currentTime, setCurrentTime] = useState<string>(() => {
-    const now = new Date();
-    return now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  });
-  const [currentDate, setCurrentDate] = useState<string>(() => {
-    const now = new Date();
-    return now.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
-  });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      setCurrentTime(now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-      setCurrentDate(now.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', ''));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Modo Limpeza de Tela Touch (bloqueia o toque por 15s)
-  const [isCleaning, setIsCleaning] = useState<boolean>(false);
-  const [cleaningSeconds, setCleaningSeconds] = useState<number>(15);
-
-  const handleStartCleaning = () => {
-    setCleaningSeconds(15);
-    setIsCleaning(true);
-  };
-
-  useEffect(() => {
-    if (!isCleaning) return;
-    const interval = setInterval(() => {
-      setCleaningSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setIsCleaning(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isCleaning]);
 
   const handleClear = useCallback(() => {
     if (isSuccess) return;
@@ -175,110 +132,6 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
 
   return (
     <div className="auth-screen-shell">
-      {/* 0. Overlay de Limpeza de Tela Touch (15 segundos) */}
-      {isCleaning && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            backgroundColor: 'rgba(0, 0, 0, 0.95)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#ffffff',
-            userSelect: 'none',
-          }}
-        >
-          <Sparkles size={44} color="#FAFAFA" style={{ marginBottom: '16px' }} />
-          <h2 style={{ fontSize: '26px', fontWeight: 800, margin: '0 0 8px 0', color: '#FAFAFA' }}>
-            Modo de Limpeza de Tela Ativo
-          </h2>
-          <p style={{ fontSize: '16px', color: '#a1a1aa', margin: '0 0 24px 0' }}>
-            Passe o pano no display do tablet. Os toques estão temporariamente bloqueados.
-          </p>
-          <div
-            style={{
-              width: '84px',
-              height: '84px',
-              borderRadius: '50%',
-              border: '2px solid rgba(255, 255, 255, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '32px',
-              fontWeight: 800,
-              fontFamily: 'var(--font-mono)',
-              color: '#FAFAFA',
-              boxShadow: '0 0 24px rgba(255, 255, 255, 0.15)',
-            }}
-          >
-            {cleaningSeconds}s
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsCleaning(false)}
-            style={{
-              marginTop: '28px',
-              padding: '10px 22px',
-              borderRadius: '10px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              color: '#ffffff',
-              fontSize: '15px',
-              cursor: 'pointer',
-            }}
-          >
-            Encerrar limpeza agora
-          </button>
-        </div>
-      )}
-
-      {/* Barra Superior de Identificação da Estação Industrial */}
-      <header className="auth-station-bar" aria-label="Identificação da estação">
-        <div className="auth-station-brand">
-          <div className="boardui-brand-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10 2v7.31L4.14 20a2 2 0 0 0 1.72 3h12.28a2 2 0 0 0 1.72-3L14 9.31V2" />
-              <path d="M8.5 2h7" />
-              <path d="M7 16h10" />
-            </svg>
-          </div>
-          <div className="auth-station-titles">
-            <span className="auth-station-title">Mada Marcenaria • Cabine de Pintura</span>
-            <span className="auth-station-subtitle">Terminal de Dosagem Homologada & Controle FEFO</span>
-          </div>
-        </div>
-
-        <div className="auth-station-status">
-          {/* Relógio Industrial em Tempo Real */}
-          <div className="auth-header-clock" title="Horário oficial da marcenaria">
-            <Clock size={15} />
-            <span>{currentTime} • {currentDate}</span>
-          </div>
-
-          {/* Botão de Limpeza de Tela */}
-          <button
-            type="button"
-            className="boardui-clean-btn"
-            onClick={handleStartCleaning}
-            title="Limpar tela (bloqueia o toque por 15 segundos)"
-            aria-label="Limpar tela"
-          >
-            <Sparkles size={15} strokeWidth={2.2} />
-            <span>Limpar tela</span>
-          </button>
-
-          <div className={`auth-status-pill ${isOffline ? 'is-offline' : 'is-online'}`}>
-            {isOffline ? <WifiOff size={18} aria-hidden="true" /> : <Wifi size={18} aria-hidden="true" />}
-            <span>{isOffline ? 'Terminal Offline' : 'Balança & Estoque Online'}</span>
-          </div>
-        </div>
-      </header>
-
       <div className="auth-layout-minimal">
         {/* Coluna da Esquerda: Seleção do Pintor */}
         <section className="auth-left-column" aria-label="Seleção de Operador">

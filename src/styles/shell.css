@@ -1035,6 +1035,54 @@ body {
   gap: 10px;
 }
 
+/* Relógio Industrial em Tempo Real (Permanente antes e depois do login) */
+.boardui-header-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-button);
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Status de Telemetria Padronizado (Opção B - Chip Verde Suave com Wi-Fi) */
+.boardui-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-button);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  user-select: none;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.boardui-status-pill.is-online {
+  color: #34d399;
+  background-color: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+
+.boardui-status-pill.is-offline {
+  color: #f87171;
+  background-color: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+}
+
 .boardui-status-indicator {
   display: inline-flex;
   align-items: center;
@@ -1159,6 +1207,23 @@ body {
 .boardui-operator-chevron {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.boardui-operator-pill--auth {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.boardui-operator-pill--auth:hover {
+  background-color: var(--card-hover);
+  border-color: var(--border);
+}
+
+.boardui-operator-avatar--auth {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-muted);
+  font-size: 10px;
 }
 
 /* 2. Área Central e Container do Dashboard BoardUI */
