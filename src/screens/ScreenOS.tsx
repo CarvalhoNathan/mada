@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Check, X, FileSpreadsheet, Layers, Search } from 'lucide-react';
 import { Ambiente, AmbienteOS, OrdemServico, PieceLot } from '../types';
 import { CountNumber } from '../components/ui/CountNumber';
+import { PieceFacesViewer3D } from '../components/ui/PieceFacesViewer3D';
 import { MOCK_ORDENS_SERVICO } from '../data/mock/mockData';
 
 interface ScreenOSProps {
@@ -241,6 +242,15 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                 </strong>
               </div>
             </div>
+
+            {/* Visualizador Tridimensional do Mapa de Faces da Peça */}
+            <PieceFacesViewer3D
+              title={pieceLot.title || pieceLot.titulo || 'Armários Superiores - Portas 18mm'}
+              substrate={pieceLot.substrate || pieceLot.substrato || 'MDF Cru 18mm Berneck'}
+              finish={pieceLot.acabamentoSugerido || 'Laca Branca Fosca 20 Gloss'}
+              area={`${areaNumeric} m²`}
+              height={165}
+            />
 
             {lotesDoAmbiente.length > 1 ? (
               <button
