@@ -11,8 +11,10 @@ import {
   Plus,
   ClipboardCopy,
   Trash2,
+  Search,
+  FileText,
 } from 'lucide-react';
-import { Lote, Operador, ScreenId, ItemSolicitacaoCompra } from '../types';
+import { Lote, Operador, ScreenId, ItemSolicitacaoCompra, Preparacao } from '../types';
 import { CountNumber } from '../components/ui/CountNumber';
 import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { ModalNewBatch } from './ModalNewBatch';
@@ -25,6 +27,7 @@ interface ScreenInventoryProps {
   onNavigate: (screen: ScreenId) => void;
   showToast: (msg: string, type?: 'info' | 'success' | 'warn' | 'danger') => void;
   solicitacoes: ItemSolicitacaoCompra[];
+  preparacoes?: Preparacao[];
   onAdicionarSolicitacao: (item: Omit<ItemSolicitacaoCompra, 'id' | 'solicitadoEm'>) => void;
   onRemoverSolicitacao: (id: string) => void;
   onReceberNovoLote?: (novoLote: Omit<Lote, 'id'>) => Promise<void>;
@@ -38,12 +41,14 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
   onNavigate,
   showToast,
   solicitacoes,
+  preparacoes = [],
   onAdicionarSolicitacao,
   onRemoverSolicitacao,
   onReceberNovoLote,
 }) => {
   const [filtro, setFiltro] = useState<'todos' | 'criticos' | 'sobras'>('todos');
   const [abaAtiva, setAbaAtiva] = useState<'estoque' | 'compras'>('estoque');
+  const [busca, setBusca] = useState<string>('');
 
   // Estado do Modal de Entrada de Nova Lata / Nota Fiscal
   const [isNewBatchModalOpen, setIsNewBatchModalOpen] = useState(false);
@@ -81,10 +86,21 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
     showToast(`✓ Entrada registrada: ${prod.nome} (${volumeEntrada.toLocaleString('pt-BR')} ml) no estoque!`, 'success');
   };
 
-  // Filtra lotes
+  // Filtra lotes por categoria + termo de busca rápida
   const lotesFiltrados = lotes.filter((l) => {
-    if (filtro === 'sobras') return l.codigo.includes('SOBRA') || l.produtoNome.includes('Sobra');
-    if (filtro === 'criticos') return l.quantidadeAtual < 1000 || l.statusUrgencia === 'alta';
+    if (filtro === 'sobras' && !(l.codigo.includes('SOBRA') || l.produtoNome.includes('Sobra'))) {
+      return false;
+    }
+    if (filtro === 'criticos' && !(l.quantidadeAtual < 1000 || l.statusUrgencia === 'alta')) {
+      return false;
+    }
+    if (busca.trim()) {
+      const q = busca.trim().toLowerCase();
+      const matchNome = l.produtoNome.toLowerCase().includes(q);
+      const matchCod = l.codigo.toLowerCase().includes(q);
+      const matchPrat = (l.prateleira || '').toLowerCase().includes(q);
+      return matchNome || matchCod || matchPrat;
+    }
     return true;
   });
 
@@ -329,33 +345,77 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
             </div>
           </div>
 
-          {/* Filtros de Lista (Controle Segmentado com Pílula Deslizante GSAP) */}
-          <SegmentedControl<'todos' | 'criticos' | 'sobras'>
-            ariaLabel="Filtrar lotes do estoque"
-            size="sm"
-            value={filtro}
-            onChange={(val) => setFiltro(val)}
-            options={[
-              {
-                id: 'todos',
-                label: `Todos os lotes (${lotes.length})`,
-                tone: 'neutral',
-              },
-              {
-                id: 'criticos',
-                label: 'Estoque baixo / validade próxima',
-                icon: <AlertCircle size={14} strokeWidth={2.4} />,
-                tone: 'danger',
-              },
-              {
-                id: 'sobras',
-                label: 'Latas de sobras',
-                icon: <RotateCcw size={14} strokeWidth={2.4} />,
-                tone: 'warn',
-              },
-            ]}
-            style={{ marginBottom: '16px' }}
-          />
+          {/* Filtros de Lista + Busca Rápida por Lote/Produto/Prateleira */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              flexWrap: 'wrap',
+              marginBottom: '16px',
+            }}
+          >
+            <SegmentedControl<'todos' | 'criticos' | 'sobras'>
+              ariaLabel="Filtrar lotes do estoque"
+              size="sm"
+              value={filtro}
+              onChange={(val) => setFiltro(val)}
+              options={[
+                {
+                  id: 'todos',
+                  label: `Todos os lotes (${lotes.length})`,
+                  tone: 'neutral',
+                },
+                {
+                  id: 'criticos',
+                  label: 'Estoque baixo / validade próxima',
+                  icon: <AlertCircle size={14} strokeWidth={2.4} />,
+                  tone: 'danger',
+                },
+                {
+                  id: 'sobras',
+                  label: 'Latas de sobras',
+                  icon: <RotateCcw size={14} strokeWidth={2.4} />,
+                  tone: 'warn',
+                },
+              ]}
+            />
+
+            <div
+              style={{
+                position: 'relative',
+                flex: '1 1 280px',
+                maxWidth: '380px',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <Search
+                size={16}
+                color="var(--text-muted)"
+                style={{ position: 'absolute', left: '12px', pointerEvents: 'none' }}
+              />
+              <input
+                type="search"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                placeholder="Buscar lote (#SY-...), produto ou prateleira..."
+                style={{
+                  width: '100%',
+                  minHeight: '40px',
+                  padding: '0 14px 0 36px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--text)',
+                  fontSize: '14px',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                }}
+              />
+            </div>
+          </div>
 
           {/* Grid de Cards de Estoque */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -363,6 +423,12 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
               const statusVal = formatarStatusValidade(lote.validade, lote.diasAberto);
               const isBaixo = lote.quantidadeAtual < 1000;
               const naListaCompras = solicitacoes.some((s) => s.produtoId === lote.produtoId);
+              const prepOrigem = preparacoes.find((p) =>
+                p.itensDevolucao.some(
+                  (it) =>
+                    it.loteSobraGeradoCodigo === lote.codigo || it.loteCodigo === lote.codigo
+                )
+              );
 
               return (
                 <div
@@ -425,6 +491,30 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
                         </strong>
                         {isBaixo && ' (Estoque Baixo)'}
                       </span>
+                      {(lote.codigo.includes('SOBRA') || prepOrigem) && (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            background: 'rgba(59, 130, 246, 0.12)',
+                            border: '1px solid rgba(59, 130, 246, 0.3)',
+                            color: '#93c5fd',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                          }}
+                        >
+                          <FileText size={12} />
+                          <span>
+                            Origem:{' '}
+                            {prepOrigem
+                              ? `${prepOrigem.ordemServicoNumero} (${prepOrigem.ambienteNome}) • ${prepOrigem.operadorNome}`
+                              : 'Sobra homologada FEFO (Cabine 01)'}
+                          </span>
+                        </span>
+                      )}
                     </div>
 
                     {/* Medidor Visual de Nível do Galão (Stageshow Meter) */}
@@ -693,18 +783,9 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
           <button
             type="button"
             className="os-bar-btn os-btn-back"
-            onClick={() => onNavigate('dashboard')}
+            onClick={() => onNavigate('manager')}
           >
-            ← Voltar ao Início
-          </button>
-        </div>
-        <div className="os-bottom-right">
-          <button
-            type="button"
-            className="os-bar-btn os-btn-continue"
-            onClick={() => onNavigate('os')}
-          >
-            <span>Nova Preparação →</span>
+            ← Voltar ao Painel do Gestor
           </button>
         </div>
       </footer>

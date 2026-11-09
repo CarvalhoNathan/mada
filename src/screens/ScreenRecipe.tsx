@@ -14,7 +14,9 @@ import {
 interface ScreenRecipeProps {
   recipe: RecipeState;
   activeRecipe?: Receita;
+  suggestedFinish?: string;
   lotes?: Lote[];
+  initialConfirmed?: boolean;
   onSelectRecipe?: (receita: Receita) => void;
   onSetTotalVolume: (vol: number) => void;
   onAdjustVolume: (delta: number) => void;
@@ -28,21 +30,37 @@ const PRESET_VOLUMES = [500, 1000, 1500, 2000];
 export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
   recipe,
   activeRecipe,
+  suggestedFinish,
   lotes,
+  initialConfirmed = false,
   onSelectRecipe,
   onSetTotalVolume,
   onAdjustVolume,
   onConfirmWeighing,
   onNavigate,
 }) => {
-  const [isRecipeConfirmed, setIsRecipeConfirmed] = useState(false);
+  const [isRecipeConfirmed, setIsRecipeConfirmed] = useState<boolean>(initialConfirmed);
 
   const vol = recipe.totalVolume;
   const lotesEstoque = lotes && lotes.length > 0 ? lotes : MOCK_LOTES;
 
-  // Receita ativa selecionada ou padrão (continua exibindo a prévia dos dados abaixo)
-  const receita = activeRecipe || MOCK_RECEITAS[0];
+  // Identifica qual receita corresponde ao acabamento sugerido pelo lote de peças da O.S.
+  const finishLower = (suggestedFinish || '').toLowerCase();
+  const receitaRecomendada =
+    MOCK_RECEITAS.find((r) => {
+      const nomeLower = r.nome.toLowerCase();
+      if (finishLower.includes('verniz')) return nomeLower.includes('verniz');
+      if (finishLower.includes('primer') || finishLower.includes('fundo'))
+        return nomeLower.includes('primer');
+      return nomeLower.includes('laca');
+    }) || MOCK_RECEITAS[0];
+
+  // Receita ativa selecionada ou recomendada pela O.S. (continua exibindo a prévia dos dados abaixo)
+  const receita = activeRecipe || receitaRecomendada;
   const marca = MOCK_MARCAS.find((m) => m.id === receita.marcaId) || { nome: receita.marcaNome };
+  const isDivergenteDaOS = isRecipeConfirmed && receita.id !== receitaRecomendada.id;
+  const isEtapaPrimer =
+    isDivergenteDaOS && receita.nome.toLowerCase().includes('primer');
 
   // Cálculo das frações químicas via função pura de domínio a partir dos itens da receita mockada
   const itensParaCalculo = receita.itens.map((item) => ({
@@ -122,19 +140,66 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
           ariaLabel="Selecionar acabamento homologado"
           value={isRecipeConfirmed ? receita.id : -1}
           onChange={handleSelectAndConfirmRecipe}
-          options={MOCK_RECEITAS.map((r) => ({
-            id: r.id,
-            label: r.nome,
-            icon:
-              isRecipeConfirmed && r.id === receita.id ? (
-                <Check size={15} strokeWidth={2.6} />
-              ) : (
-                <FlaskConical size={15} strokeWidth={2.2} />
-              ),
-            tone: 'primary',
-          }))}
+          options={MOCK_RECEITAS.map((r) => {
+            const isRecommended = r.id === receitaRecomendada.id;
+            return {
+              id: r.id,
+              label: r.nome,
+              icon:
+                isRecipeConfirmed && r.id === receita.id ? (
+                  <Check size={15} strokeWidth={2.6} />
+                ) : (
+                  <FlaskConical size={15} strokeWidth={2.2} />
+                ),
+              badge: isRecommended ? (
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    padding: '1px 6px',
+                    borderRadius: '999px',
+                    background: 'rgba(16, 185, 129, 0.16)',
+                    border: '1px solid rgba(16, 185, 129, 0.4)',
+                    color: '#4ade80',
+                    marginLeft: '4px',
+                  }}
+                >
+                  ★ O.S.
+                </span>
+              ) : undefined,
+              tone: 'primary',
+            };
+          })}
           style={{ width: '100%' }}
         />
+
+        {isDivergenteDaOS && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 12px',
+              borderRadius: '10px',
+              background: isEtapaPrimer
+                ? 'rgba(59, 130, 246, 0.12)'
+                : 'rgba(245, 158, 11, 0.14)',
+              border: isEtapaPrimer
+                ? '1px solid rgba(59, 130, 246, 0.35)'
+                : '1px solid rgba(245, 158, 11, 0.42)',
+              fontSize: '12px',
+              fontWeight: 600,
+              color: isEtapaPrimer ? '#93c5fd' : '#fcd34d',
+            }}
+          >
+            <AlertTriangle size={14} strokeWidth={2.4} style={{ flexShrink: 0 }} />
+            <span>
+              {isEtapaPrimer
+                ? `Etapa de Fundo/Preparação: A peça pede acabamento final "${suggestedFinish || receitaRecomendada.nome}", e você selecionou "${receita.nome}".`
+                : `Atenção: O lote de peças na O.S. especifica "${suggestedFinish || receitaRecomendada.nome}", mas você selecionou "${receita.nome}".`}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Dados da receita permanecem visíveis abaixo, com trava tátil até a escolha da receita */}

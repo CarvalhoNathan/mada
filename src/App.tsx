@@ -198,18 +198,6 @@ export const App: React.FC = () => {
     [preparacoes]
   );
 
-  // Preparação em foco na tela de devolução:
-  // Somente mantém uma preparação em foco automático se ela ainda possuir itens PENDENTE
-  const activePreparacao = useMemo(() => {
-    if (activePreparacaoId) {
-      const encontrada = preparacoes.find((p) => p.id === activePreparacaoId);
-      if (encontrada && temItensPendentesDevolucao(encontrada)) {
-        return encontrada;
-      }
-    }
-    return preparacoesPendentes[0] || null;
-  }, [preparacoes, activePreparacaoId, preparacoesPendentes]);
-
   // Identificação da cabine do operador atual e verificação de aplicação ativa na cabine
   const cabineOperador = useMemo(
     () => obterCabineOperador(selectedOperator),
@@ -220,6 +208,21 @@ export const App: React.FC = () => {
     () => buscarAplicacaoAtivaPorCabine(preparacoes, cabineOperador.cabineId) || null,
     [preparacoes, cabineOperador.cabineId]
   );
+
+  // Preparação em foco na tela de devolução:
+  // Prioriza preparação selecionada ou da cabine do operador logado
+  const activePreparacao = useMemo(() => {
+    if (activePreparacaoId) {
+      const encontrada = preparacoes.find((p) => p.id === activePreparacaoId);
+      if (encontrada && temItensPendentesDevolucao(encontrada)) {
+        return encontrada;
+      }
+    }
+    const daCabine = preparacoesPendentes.find(
+      (p) => (p.cabineId || 'CABINE-01').toUpperCase() === cabineOperador.cabineId.toUpperCase()
+    );
+    return daCabine || preparacoesPendentes[0] || null;
+  }, [preparacoes, activePreparacaoId, preparacoesPendentes, cabineOperador.cabineId]);
 
   // Dados da OS e Lote
   const [selectedOSNumber, setSelectedOSNumber] = useState(MOCK_ORDENS_SERVICO[0].numero);
@@ -259,6 +262,8 @@ export const App: React.FC = () => {
   // Modais
   const [isUseFirstModalOpen, setIsUseFirstModalOpen] = useState(false);
   const [isCancelPrepModalOpen, setIsCancelPrepModalOpen] = useState(false);
+  const [isShiftSummaryModalOpen, setIsShiftSummaryModalOpen] = useState(false);
+  const [preConfirmedRecipe, setPreConfirmedRecipe] = useState(false);
 
   // Toast
   const [toast, setToast] = useState<{
@@ -275,16 +280,9 @@ export const App: React.FC = () => {
     []
   );
 
-  // Estado de Pot Life derivado da aplicação ativa na cabine (usando timestamps absolutos persistidos)
+  // Estado de Pot Life derivado da aplicação ativa na cabine do operador logado
   const potLife: PotLifeState | null = useMemo(() => {
-    const prepComAplicacao =
-      preparacaoAtivaCabine ||
-      preparacoes.find(
-        (p) =>
-          Boolean(p.dosagemConcluidaEm) &&
-          !p.aplicacaoConcluidaEm &&
-          p.status !== 'PREPARACAO_ENCERRADA'
-      );
+    const prepComAplicacao = preparacaoAtivaCabine;
 
     if (!prepComAplicacao || !prepComAplicacao.dosagemConcluidaEm || !prepComAplicacao.potLifeMinutos) {
       return null;
@@ -307,12 +305,15 @@ export const App: React.FC = () => {
         procedimentosPotLife[prepComAplicacao.receitaId] ||
         receitaRef?.procedimentoOficialPotLifeExpirado,
     };
-  }, [preparacaoAtivaCabine, preparacoes, procedimentosPotLife]);
+  }, [preparacaoAtivaCabine, procedimentosPotLife]);
 
   // Navegação protegida pelos bloqueios inteligentes de cabine/equipamento
   const handleNavigate = useCallback(
     (targetScreen: ScreenId) => {
       setIsOccurrenceModalOpen(false);
+      if (targetScreen !== 'recipe') {
+        setPreConfirmedRecipe(false);
+      }
 
       // Ao voltar ao Dashboard, limpa o ID de preparação em foco caso ela já esteja concluída
       if (targetScreen === 'dashboard') {
@@ -940,9 +941,21 @@ export const App: React.FC = () => {
       if (porProduto) receitaVinculada = porProduto;
     }
 
+    // Seleciona automaticamente uma O.S. cujo acabamento sugerido seja compatível com a receita do lote prioritário
+    const recLower = receitaVinculada.nome.toLowerCase();
+    const osCompativel =
+      MOCK_ORDENS_SERVICO.find((o) => {
+        const acabLower = (o.pecaLote.acabamentoSugerido || '').toLowerCase();
+        if (recLower.includes('verniz')) return acabLower.includes('verniz');
+        if (recLower.includes('primer')) return acabLower.includes('primer');
+        return acabLower.includes('laca');
+      }) || MOCK_ORDENS_SERVICO[0];
+
+    handleSelectOS(osCompativel);
     setSelectedRecipe(receitaVinculada);
+    setPreConfirmedRecipe(true);
     showToast(
-      `✓ Lote prioritário ${batchCode} vinculado à receita ${receitaVinculada.nome}!`,
+      `✓ Lote prioritário ${batchCode} vinculado à ${osCompativel.numero} (${receitaVinculada.nome})!`,
       'success'
     );
     setCurrentScreen('recipe');
@@ -964,19 +977,23 @@ export const App: React.FC = () => {
         onNavigate={handleNavigate}
         operator={
           currentScreen !== 'auth'
-            ? {
-                name: selectedOperator.nome,
-                avatarUrl: selectedOperator.avatar,
-                role: selectedOperator.papel,
-              }
+            ? currentScreen === 'manager' || currentScreen === 'inventory'
+              ? {
+                  name: 'Fábio (Gestor)',
+                  role: 'Supervisor de Cabine',
+                }
+              : {
+                  name: selectedOperator.nome,
+                  avatarUrl: selectedOperator.avatar,
+                  role: selectedOperator.papel,
+                }
             : undefined
         }
         isWifiConnected={isOnline}
         isServerLocal={isServerLocal}
         onOperatorClick={() => {
           if (currentScreen !== 'auth') {
-            setCurrentScreen('auth');
-            showToast('Sessão encerrada. Selecione o operador.', 'info');
+            setIsShiftSummaryModalOpen(true);
           }
         }}
       >
@@ -992,14 +1009,17 @@ export const App: React.FC = () => {
         )}
 
         {/* Banner de Cronômetro de Vida Útil da Mistura (Pot Life persistente via timestamp absoluto) */}
-        {currentScreen !== 'auth' && potLife && (
-          <PotLifeTimerBanner
-            potLife={potLife}
-            onFinishApplication={handleFinishApplication}
-            onOpenOccurrenceModal={() => setIsOccurrenceModalOpen(true)}
-            onPotLifeExpired={handlePotLifeExpired}
-          />
-        )}
+        {currentScreen !== 'auth' &&
+          currentScreen !== 'manager' &&
+          currentScreen !== 'inventory' &&
+          potLife && (
+            <PotLifeTimerBanner
+              potLife={potLife}
+              onFinishApplication={handleFinishApplication}
+              onOpenOccurrenceModal={() => setIsOccurrenceModalOpen(true)}
+              onPotLifeExpired={handlePotLifeExpired}
+            />
+          )}
 
         {/* Stepper Persistente nas 3 etapas da Cabine */}
         {(currentScreen === 'os' || currentScreen === 'recipe' || currentScreen === 'dosing') && (
@@ -1031,6 +1051,8 @@ export const App: React.FC = () => {
               }}
               isOffline={isOffline}
               showToast={showToast}
+              lotes={lotes}
+              preparacoes={preparacoes}
             />
           )}
 
@@ -1114,6 +1136,7 @@ export const App: React.FC = () => {
               activeRecipe={selectedRecipe}
               suggestedFinish={pieceLot.acabamentoSugerido}
               lotes={lotes}
+              initialConfirmed={preConfirmedRecipe}
               onSelectRecipe={setSelectedRecipe}
               onSetTotalVolume={handleSetTotalVolume}
               onAdjustVolume={handleAdjustVolume}
@@ -1206,6 +1229,7 @@ export const App: React.FC = () => {
                 showToast={showToast}
                 movimentacoes={movimentacoes}
                 lotes={lotes}
+                preparacoes={preparacoes}
                 preparacoesEmConferencia={preparacoesEmConferencia}
                 residuosMistura={residuosMistura}
                 onResolveConferenceItem={handleRegisterItemReturn}
@@ -1310,6 +1334,239 @@ export const App: React.FC = () => {
             showToast('Preparação cancelada.', 'info');
           }}
         />
+
+        {/* Modal de Resumo do Turno / Trocar Operador */}
+        {isShiftSummaryModalOpen && (() => {
+          const isManagerSession = currentScreen === 'manager' || currentScreen === 'inventory';
+          const prepsDoOperador = isManagerSession
+            ? preparacoes
+            : preparacoes.filter((p) => p.operadorId === selectedOperator.id);
+          const volumeTotalTurno = prepsDoOperador.reduce((acc, p) => acc + p.volumeTotal, 0);
+          const itensResolvidosTurno = prepsDoOperador.reduce(
+            (acc, p) => acc + p.itensDevolucao.filter((it) => it.status !== 'PENDENTE').length,
+            0
+          );
+          const itensPendentesTurno = prepsDoOperador.reduce(
+            (acc, p) => acc + p.itensDevolucao.filter((it) => it.status === 'PENDENTE').length,
+            0
+          );
+
+          return (
+            <div
+              className="ds-modal-backdrop"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Resumo do Turno e Troca de Operador"
+              onClick={() => setIsShiftSummaryModalOpen(false)}
+            >
+              <div
+                className="os-modal-card-apple"
+                onClick={(e) => e.stopPropagation()}
+                style={{ maxWidth: '520px' }}
+              >
+                <div className="os-modal-header-apple">
+                  <div className="os-modal-header-left">
+                    <div
+                      className="os-modal-icon-badge"
+                      style={{
+                        fontWeight: 800,
+                        fontSize: '15px',
+                        color: 'var(--text)',
+                      }}
+                    >
+                      {isManagerSession
+                        ? 'FB'
+                        : selectedOperator.nome
+                            .split(' ')
+                            .map((p) => p[0])
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="os-modal-title-apple">
+                        <span>
+                          {isManagerSession ? 'Fábio (Gestor)' : selectedOperator.nome}
+                        </span>
+                        <span className="os-modal-count-pill">
+                          {isManagerSession ? 'Gestão' : cabineOperador.cabineNome}
+                        </span>
+                      </h3>
+                      <p className="os-modal-subtitle-apple">
+                        {isManagerSession
+                          ? 'Supervisor de Cabine • Resumo Geral da Operação'
+                          : `${selectedOperator.papel} • Resumo do turno atual`}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsShiftSummaryModalOpen(false)}
+                    className="os-modal-close-apple"
+                    aria-label="Fechar resumo do turno"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '10px',
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: '12px',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      Misturas no Turno
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '20px',
+                        fontWeight: 800,
+                        color: 'var(--text)',
+                        marginTop: '4px',
+                      }}
+                    >
+                      {prepsDoOperador.length}{' '}
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)' }}>
+                        ({volumeTotalTurno} ml)
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      padding: '14px 16px',
+                      borderRadius: '12px',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      Embalagens Rastreadas
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '20px',
+                        fontWeight: 800,
+                        color: itensPendentesTurno > 0 ? '#FBBF24' : '#34D399',
+                        marginTop: '4px',
+                      }}
+                    >
+                      {itensResolvidosTurno} resolvidas{' '}
+                      {itensPendentesTurno > 0 && (
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#FBBF24' }}>
+                          • {itensPendentesTurno} pend.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {!isManagerSession && preparacaoAtivaCabine && (
+                  <div
+                    style={{
+                      padding: '12px 14px',
+                      borderRadius: '12px',
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      border: '1px solid rgba(16, 185, 129, 0.35)',
+                      fontSize: '13px',
+                      color: '#34D399',
+                      fontWeight: 600,
+                    }}
+                  >
+                    ● Aplicação ativa na {cabineOperador.cabineNome}:{' '}
+                    <strong>{preparacaoAtivaCabine.ordemServicoNumero}</strong> (
+                    {preparacaoAtivaCabine.receitaNome}). O cronômetro de Pot Life continuará salvo.
+                  </div>
+                )}
+
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginTop: '4px',
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setIsShiftSummaryModalOpen(false)}
+                    style={{
+                      minHeight: '46px',
+                      padding: '0 18px',
+                      borderRadius: '10px',
+                      border: '1px solid var(--border)',
+                      background: 'var(--bg)',
+                      color: 'var(--text)',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Continuar no turno
+                  </button>
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {!isManagerSession && itensPendentesTurno > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsShiftSummaryModalOpen(false);
+                          setCurrentScreen('return');
+                        }}
+                        style={{
+                          minHeight: '46px',
+                          padding: '0 14px',
+                          borderRadius: '10px',
+                          border: '1px solid rgba(245, 158, 11, 0.45)',
+                          background: 'rgba(245, 158, 11, 0.14)',
+                          color: '#FBBF24',
+                          fontSize: '13px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Devolver sobras ({itensPendentesTurno})
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsShiftSummaryModalOpen(false);
+                        setCurrentScreen('auth');
+                        showToast('Turno encerrado. Selecione o próximo operador.', 'info');
+                      }}
+                      style={{
+                        minHeight: '46px',
+                        padding: '0 18px',
+                        borderRadius: '10px',
+                        border: 'none',
+                        background: 'var(--primary)',
+                        color: 'var(--primary-foreground)',
+                        fontSize: '14px',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Trocar operador →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </AppShell>
 
       {/* Toast Notificações no topo da raiz da aplicação */}
