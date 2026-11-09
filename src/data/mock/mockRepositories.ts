@@ -235,10 +235,39 @@ export class MockPreparacaoRepository implements PreparacaoRepository {
   private preparacoes: Preparacao[];
 
   constructor() {
-    this.preparacoes = loadStorage<Preparacao[]>(
+    const loaded = loadStorage<Preparacao[]>(
       STORAGE_KEYS.PREPARACOES,
       JSON.parse(JSON.stringify(MOCK_PREPARACOES_INICIAIS))
     );
+    const prepAnaTemplate = MOCK_PREPARACOES_INICIAIS.find((p) => p.id === 'PREP-2026-8842');
+    const existingAnaIdx = loaded.findIndex((p) => p.id === 'PREP-2026-8842');
+    const freshTimestamp = new Date(Date.now() - (10 * 60 + 35) * 1000).toISOString();
+
+    if (prepAnaTemplate && existingAnaIdx === -1) {
+      loaded.push({
+        ...JSON.parse(JSON.stringify(prepAnaTemplate)),
+        criadaEm: freshTimestamp,
+        dosagemConcluidaEm: freshTimestamp,
+      });
+    } else if (
+      existingAnaIdx >= 0 &&
+      !loaded[existingAnaIdx].aplicacaoConcluidaEm &&
+      loaded[existingAnaIdx].status !== 'PREPARACAO_ENCERRADA'
+    ) {
+      const startMs = loaded[existingAnaIdx].dosagemConcluidaEm
+        ? new Date(loaded[existingAnaIdx].dosagemConcluidaEm!).getTime()
+        : 0;
+      const elapsedSec = (Date.now() - startMs) / 1000;
+      if (elapsedSec > 23 * 60 || elapsedSec < 0) {
+        loaded[existingAnaIdx] = {
+          ...loaded[existingAnaIdx],
+          criadaEm: freshTimestamp,
+          dosagemConcluidaEm: freshTimestamp,
+          statusPotLife: 'NORMAL',
+        };
+      }
+    }
+    this.preparacoes = loaded;
   }
 
   async listar(): Promise<Preparacao[]> {
@@ -277,7 +306,13 @@ export class MockPreparacaoRepository implements PreparacaoRepository {
   }
 
   async resetar(): Promise<void> {
-    this.preparacoes = JSON.parse(JSON.stringify(MOCK_PREPARACOES_INICIAIS));
+    const freshTimestamp = new Date(Date.now() - (10 * 60 + 35) * 1000).toISOString();
+    this.preparacoes = JSON.parse(JSON.stringify(MOCK_PREPARACOES_INICIAIS)).map(
+      (p: Preparacao) =>
+        p.id === 'PREP-2026-8842'
+          ? { ...p, criadaEm: freshTimestamp, dosagemConcluidaEm: freshTimestamp }
+          : p
+    );
     saveStorage(STORAGE_KEYS.PREPARACOES, this.preparacoes);
   }
 }

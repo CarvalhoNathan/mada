@@ -11,7 +11,7 @@ import {
   Produto,
   CriterioChecklistProduto,
 } from '../types';
-import { ordenarLotesFEFO } from './fefo';
+import { ordenarLotesFEFO, alocarConsumoMultiLoteFEFO } from './fefo';
 import { obterDuracaoPotLifeHomologada } from './potLife';
 import { obterCabineOperador } from './operationalLocks';
 
@@ -59,10 +59,18 @@ export function criarPreparacaoDevolucao(params: ParametrosCriacaoPreparacao): P
 
   const itensDevolucao: ItemDevolucaoComponente[] = receita.itens.map((item, idx) => {
     const quantidadeRetiradaMl = valoresDosados[item.id] ?? Math.round(volumeTotal * item.proporcao);
-    const lotesOrdenados = ordenarLotesFEFO(
-      lotesDisponiveis.filter((l) => l.produtoId === item.produtoId && l.quantidadeAtual > 0)
+    const lotesProduto = lotesDisponiveis.filter(
+      (l) => l.produtoId === item.produtoId && l.quantidadeAtual > 0
     );
+    const lotesOrdenados = ordenarLotesFEFO(lotesProduto);
+    const planoMultiLote = alocarConsumoMultiLoteFEFO(lotesProduto, quantidadeRetiradaMl);
+    const ultimaAlocacao =
+      planoMultiLote.alocacoes.length > 0
+        ? planoMultiLote.alocacoes[planoMultiLote.alocacoes.length - 1]
+        : null;
+
     const loteOrigem =
+      ultimaAlocacao?.lote ||
       lotesOrdenados[0] ||
       lotesDisponiveis.find((l) => l.produtoId === item.produtoId) || {
         id: item.id,
@@ -76,8 +84,12 @@ export function criarPreparacaoDevolucao(params: ParametrosCriacaoPreparacao): P
         prateleira: 'Prateleira A-01',
       };
 
-    const saldoInicialLataMl = Math.max(quantidadeRetiradaMl, loteOrigem.quantidadeAtual);
-    const saldoRestanteSugerido = Math.max(0, saldoInicialLataMl - quantidadeRetiradaMl);
+    const saldoInicialLataMl = ultimaAlocacao
+      ? loteOrigem.quantidadeAtual
+      : Math.max(quantidadeRetiradaMl, loteOrigem.quantidadeAtual);
+    const saldoRestanteSugerido = ultimaAlocacao
+      ? ultimaAlocacao.saldoRestanteLoteMl
+      : Math.max(0, saldoInicialLataMl - quantidadeRetiradaMl);
     const cleanCode = loteOrigem.codigo.replace(/^#+/, '');
 
     return {

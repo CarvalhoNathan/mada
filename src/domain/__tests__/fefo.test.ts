@@ -3,6 +3,7 @@ import {
   ordenarLotesFEFO,
   calcularDiasAteVencimento,
   formatarStatusValidade,
+  alocarConsumoMultiLoteFEFO,
 } from '../fefo';
 
 describe('Domain: fefo (Ordenação por Validade e Latas Abertas)', () => {
@@ -54,5 +55,24 @@ describe('Domain: fefo (Ordenação por Validade e Latas Abertas)', () => {
 
     const loteNormal = formatarStatusValidade('2027-02-10', 0, ref);
     expect(loteNormal.nivel).toBe('normal');
+  });
+
+  it('deve alocar consumo em múltiplos lotes FEFO quando a primeira lata aberta tem saldo insuficiente', () => {
+    const lotes = [
+      { id: 10, codigo: '#SY-7410-NOVA', diasAberto: 0, validade: '2027-03-01', quantidadeAtual: 1000 },
+      { id: 11, codigo: '#SY-7410-SOBRA-02', diasAberto: 4, validade: '2026-11-10', quantidadeAtual: 87 },
+    ];
+
+    const plano = alocarConsumoMultiLoteFEFO(lotes, 263);
+
+    expect(plano.precisaComplementar).toBe(true);
+    expect(plano.volumeFaltanteEstoqueMl).toBe(0);
+    expect(plano.alocacoes).toHaveLength(2);
+    expect(plano.alocacoes[0].lote.codigo).toBe('#SY-7410-SOBRA-02');
+    expect(plano.alocacoes[0].volumeAlocadoMl).toBe(87);
+    expect(plano.alocacoes[0].esgotouLote).toBe(true);
+    expect(plano.alocacoes[1].lote.codigo).toBe('#SY-7410-NOVA');
+    expect(plano.alocacoes[1].volumeAlocadoMl).toBe(176);
+    expect(plano.alocacoes[1].saldoRestanteLoteMl).toBe(824);
   });
 });

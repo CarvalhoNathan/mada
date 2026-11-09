@@ -104,3 +104,55 @@ export function formatarStatusValidade(validade: string, diasAberto = 0, dataRef
     nivel: 'normal',
   };
 }
+
+export interface AlocacaoLoteFEFO<T> {
+  lote: T;
+  volumeAlocadoMl: number;
+  saldoRestanteLoteMl: number;
+  esgotouLote: boolean;
+}
+
+/**
+ * Calcula a alocação de consumo em múltiplos lotes segundo a prioridade FEFO:
+ * Quando a primeira lata aberta (sobra prioritária) possui saldo insuficiente para
+ * cobrir a meta da receita (ex.: lata aberta tem 87 ml e a meta pede 263 ml),
+ * aloca os 87 ml da 1ª lata (zerando-a) e complementa os 176 ml restantes do 2º lote FEFO.
+ */
+export function alocarConsumoMultiLoteFEFO<
+  T extends ItemComValidade & { id: number; codigo: string; quantidadeAtual: number }
+>(
+  lotesDisponiveis: T[],
+  volumeNecessarioMl: number
+): {
+  alocacoes: AlocacaoLoteFEFO<T>[];
+  precisaComplementar: boolean;
+  volumeFaltanteEstoqueMl: number;
+} {
+  const ordenados = ordenarLotesFEFO(lotesDisponiveis.filter((l) => l.quantidadeAtual > 0));
+  const alocacoes: AlocacaoLoteFEFO<T>[] = [];
+  let restanteParaAlocar = Math.max(0, Math.round(volumeNecessarioMl));
+
+  for (const lote of ordenados) {
+    if (restanteParaAlocar <= 0) break;
+    const disponivelNoLote = Math.max(0, Math.round(lote.quantidadeAtual));
+    if (disponivelNoLote <= 0) continue;
+
+    const alocado = Math.min(disponivelNoLote, restanteParaAlocar);
+    const saldoRestanteLoteMl = disponivelNoLote - alocado;
+
+    alocacoes.push({
+      lote,
+      volumeAlocadoMl: alocado,
+      saldoRestanteLoteMl,
+      esgotouLote: saldoRestanteLoteMl === 0,
+    });
+
+    restanteParaAlocar -= alocado;
+  }
+
+  return {
+    alocacoes,
+    precisaComplementar: alocacoes.length > 1,
+    volumeFaltanteEstoqueMl: Math.max(0, restanteParaAlocar),
+  };
+}
