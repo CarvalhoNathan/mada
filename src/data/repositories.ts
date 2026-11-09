@@ -6,6 +6,8 @@ import {
   Lote,
   Receita,
   Movimentacao,
+  Preparacao,
+  ResiduoMisturaOcorrencia,
 } from '../types';
 
 export interface OperadorRepository {
@@ -45,5 +47,23 @@ export interface ReceitaRepository {
 export interface MovimentacaoRepository {
   registrar(movimentacao: Movimentacao): Promise<Movimentacao>;
   listar(): Promise<Movimentacao[]>;
+  resetar(): Promise<void>;
+}
+
+export interface PreparacaoRepository {
+  listar(): Promise<Preparacao[]>;
+  listarPendentesDevolucao(): Promise<Preparacao[]>;
+  listarEmConferencia(): Promise<Preparacao[]>;
+  listarHistoricoConcluidas(): Promise<Preparacao[]>;
+  buscarAplicacaoAtivaPorCabine(cabineId: string): Promise<Preparacao | undefined>;
+  buscarPorId(id: string): Promise<Preparacao | undefined>;
+  salvar(preparacao: Preparacao): Promise<Preparacao>;
+  resetar(): Promise<void>;
+}
+
+export interface ResiduoMisturaRepository {
+  registrar(ocorrencia: ResiduoMisturaOcorrencia): Promise<ResiduoMisturaOcorrencia>;
+  listar(): Promise<ResiduoMisturaOcorrencia[]>;
+  listarPorPreparacao(preparacaoId: string): Promise<ResiduoMisturaOcorrencia[]>;
   resetar(): Promise<void>;
 }

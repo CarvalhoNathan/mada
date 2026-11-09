@@ -5,6 +5,8 @@ import {
   LoteRepository,
   ReceitaRepository,
   MovimentacaoRepository,
+  PreparacaoRepository,
+  ResiduoMisturaRepository,
 } from './repositories';
 import {
   MockOperadorRepository,
@@ -13,6 +15,8 @@ import {
   MockLoteRepository,
   MockReceitaRepository,
   MockMovimentacaoRepository,
+  MockPreparacaoRepository,
+  MockResiduoMisturaRepository,
 } from './mock';
 
 export * from './repositories';
@@ -33,6 +37,8 @@ function createRepositories() {
     loteRepository: new MockLoteRepository() as LoteRepository,
     receitaRepository: new MockReceitaRepository() as ReceitaRepository,
     movimentacaoRepository: new MockMovimentacaoRepository() as MovimentacaoRepository,
+    preparacaoRepository: new MockPreparacaoRepository() as PreparacaoRepository,
+    residuoMisturaRepository: new MockResiduoMisturaRepository() as ResiduoMisturaRepository,
   };
 }
 
@@ -45,4 +51,6 @@ export const {
   loteRepository,
   receitaRepository,
   movimentacaoRepository,
+  preparacaoRepository,
+  residuoMisturaRepository,
 } = repositories;
