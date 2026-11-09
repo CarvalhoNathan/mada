@@ -334,7 +334,7 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
               minHeight: '52px',
               padding: '0 20px',
               background: 'var(--primary)',
-              color: '#fff',
+              color: 'var(--primary-foreground)',
               border: 'none',
               borderRadius: '12px',
               fontSize: '16px',

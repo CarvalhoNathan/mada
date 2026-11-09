@@ -199,7 +199,7 @@
 .recipe-preset-chip.is-active {
   background-color: var(--primary-soft);
   border: 1.5px solid var(--primary);
-  color: #93c5fd;
+  color: var(--text);
   font-weight: 700;
 }
 

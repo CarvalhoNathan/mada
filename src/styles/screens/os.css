@@ -47,7 +47,7 @@
 
 .step-pill.active .step-num {
   background: var(--primary);
-  color: white;
+  color: var(--primary-foreground);
 }
 
 .step-pill.completed .step-num {
@@ -112,7 +112,7 @@
 
 .os-step-pill.active .os-step-badge {
   background-color: var(--primary);
-  color: #ffffff;
+  color: var(--primary-foreground);
 }
 
 .os-step-pill.clickable {
@@ -357,7 +357,7 @@
 .os-env-chip.is-selected {
   border: 2px solid var(--primary);
   background-color: var(--primary-soft);
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   transform: translateY(-2px);
 }
 
@@ -593,15 +593,26 @@
 .os-btn-continue {
   background-color: var(--primary);
   border: 1.5px solid var(--primary);
-  color: #ffffff;
+  color: var(--primary-foreground);
   min-width: 260px;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  font-weight: 700;
+}
+
+.os-btn-continue svg {
+  stroke: var(--primary-foreground);
 }
 
 .os-btn-continue:hover:not(:disabled) {
   background-color: var(--primary-hover);
   border-color: var(--primary-hover);
+  color: var(--primary-foreground);
   transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+.os-btn-continue:hover:not(:disabled) svg {
+  stroke: var(--primary-foreground);
 }
 
 .os-btn-continue:disabled {

@@ -166,15 +166,15 @@
 
 /* Card 1: Nova Preparação (Leve destaque primário) */
 .dash-action-card.card-primary-highlight {
-  border: 1.5px solid var(--primary);
-  background-color: rgba(43, 127, 255, 0.08);
-  box-shadow: 0 0 24px rgba(43, 127, 255, 0.12);
+  border: 1.5px solid var(--primary-border);
+  background-color: var(--primary-soft);
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
 }
 
 .dash-action-card.card-primary-highlight:hover {
-  background-color: rgba(43, 127, 255, 0.12);
-  border-color: #3b8bff;
-  box-shadow: 0 0 32px rgba(43, 127, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary);
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.45);
 }
 
 .dash-card-header {
@@ -198,9 +198,9 @@
 }
 
 .dash-card-icon-box.icon-primary {
-  background-color: var(--primary); /* #2563EB */
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .dash-card-arrow {

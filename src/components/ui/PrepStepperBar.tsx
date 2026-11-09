@@ -135,10 +135,11 @@ export const PrepStepperBar: React.FC<PrepStepperBarProps> = ({
                     ? 'var(--ok-soft)'
                     : 'rgba(255, 255, 255, 0.08)',
                   color: isActive
-                    ? '#ffffff'
+                    ? 'var(--primary-foreground)'
                     : isCompleted
                     ? '#4ade80'
                     : 'var(--text-muted)',
+                  fontWeight: isActive ? 800 : 700,
                   transition: 'background-color 0.3s ease, color 0.3s ease',
                 }}
               >

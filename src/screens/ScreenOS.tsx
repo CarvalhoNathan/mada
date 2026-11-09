@@ -351,7 +351,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                         borderRadius: '50%',
                         border: isCurrent ? '2px solid var(--primary)' : '2px solid var(--border)',
                         background: isCurrent ? 'var(--primary)' : 'var(--card)',
-                        color: '#fff',
+                        color: isCurrent ? 'var(--primary-foreground)' : '#fff',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',

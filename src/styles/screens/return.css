@@ -119,10 +119,10 @@
 }
 
 .btn-stepper-round:hover {
-  background-color: #24252b;
-  border-color: #2b7fff;
-  color: #2b7fff;
-  box-shadow: 0 0 16px rgba(43, 127, 255, 0.35);
+  background-color: var(--card-hover);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.4);
 }
 
 .btn-stepper-round:active {
@@ -133,15 +133,15 @@
 .sobra-value-center {
   min-width: 210px;
   height: 54px;
-  background-color: rgba(43, 127, 255, 0.08);
-  border: 1.5px solid rgba(43, 127, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid var(--border);
   border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: default;
-  box-shadow: 0 0 20px rgba(43, 127, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   user-select: none;
   transition: all var(--transition-fast);
 }

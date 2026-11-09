@@ -780,7 +780,7 @@
 }
 .ds-step-active .ds-step-badge {
   background-color: var(--primary);
-  color: white;
+  color: var(--primary-foreground);
 }
 .ds-step-active .ds-step-label {
   color: var(--text);
@@ -1004,7 +1004,7 @@
 .ds-choice-card.is-selected .ds-choice-radio-indicator {
   border-color: var(--primary);
   background-color: var(--primary);
-  color: white;
+  color: var(--primary-foreground);
   font-weight: 800;
 }
 
@@ -1124,12 +1124,12 @@
   height: 34px;
   border-radius: 10px;
   background-color: var(--primary);
-  color: white;
+  color: var(--primary-foreground);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 0 16px rgba(43, 127, 255, 0.35);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.35);
 }
 .ds-shell-logo svg {
   width: 20px;

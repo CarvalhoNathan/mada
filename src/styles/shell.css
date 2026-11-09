@@ -105,8 +105,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+  color: var(--primary-foreground);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .brand-icon-box svg {
@@ -1446,7 +1446,7 @@ body {
 .boardui-card-icon.primary-icon {
   background-color: var(--primary);
   border-color: var(--primary);
-  color: var(--text);
+  color: var(--primary-foreground);
 }
 
 .boardui-card-arrow {

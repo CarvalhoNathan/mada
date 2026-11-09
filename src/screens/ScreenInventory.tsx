@@ -579,7 +579,7 @@ export const ScreenInventory: React.FC<ScreenInventoryProps> = ({
                         height: '28px',
                         borderRadius: '50%',
                         background: 'var(--primary)',
-                        color: '#fff',
+                        color: 'var(--primary-foreground)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
