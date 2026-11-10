@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Check, HelpCircle, KeyRound, Shield, X, Lock } from 'lucide-react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Check, KeyRound, Shield, X, Lock } from 'lucide-react';
+import gsap from 'gsap';
 import { Operator, Lote, Preparacao } from '../types';
 import { PIN_ERRO_SIMULADO, MOCK_SUPERVISOR, MOCK_LOTES } from '../data';
 import { PinInput } from '../components/ui/PinInput';
@@ -51,6 +52,9 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
   const [shakeOperatorList, setShakeOperatorList] = useState<boolean>(false);
 
+  const layoutRef = useRef<HTMLDivElement>(null);
+  const pinCardRef = useRef<HTMLDivElement>(null);
+
   // Relógio de simulação em tempo real (1Hz) para mostrar o chão de fábrica vivo
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const [cabine2SecRestantes, setCabine2SecRestantes] = useState<number>(14 * 60 + 25);
@@ -61,6 +65,45 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
       setCabine2SecRestantes((prev) => (prev > 60 ? prev - 1 : 14 * 60 + 25));
     }, 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Animação de montagem GSAP (Stagger cinético de console industrial)
+  useEffect(() => {
+    if (!layoutRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.from('.auth-column-header', {
+        y: -10,
+        opacity: 0,
+        duration: 0.28,
+        ease: 'power2.out',
+      });
+      gsap.from('.operator-card-apple', {
+        x: -16,
+        opacity: 0,
+        duration: 0.24,
+        stagger: 0.045,
+        ease: 'power2.out',
+        delay: 0.04,
+      });
+      gsap.from('.auth-action-buttons-row', {
+        y: 10,
+        opacity: 0,
+        duration: 0.22,
+        ease: 'power2.out',
+        delay: 0.16,
+      });
+      if (pinCardRef.current) {
+        gsap.from(pinCardRef.current, {
+          x: 16,
+          opacity: 0,
+          duration: 0.3,
+          ease: 'power2.out',
+          delay: 0.08,
+        });
+      }
+    }, layoutRef);
+
+    return () => ctx.revert();
   }, []);
 
   const handleClear = useCallback(() => {
@@ -185,6 +228,63 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
     [hasError, isSuccess, hasPickedOperator, isManagerAuthMode, pinEntered, handleSubmit, showToast]
   );
 
+  // Seleção de operador com microinteração de despertar no teclado
+  const handleSelectOperatorWithMotion = useCallback(
+    (op: Operator, cardEl?: HTMLElement | null) => {
+      setIsManagerAuthMode(false);
+      setHasPickedOperator(true);
+      onSelectOperator(op);
+      handleClear();
+
+      if (cardEl) {
+        gsap.killTweensOf(cardEl);
+        gsap.fromTo(
+          cardEl,
+          { scale: 0.98 },
+          { scale: 1, duration: 0.22, ease: 'back.out(2)' }
+        );
+      }
+
+      if (pinCardRef.current) {
+        gsap.killTweensOf(pinCardRef.current);
+        gsap.fromTo(
+          pinCardRef.current,
+          { scale: 0.985 },
+          { scale: 1, duration: 0.25, ease: 'back.out(1.8)' }
+        );
+      }
+    },
+    [onSelectOperator, handleClear]
+  );
+
+  // Seleção do Gestor com transição visual
+  const handleSelectManagerWithMotion = useCallback(
+    (btnEl?: HTMLElement | null) => {
+      setIsManagerAuthMode(true);
+      setHasPickedOperator(false);
+      handleClear();
+
+      if (btnEl) {
+        gsap.killTweensOf(btnEl);
+        gsap.fromTo(
+          btnEl,
+          { scale: 0.96 },
+          { scale: 1, duration: 0.2, ease: 'back.out(2)' }
+        );
+      }
+
+      if (pinCardRef.current) {
+        gsap.killTweensOf(pinCardRef.current);
+        gsap.fromTo(
+          pinCardRef.current,
+          { scale: 0.985 },
+          { scale: 1, duration: 0.25, ease: 'back.out(1.8)' }
+        );
+      }
+    },
+    [handleClear]
+  );
+
   // Suporte a teclado físico para conveniência e acessibilidade
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -245,7 +345,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   const totalSobrasFefo = lotesBase.filter((l) => l.diasAberto > 0 && l.quantidadeAtual > 0).length;
 
   return (
-    <div className="auth-screen-shell">
+    <div ref={layoutRef} className="auth-screen-shell">
       <div className="auth-layout-minimal">
         {/* Coluna da Esquerda: Seleção do Pintor */}
         <section className="auth-left-column" aria-label="Seleção de Operador">
@@ -256,7 +356,11 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
             </p>
           </div>
 
-          <div className={`auth-operators-vertical ${shakeOperatorList ? 'shake' : ''}`} role="radiogroup" aria-label="Operadores disponíveis">
+          <div
+            className={`auth-operators-vertical ${shakeOperatorList ? 'shake' : ''}`}
+            role="radiogroup"
+            aria-label="Operadores disponíveis"
+          >
             {operators.map((op) => {
               const opName = op.nome || op.name || '';
               const opRole = op.papel || op.role || 'Operador de Pintura';
@@ -275,26 +379,26 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
 
               if (isAna) {
                 if (prepAtivaCabine2) {
-                  liveStatusLabel = `● Aplicando ${prepAtivaCabine2.ordemServicoNumero} • Verniz PU (${formatMmSs(
+                  liveStatusLabel = `Aplicando ${prepAtivaCabine2.ordemServicoNumero} • Verniz PU (${formatMmSs(
                     cabine2RealSec
                   )})`;
                   liveStatusTone = 'active-green';
                 } else {
-                  liveStatusLabel = '● Cabine 02 livre p/ nova O.S.';
+                  liveStatusLabel = 'Cabine 02 livre p/ nova O.S.';
                   liveStatusTone = 'info-blue';
                 }
               } else if (isCarlos) {
                 if (prepAtivaCabine1 && cabine1RemainingSec !== null) {
-                  liveStatusLabel = `● Aplicando ${prepAtivaCabine1.ordemServicoNumero} (${formatMmSs(
+                  liveStatusLabel = `Aplicando ${prepAtivaCabine1.ordemServicoNumero} (${formatMmSs(
                     cabine1RemainingSec
                   )})`;
                   liveStatusTone = 'active-green';
                 } else {
-                  liveStatusLabel = '● Cabine 01 livre p/ nova O.S.';
+                  liveStatusLabel = 'Cabine 01 livre p/ nova O.S.';
                   liveStatusTone = 'info-blue';
                 }
               } else {
-                liveStatusLabel = `● ${totalSobrasFefo} sobras prioritárias FEFO na bancada`;
+                liveStatusLabel = `${totalSobrasFefo} sobras prioritárias FEFO na bancada`;
                 liveStatusTone = 'warn-amber';
               }
 
@@ -324,12 +428,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                   role="radio"
                   aria-checked={isSelected}
                   className={`operator-card-apple ${isSelected ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setIsManagerAuthMode(false);
-                    setHasPickedOperator(true);
-                    onSelectOperator(op);
-                    handleClear();
-                  }}
+                  onClick={(e) => handleSelectOperatorWithMotion(op, e.currentTarget)}
                 >
                   <div
                     className={`operator-avatar-circle operator-avatar-circle--${opAvatarKey}`}
@@ -341,7 +440,8 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                     <span className="operator-name-apple">{opName}</span>
                     <span className="operator-role-apple">{opRole}</span>
                     <span className="operator-status-pill" style={badgeStyles}>
-                      {liveStatusLabel}
+                      <span className={`status-beacon status-beacon--${liveStatusTone}`} aria-hidden="true" />
+                      <span>{liveStatusLabel}</span>
                     </span>
                   </div>
                   <div
@@ -360,11 +460,7 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
             <button
               type="button"
               className="auth-supervisor-btn"
-              onClick={() => {
-                setIsManagerAuthMode(true);
-                setHasPickedOperator(false);
-                handleClear();
-              }}
+              onClick={(e) => handleSelectManagerWithMotion(e.currentTarget)}
               style={
                 isManagerAuthMode
                   ? {
@@ -395,10 +491,17 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           </div>
         </section>
 
-        {/* Coluna da Direita: Teclado Numérico & PIN estilo Apple */}
+        {/* Coluna da Direita: Teclado Numérico & PIN estilo Apple com Motion */}
         <section className="auth-right-column" aria-label="Autenticação com PIN">
           <div
-            className="auth-pin-card-apple"
+            ref={pinCardRef}
+            className={`auth-pin-card-apple ${
+              isManagerAuthMode
+                ? 'is-manager'
+                : hasPickedOperator
+                ? 'is-ready'
+                : ''
+            }`}
             style={{
               opacity: hasPickedOperator || isManagerAuthMode ? 1 : 0.78,
               transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -671,5 +774,3 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
     </div>
   );
 };
-
-

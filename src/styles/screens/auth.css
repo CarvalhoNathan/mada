@@ -633,3 +633,67 @@
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+
+/* ==========================================================================
+   Motion & Live Beacon Additions (Chão de Fábrica & GSAP Polish)
+   ========================================================================== */
+.status-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.status-beacon--active-green {
+  background-color: #34D399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.7);
+}
+
+.status-beacon--active-green::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid #34D399;
+  animation: beaconPulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  box-sizing: border-box;
+}
+
+@keyframes beaconPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.status-beacon--info-blue {
+  background-color: #60A5FA;
+}
+
+.status-beacon--warn-amber {
+  background-color: #FBBF24;
+}
+
+.auth-pin-card-apple.is-ready {
+  border-color: rgba(59, 130, 246, 0.38);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 0 24px rgba(59, 130, 246, 0.12);
+}
+
+.auth-pin-card-apple.is-manager {
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 0 24px rgba(245, 158, 11, 0.14);
+}

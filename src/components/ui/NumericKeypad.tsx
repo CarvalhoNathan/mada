@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
 
 export interface NumericKeypadProps {
   onDigit?: (digit: string) => void;
@@ -12,9 +13,9 @@ export interface NumericKeypadProps {
 }
 
 /**
- * NumericKeypad - Teclado Tátil Industrial de 90px
- * Otimizado para operadores com luvas e mãos sujas.
- * Inclui teclas dedicadas de Limpar e Backspace (Apagar).
+ * NumericKeypad - Teclado Tátil Industrial Cinético (GSAP + Feedback Tátil Óptico)
+ * Otimizado para operadores com luvas e dedos com resíduos de solvente.
+ * Cada tecla reage com compressão e retorno mecânico (efeito mola de alta precisão).
  */
 export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onDigit,
@@ -27,6 +28,30 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   confirmDisabled = false,
 }) => {
   const handleDigit = onDigit || onKeyPress || (() => {});
+  const containerRef = useRef<HTMLDivElement>(null);
+  const wasDisabledRef = useRef<boolean>(disabled);
+
+  // Efeito cascata quando o teclado é destravado
+  useEffect(() => {
+    if (wasDisabledRef.current && !disabled && containerRef.current) {
+      const buttons = containerRef.current.querySelectorAll<HTMLButtonElement>('.ds-keypad-btn');
+      if (buttons.length > 0) {
+        gsap.killTweensOf(buttons);
+        gsap.fromTo(
+          buttons,
+          { scale: 0.94, opacity: 0.75 },
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 0.24,
+            stagger: 0.012,
+            ease: 'back.out(2)',
+          }
+        );
+      }
+    }
+    wasDisabledRef.current = disabled;
+  }, [disabled]);
 
   const triggerHaptic = (ms = 25) => {
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
@@ -38,17 +63,34 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
     }
   };
 
-  const onDigitPress = (num: string) => {
+  const animateButtonPress = (el: HTMLElement | null) => {
+    if (!el) return;
+    gsap.killTweensOf(el);
+    gsap.fromTo(
+      el,
+      { scale: 0.88 },
+      {
+        scale: 1,
+        duration: 0.18,
+        ease: 'back.out(2.4)',
+      }
+    );
+  };
+
+  const onDigitPress = (num: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    animateButtonPress(e.currentTarget);
     triggerHaptic(20);
     handleDigit(num);
   };
 
-  const onBackspacePress = () => {
+  const onBackspacePress = (e: React.MouseEvent<HTMLButtonElement>) => {
+    animateButtonPress(e.currentTarget);
     triggerHaptic(30);
     onBackspace();
   };
 
-  const onClearPress = () => {
+  const onClearPress = (e: React.MouseEvent<HTMLButtonElement>) => {
+    animateButtonPress(e.currentTarget);
     triggerHaptic(35);
     onClear();
   };
@@ -56,14 +98,19 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
   return (
-    <div className="ds-numeric-keypad" role="group" aria-label="Teclado numérico industrial">
+    <div
+      ref={containerRef}
+      className={`ds-numeric-keypad ${disabled ? 'is-disabled' : 'is-ready'}`}
+      role="group"
+      aria-label="Teclado numérico industrial"
+    >
       <div className="ds-keypad-grid">
         {digits.map((num) => (
           <button
             key={num}
             type="button"
             className="ds-keypad-btn ds-keypad-digit"
-            onClick={() => onDigitPress(num)}
+            onClick={(e) => onDigitPress(num, e)}
             disabled={disabled}
           >
             <span className="ds-keypad-digit-num">{num}</span>
@@ -97,7 +144,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
         <button
           type="button"
           className="ds-keypad-btn ds-keypad-digit"
-          onClick={() => onDigitPress('0')}
+          onClick={(e) => onDigitPress('0', e)}
           disabled={disabled}
         >
           <span className="ds-keypad-digit-num">0</span>
