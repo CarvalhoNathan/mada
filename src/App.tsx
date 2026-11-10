@@ -29,10 +29,12 @@ import { ScreenRecipe } from './screens/ScreenRecipe';
 import { ScreenDosing } from './screens/ScreenDosing';
 import { ScreenReturn } from './screens/ScreenReturn';
 
-import { ModalUseFirst } from './screens/ModalUseFirst';
-import { ModalCancelPrep } from './screens/ModalCancelPrep';
-import { ModalQrPackageResult } from './screens/ModalQrPackageResult';
-import { ModalOcorrenciaMistura } from './screens/ModalOcorrenciaMistura';
+import {
+  ModalUseFirst,
+  ModalCancelPrep,
+  ModalQrPackageResult,
+  ModalOcorrenciaMistura,
+} from './components/modals';
 
 const ScreenInventory = lazy(() =>
   import('./screens/ScreenInventory').then((m) => ({ default: m.ScreenInventory }))
@@ -41,7 +43,7 @@ const ScreenManager = lazy(() =>
   import('./screens/ScreenManager').then((m) => ({ default: m.ScreenManager }))
 );
 const QrScannerModal = lazy(() =>
-  import('./components/ui/QrScannerModal').then((m) => ({ default: m.QrScannerModal }))
+  import('./components/modals/QrScannerModal').then((m) => ({ default: m.QrScannerModal }))
 );
 
 import {
@@ -58,7 +60,7 @@ import {
   MOCK_PRODUTOS,
   MOCK_CHECKLIST_SOBRAS,
 } from './data';
-import { useConnectionStatus } from './hooks/useConnectionStatus';
+import { useConnectionStatus, usePurchasesRequests, usePotLifeTimer } from './hooks';
 import { ordenarLotesFEFO, alocarConsumoMultiLoteFEFO } from './domain/fefo';
 import {
   criarPreparacaoDevolucao,
@@ -235,30 +237,6 @@ export const App: React.FC = () => {
   const [selectedRecipe, setSelectedRecipe] = useState<Receita>(MOCK_RECEITAS[0]);
   const [recipe, setRecipe] = useState<RecipeState>(INITIAL_RECIPE);
 
-  // Procedimentos oficiais homologados pelo gestor p/ Pot Life Expirado (por receitaId)
-  const [procedimentosPotLife, setProcedimentosPotLife] = useState<Record<number, string>>(() => {
-    try {
-      const saved = localStorage.getItem('mada_pot_life_procedimentos');
-      if (saved) return JSON.parse(saved);
-    } catch {
-      // Ignora erro de parse
-    }
-    return {};
-  });
-
-  const handleSaveProcedimentoPotLife = useCallback((receitaId: number, procedimento: string) => {
-    setProcedimentosPotLife((prev) => {
-      const atualizado = { ...prev };
-      if (procedimento.trim()) {
-        atualizado[receitaId] = procedimento.trim();
-      } else {
-        delete atualizado[receitaId];
-      }
-      localStorage.setItem('mada_pot_life_procedimentos', JSON.stringify(atualizado));
-      return atualizado;
-    });
-  }, []);
-
   // Modais
   const [isUseFirstModalOpen, setIsUseFirstModalOpen] = useState(false);
   const [isCancelPrepModalOpen, setIsCancelPrepModalOpen] = useState(false);
@@ -280,32 +258,28 @@ export const App: React.FC = () => {
     []
   );
 
-  // Estado de Pot Life derivado da aplicação ativa na cabine do operador logado
-  const potLife: PotLifeState | null = useMemo(() => {
-    const prepComAplicacao = preparacaoAtivaCabine;
+  // Controle de Pot Life e Procedimentos homologados
+  const {
+    potLife,
+    procedimentosPotLife,
+    handleSaveProcedimentoPotLife,
+    handlePotLifeExpired,
+    handleFinishApplication,
+  } = usePotLifeTimer({
+    preparacaoAtivaCabine,
+    preparacoes,
+    setPreparacoes,
+    cabineNome: cabineOperador.cabineNome,
+    showToast,
+  });
 
-    if (!prepComAplicacao || !prepComAplicacao.dosagemConcluidaEm || !prepComAplicacao.potLifeMinutos) {
-      return null;
-    }
-
-    const startMs = new Date(prepComAplicacao.dosagemConcluidaEm).getTime();
-    const receitaRef = MOCK_RECEITAS.find((r) => r.id === prepComAplicacao.receitaId);
-
-    return {
-      preparacaoId: prepComAplicacao.id,
-      dosagemConcluidaEm: prepComAplicacao.dosagemConcluidaEm,
-      startTime: startMs,
-      potLifeMinutos: prepComAplicacao.potLifeMinutos,
-      durationSeconds: prepComAplicacao.potLifeMinutos * 60,
-      recipeName: prepComAplicacao.receitaNome,
-      osNumber: prepComAplicacao.ordemServicoNumero,
-      volumeTotal: prepComAplicacao.volumeTotal,
-      cabineNome: prepComAplicacao.cabineNome || 'Cabine 01',
-      procedimentoOficialValidado:
-        procedimentosPotLife[prepComAplicacao.receitaId] ||
-        receitaRef?.procedimentoOficialPotLifeExpirado,
-    };
-  }, [preparacaoAtivaCabine, procedimentosPotLife]);
+  // Gestão e reposição de Solicitações de Compras
+  const {
+    solicitacoesCompras,
+    handleAdicionarSolicitacao,
+    handleRemoverSolicitacao,
+    verificarReposicaoAutomaticaEstoque,
+  } = usePurchasesRequests(selectedOperator.nome, showToast);
 
   // Navegação protegida pelos bloqueios inteligentes de cabine/equipamento
   const handleNavigate = useCallback(
@@ -385,53 +359,6 @@ export const App: React.FC = () => {
     );
   };
 
-  // Quando o Pot Life expira: altera o estado da preparação para POT_LIFE_EXPIRADO e registra o horário,
-  // sem encerrar automaticamente a aplicação nem determinar descarte/limpeza não validados.
-  const handlePotLifeExpired = useCallback(
-    async (expiredIso: string) => {
-      const alvoId = potLife?.preparacaoId;
-      if (!alvoId) return;
-      const prepAlvo = preparacoes.find((p) => p.id === alvoId);
-      if (!prepAlvo || prepAlvo.statusPotLife === 'POT_LIFE_EXPIRADO') return;
-
-      const atualizada = sincronizarEstadoPotLifePreparacao(
-        {
-          ...prepAlvo,
-          potLifeExpiradoEm: prepAlvo.potLifeExpiradoEm || expiredIso,
-        },
-        Date.now()
-      );
-      await preparacaoRepository.salvar(atualizada);
-      const lista = await preparacaoRepository.listar();
-      setPreparacoes(lista);
-      showToast(ORIENTACAO_NEUTRA_POT_LIFE_EXPIRADO, 'warn');
-    },
-    [potLife?.preparacaoId, preparacoes, showToast]
-  );
-
-  // Conclusão da aplicação na pistola: libera imediatamente o bloqueio da cabine, mantendo devoluções pendentes
-  const handleFinishApplication = async () => {
-    localStorage.removeItem('mada_active_pot_life');
-
-    const alvo =
-      preparacaoAtivaCabine ||
-      (potLife?.preparacaoId
-        ? preparacoes.find((p) => p.id === potLife.preparacaoId)
-        : activePreparacao);
-
-    if (alvo) {
-      const prepComAplicacaoConcluida = registrarConclusaoAplicacao(alvo);
-      await preparacaoRepository.salvar(prepComAplicacaoConcluida);
-      const listaAtualizada = await preparacaoRepository.listar();
-      setPreparacoes(listaAtualizada);
-    }
-
-    showToast(
-      `✓ Aplicação concluída! ${cabineOperador.cabineNome} liberada para novas operações. As embalagens permanecem pendentes de devolução.`,
-      'success'
-    );
-  };
-
   // Registro de Ocorrência / Resíduo da Mistura Pronta (separado da devolução de embalagens originais)
   const handleRegisterMixtureOccurrence = async (dados: {
     localMistura: LocalMistura;
@@ -473,103 +400,6 @@ export const App: React.FC = () => {
     );
   };
 
-  // Solicitações de Compras (Gestão de Insumos da Cabine)
-  const [solicitacoesCompras, setSolicitacoesCompras] = useState<ItemSolicitacaoCompra[]>(() => {
-    try {
-      const saved = localStorage.getItem('mada_solicitacoes_compras');
-      if (saved) return JSON.parse(saved);
-    } catch {
-      // Ignora erro
-    }
-    return [
-      {
-        id: 'sc-1',
-        produtoId: 2,
-        produtoNome: '2º Catalisador PU Médio',
-        codigoProduto: '#SY-7410',
-        quantidadeSugerida: '2 galões de 3,6L',
-        motivo: 'estoque_critico',
-        urgencia: 'alta',
-        solicitadoEm: new Date().toISOString(),
-        solicitadoPor: 'Carlos Silva',
-      },
-    ];
-  });
-
-  const handleAdicionarSolicitacao = (
-    item: Omit<ItemSolicitacaoCompra, 'id' | 'solicitadoEm'>
-  ) => {
-    const nova: ItemSolicitacaoCompra = {
-      ...item,
-      id: `sc-${Date.now()}`,
-      solicitadoEm: new Date().toISOString(),
-    };
-    setSolicitacoesCompras((prev) => {
-      const atualizada = [nova, ...prev];
-      localStorage.setItem('mada_solicitacoes_compras', JSON.stringify(atualizada));
-      return atualizada;
-    });
-  };
-
-  const handleRemoverSolicitacao = (id: string) => {
-    setSolicitacoesCompras((prev) => {
-      const filtrada = prev.filter((s) => s.id !== id);
-      localStorage.setItem('mada_solicitacoes_compras', JSON.stringify(filtrada));
-      return filtrada;
-    });
-    showToast('Item removido da lista de compras.', 'info');
-  };
-
-  // Gatilho automático de reposição de compras quando o saldo total do insumo cai abaixo de 1.000 ml
-  const verificarReposicaoAutomaticaEstoque = useCallback(
-    (lotesAtuais: Lote[]) => {
-      const saldosPorProduto: Record<number, number> = {};
-      MOCK_PRODUTOS.forEach((p) => {
-        saldosPorProduto[p.id] = 0;
-      });
-      lotesAtuais.forEach((l) => {
-        saldosPorProduto[l.produtoId] = (saldosPorProduto[l.produtoId] || 0) + l.quantidadeAtual;
-      });
-
-      const novosAlertas: string[] = [];
-      setSolicitacoesCompras((prev) => {
-        let atualizada = [...prev];
-        for (const prod of MOCK_PRODUTOS) {
-          const saldoTotal = saldosPorProduto[prod.id] || 0;
-          const jaSolicitado = atualizada.some((s) => s.produtoId === prod.id);
-          if (saldoTotal < 1000 && !jaSolicitado) {
-            const novaSolicitacao: ItemSolicitacaoCompra = {
-              id: `sc-auto-${prod.id}-${Date.now()}`,
-              produtoId: prod.id,
-              produtoNome: prod.nome,
-              codigoProduto: prod.codigo,
-              quantidadeSugerida: saldoTotal === 0 ? '3 galões de 3,6L (Urgente)' : '2 galões de 3,6L',
-              motivo: 'estoque_critico',
-              urgencia: 'alta',
-              solicitadoEm: new Date().toISOString(),
-              solicitadoPor: `Automático (${selectedOperator.nome})`,
-            };
-            atualizada = [novaSolicitacao, ...atualizada];
-            novosAlertas.push(`${prod.nome} (${saldoTotal} ml)`);
-          }
-        }
-        if (atualizada.length !== prev.length) {
-          localStorage.setItem('mada_solicitacoes_compras', JSON.stringify(atualizada));
-        }
-        return atualizada;
-      });
-
-      if (novosAlertas.length > 0) {
-        setTimeout(() => {
-          showToast(
-            `⚠ Estoque crítico (< 1.000 ml): Solicitação de compra gerada automaticamente para ${novosAlertas.join(', ')}.`,
-            'warn'
-          );
-        }, 400);
-      }
-    },
-    [selectedOperator.nome, showToast]
-  );
   const { isOnline, isServerLocal, isOffline } = useConnectionStatus();
 
   // Ações de Receita
