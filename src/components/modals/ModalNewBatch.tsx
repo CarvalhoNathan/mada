@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { Button } from '../components/ui/Button';
-import { MOCK_PRODUTOS } from '../data';
+import { Button } from '../ui/Button';
+import { MOCK_PRODUTOS } from '../../data';
 
 interface ModalNewBatchProps {
   isOpen: boolean;

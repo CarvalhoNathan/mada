@@ -1,8 +1,8 @@
 import React from 'react';
 import { Package, History, RotateCcw, Boxes, X, MapPin, Calendar } from 'lucide-react';
-import { Lote, Produto, Movimentacao, Preparacao } from '../types';
-import { Button } from '../components/ui/Button';
-import { formatarStatusValidade } from '../domain/fefo';
+import { Lote, Produto, Movimentacao, Preparacao } from '../../types';
+import { Button } from '../ui/Button';
+import { formatarStatusValidade } from '../../domain/fefo';
 
 interface ModalQrPackageResultProps {
   isOpen: boolean;

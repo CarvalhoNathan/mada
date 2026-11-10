@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { AlertOctagon, Beaker, SprayCan, Package, Check, X, History } from 'lucide-react';
-import { LocalMistura, Preparacao, ResiduoMisturaOcorrencia } from '../types';
-import { Button } from '../components/ui/Button';
-import { ORIENTACAO_NEUTRA_POT_LIFE_EXPIRADO } from '../domain/potLife';
+import { LocalMistura, Preparacao, ResiduoMisturaOcorrencia } from '../../types';
+import { Button } from '../ui/Button';
+import { ORIENTACAO_NEUTRA_POT_LIFE_EXPIRADO } from '../../domain/potLife';
 
 interface ModalOcorrenciaMisturaProps {
   isOpen: boolean;

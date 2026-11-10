@@ -14,7 +14,6 @@ export * from './SidebarNav';
 export * from './StatusBanner';
 export * from './StepIndicator';
 export * from './Toast';
-export * from './QrScannerModal';
 export * from './PotLifeTimerBanner';
 export * from './BeakerVisualizer';
 export * from './CountNumber';

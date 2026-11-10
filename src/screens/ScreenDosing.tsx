@@ -4,7 +4,7 @@ import { RecipeState, Operator, OrdemServico, Receita, Lote } from '../types';
 import { NumericKeypad } from '../components/ui/NumericKeypad';
 import { BeakerVisualizer } from '../components/ui/BeakerVisualizer';
 import { CountNumber } from '../components/ui/CountNumber';
-import { ModalCriticalExcess } from './ModalCriticalExcess';
+import { ModalCriticalExcess } from '../components/modals';
 import { calcularFracoesMistura } from '../domain/mixture';
 import { excedeTolerancia, calcularCustoExcesso } from '../domain/tolerance';
 import { ordenarLotesFEFO, alocarConsumoMultiLoteFEFO } from '../domain/fefo';

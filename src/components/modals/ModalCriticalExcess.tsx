@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AlertOctagon, Calculator, Trash2 } from 'lucide-react';
-import { Button } from '../components/ui/Button';
-import { operadorRepository } from '../data';
+import { Button } from '../ui/Button';
+import { operadorRepository } from '../../data';
 
 export interface ModalCriticalExcessProps {
   isOpen: boolean;

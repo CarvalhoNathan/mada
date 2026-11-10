@@ -1,8 +1,8 @@
 import React from 'react';
 import { AlertTriangle, MapPin, X, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { Lote } from '../types';
-import { MOCK_LOTES } from '../data/mock/mockData';
-import { ordenarLotesFEFO, formatarStatusValidade } from '../domain/fefo';
+import { Lote } from '../../types';
+import { MOCK_LOTES } from '../../data/mock/mockData';
+import { ordenarLotesFEFO, formatarStatusValidade } from '../../domain/fefo';
 
 interface ModalUseFirstProps {
   isOpen: boolean;
