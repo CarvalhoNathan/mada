@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { KeyRound, Shield, Lock, User } from 'lucide-react';
+import { KeyRound, Shield, User } from 'lucide-react';
 import gsap from 'gsap';
 import { Operator } from '../../types';
 import { PIN_ERRO_SIMULADO, MOCK_SUPERVISOR } from '../../data';
