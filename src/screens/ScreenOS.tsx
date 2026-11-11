@@ -92,15 +92,102 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
 
   return (
     <div className="os-screen-container">
+      {/* Banner de Trava Obrigatória de Seleção de O.S. (Padrão idêntico à Etapa 2) */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          padding: '12px 16px',
+          borderRadius: '16px',
+          marginBottom: '14px',
+          border: isOSConfirmed
+            ? '1.5px solid var(--ok-border)'
+            : '1.5px solid rgba(245, 158, 11, 0.48)',
+          background: isOSConfirmed
+            ? 'rgba(16, 185, 129, 0.05)'
+            : 'rgba(245, 158, 11, 0.08)',
+          transition: 'all 0.22s ease',
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {isOSConfirmed ? (
+            <Check size={16} strokeWidth={2.8} color="var(--ok)" />
+          ) : (
+            <Lock size={16} strokeWidth={2.4} color="var(--warn)" />
+          )}
+          <span
+            style={{
+              fontSize: '13px',
+              fontWeight: 700,
+              color: isOSConfirmed ? 'var(--ok)' : 'var(--warn)',
+              letterSpacing: '0.01em',
+            }}
+          >
+            {isOSConfirmed
+              ? `Ordem de Serviço confirmada: ${selectedOS} • ${clientName} — ambientes e peças liberados`
+              : 'Passo obrigatório: Selecione ou confirme a Ordem de Serviço abaixo para liberar a preparação'}
+          </span>
+        </div>
+
+        {!isOSConfirmed && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {onConfirmOS && (
+              <button
+                type="button"
+                onClick={onConfirmOS}
+                style={{
+                  background: 'rgba(245, 158, 11, 0.2)',
+                  border: '1px solid rgba(245, 158, 11, 0.45)',
+                  color: '#fbbf24',
+                  borderRadius: '8px',
+                  padding: '5px 12px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <Check size={14} strokeWidth={2.8} />
+                <span>Confirmar {selectedOS}</span>
+              </button>
+            )}
+            <span className="os-meta-badge os-meta-badge--amber">
+              Toque em Selecionar O.S. para escolher
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* 2. Área de Trabalho Principal em 2 Colunas */}
       <div className="os-layout-minimal">
         {/* Coluna Esquerda: O.S. & Ambiente */}
         <div className="os-col-left">
           {/* Card da Ordem de Serviço */}
-          <div className="os-card-surface">
+          <div
+            className="os-card-surface"
+            style={
+              !isOSConfirmed
+                ? {
+                    border: '1.5px solid rgba(245, 158, 11, 0.4)',
+                    boxShadow: '0 0 16px rgba(245, 158, 11, 0.08)',
+                  }
+                : undefined
+            }
+          >
             <div className="os-card-header-row">
               <span className="os-section-label">Ordem de Serviço Ativa</span>
-              <span className="os-meta-badge os-meta-badge--primary">{selectedOS || 'OS #8841'}</span>
+              <span
+                className={`os-meta-badge ${
+                  isOSConfirmed ? 'os-meta-badge--primary' : 'os-meta-badge--amber'
+                }`}
+              >
+                {isOSConfirmed ? selectedOS || 'OS #8841' : '🔒 Aguardando Seleção'}
+              </span>
             </div>
 
             <div className="os-info-block">
@@ -128,7 +215,9 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
 
               <button
                 type="button"
-                className="os-action-btn os-btn-secondary"
+                className={`os-action-btn ${
+                  !isOSConfirmed ? 'os-btn-scan' : 'os-btn-secondary'
+                }`}
                 onClick={() => {
                   if (onSelectOS) {
                     setIsOsModalOpen(true);
@@ -136,6 +225,15 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                     onChangeOS();
                   }
                 }}
+                style={
+                  !isOSConfirmed
+                    ? {
+                        background: 'rgba(245, 158, 11, 0.16)',
+                        border: '1.5px solid rgba(245, 158, 11, 0.5)',
+                        color: '#fbbf24',
+                      }
+                    : undefined
+                }
                 title="Selecionar Ordem de Serviço na fila"
                 aria-label="Alternar Ordem de Serviço"
               >
@@ -149,7 +247,17 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
           </div>
 
           {/* Card de Ambientes / Cômodos vinculados exclusivamente à O.S. selecionada */}
-          <div className="os-card-surface os-env-surface">
+          <div
+            className="os-card-surface os-env-surface"
+            style={
+              !isOSConfirmed
+                ? {
+                    opacity: 0.65,
+                    transition: 'opacity 0.2s ease',
+                  }
+                : undefined
+            }
+          >
             <div className="os-card-header-row">
               <span className="os-section-label">
                 {ambientesDaOS.length === 1

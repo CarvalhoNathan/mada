@@ -12,7 +12,7 @@ Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas qu
 [![React](https://img.shields.io/badge/React%2019-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite%208-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![UX](https://img.shields.io/badge/UX-tablet--first-3B82F6)](#-telas)
-[![Tests](https://img.shields.io/badge/Vitest-25%20passed-success?logo=vitest&logoColor=white)](#-testes-e-qualidade)
+[![Tests](https://img.shields.io/badge/Vitest-53%20passed-success?logo=vitest&logoColor=white)](#-testes-e-qualidade)
 
 🔗 **Acesse a Demonstração Online:** [https://carvalhonathan.github.io/mada/](https://carvalhonathan.github.io/mada/)
 
