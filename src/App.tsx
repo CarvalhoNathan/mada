@@ -6,7 +6,6 @@ import {
   RecipeState,
   ScreenId,
   Lote,
-  ItemSolicitacaoCompra,
   Receita,
   Movimentacao,
   OrdemServico,
@@ -19,7 +18,7 @@ import {
 import { AppShell } from './components/ui/AppShell';
 import { StatusBanner } from './components/ui/StatusBanner';
 import { Toast } from './components/ui/Toast';
-import { PotLifeTimerBanner, PotLifeState } from './components/ui/PotLifeTimerBanner';
+import { PotLifeTimerBanner } from './components/ui/PotLifeTimerBanner';
 import { PrepStepperBar } from './components/ui/PrepStepperBar';
 
 import { ScreenAuth } from './screens/ScreenAuth';
@@ -60,11 +59,15 @@ import {
   MOCK_PRODUTOS,
   MOCK_CHECKLIST_SOBRAS,
 } from './data';
-import { useConnectionStatus, usePurchasesRequests, usePotLifeTimer } from './hooks';
+import {
+  useConnectionStatus,
+  usePurchasesRequests,
+  usePotLifeTimer,
+  useOrderSelection,
+} from './hooks';
 import { ordenarLotesFEFO, alocarConsumoMultiLoteFEFO } from './domain/fefo';
 import {
   criarPreparacaoDevolucao,
-  registrarConclusaoAplicacao,
   registrarMovimentacaoComponente,
   registrarImpressaoEtiquetaComponente,
   encerrarPreparacao,
@@ -74,9 +77,7 @@ import {
   temItensPendentesDevolucao,
 } from './domain/returnFlow';
 import {
-  sincronizarEstadoPotLifePreparacao,
   registrarOcorrenciaResiduoMistura,
-  ORIENTACAO_NEUTRA_POT_LIFE_EXPIRADO,
 } from './domain/potLife';
 import {
   obterCabineOperador,
@@ -85,8 +86,6 @@ import {
   verificarPermissaoDevolucaoDuranteAplicacao,
 } from './domain/operationalLocks';
 import { classificarQrCode } from './domain/qrIdentification';
-
-const INITIAL_PIECE_LOT: PieceLot = MOCK_ORDENS_SERVICO[0].pecaLote;
 
 const INITIAL_RECIPE: RecipeState = {
   totalVolume: 1000,
@@ -226,13 +225,6 @@ export const App: React.FC = () => {
     return daCabine || preparacoesPendentes[0] || null;
   }, [preparacoes, activePreparacaoId, preparacoesPendentes, cabineOperador.cabineId]);
 
-  // Dados da OS e Lote
-  const [selectedOSNumber, setSelectedOSNumber] = useState(MOCK_ORDENS_SERVICO[0].numero);
-  const [clientName, setClientName] = useState(MOCK_ORDENS_SERVICO[0].clienteNome);
-  const [projectName, setProjectName] = useState(MOCK_ORDENS_SERVICO[0].projetoNome);
-  const [selectedEnvironment, setSelectedEnvironment] = useState(MOCK_ORDENS_SERVICO[0].ambienteNome);
-  const [pieceLot, setPieceLot] = useState<PieceLot>(INITIAL_PIECE_LOT);
-
   // Receita de Mistura Homologada (Dinâmica)
   const [selectedRecipe, setSelectedRecipe] = useState<Receita>(MOCK_RECEITAS[0]);
   const [recipe, setRecipe] = useState<RecipeState>(INITIAL_RECIPE);
@@ -257,6 +249,22 @@ export const App: React.FC = () => {
     },
     []
   );
+
+  // Dados da OS e Lote gerenciados via hook especializado
+  const {
+    selectedOSNumber,
+    clientName,
+    projectName,
+    selectedEnvironment,
+    pieceLot,
+    setSelectedOSNumber,
+    setClientName,
+    setProjectName,
+    setSelectedEnvironment,
+    setPieceLot,
+    handleSelectPieceLot,
+    handleSelectOS,
+  } = useOrderSelection({ setRecipe, showToast });
 
   // Controle de Pot Life e Procedimentos homologados
   const {
@@ -319,45 +327,6 @@ export const App: React.FC = () => {
     },
     [preparacoes, cabineOperador, showToast]
   );
-
-  const handleSelectPieceLot = (lote: PieceLot, envName?: string) => {
-    if (envName) {
-      setSelectedEnvironment(envName);
-    }
-    setPieceLot(lote);
-    const parsedVol = parseInt(
-      (lote.volumeEstimado || lote.estVolume || '').replace(/\D/g, ''),
-      10
-    );
-    if (parsedVol >= 100 && parsedVol <= 5000) {
-      setRecipe((prev) => ({ ...prev, totalVolume: parsedVol }));
-    }
-    const labelEnv = envName || selectedEnvironment;
-    showToast(
-      `✓ ${labelEnv}: ${lote.titulo || lote.title} selecionado • Volume previsto: ${lote.volumeEstimado || lote.estVolume}`,
-      'info'
-    );
-  };
-
-  const handleSelectOS = (os: OrdemServico) => {
-    const primeiroAmbiente = os.ambientesObra?.[0];
-    const envInicial = primeiroAmbiente?.nome || os.ambienteNome;
-    const loteInicial = primeiroAmbiente?.lotesPecas?.[0] || os.pecaLote;
-
-    setSelectedOSNumber(os.numero);
-    setClientName(os.clienteNome);
-    setProjectName(os.projetoNome);
-    setSelectedEnvironment(envInicial);
-    setPieceLot(loteInicial);
-    const parsedVol = parseInt((loteInicial.volumeEstimado || '').replace(/\D/g, ''), 10);
-    if (parsedVol >= 100 && parsedVol <= 5000) {
-      setRecipe((prev) => ({ ...prev, totalVolume: parsedVol }));
-    }
-    showToast(
-      `✓ ${os.numero} (${envInicial}) vinculada • Meta ajustada para ${loteInicial.volumeEstimado}!`,
-      'success'
-    );
-  };
 
   // Registro de Ocorrência / Resíduo da Mistura Pronta (separado da devolução de embalagens originais)
   const handleRegisterMixtureOccurrence = async (dados: {

@@ -97,7 +97,7 @@ export function usePotLifeTimer({
       setPreparacoes(lista);
       showToast(ORIENTACAO_NEUTRA_POT_LIFE_EXPIRADO, 'warn');
     },
-    [potLife?.preparacaoId, preparacoes, setPreparacoes, showToast]
+    [potLife, preparacoes, setPreparacoes, showToast]
   );
 
   // Conclusão da aplicação na pistola
@@ -121,7 +121,7 @@ export function usePotLifeTimer({
       `✓ Aplicação concluída! ${cabineNome} liberada para novas operações. As embalagens permanecem pendentes de devolução.`,
       'success'
     );
-  }, [preparacaoAtivaCabine, potLife?.preparacaoId, preparacoes, setPreparacoes, cabineNome, showToast]);
+  }, [preparacaoAtivaCabine, potLife, preparacoes, setPreparacoes, cabineNome, showToast]);
 
   return {
     potLife,
