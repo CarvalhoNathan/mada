@@ -15,21 +15,25 @@ export function verificarToleranciaExcesso(
   volumeRealMl: number,
   toleranciaPercentual: number = 0.05
 ): ResultadoTolerancia {
-  if (volumeEsperadoMl <= 0) {
+  const safeEsperado = Number.isFinite(volumeEsperadoMl) ? Math.max(0, volumeEsperadoMl) : 0;
+  const safeReal = Number.isFinite(volumeRealMl) ? Math.max(0, volumeRealMl) : 0;
+  const safeTol = Number.isFinite(toleranciaPercentual) && toleranciaPercentual >= 0 ? toleranciaPercentual : 0.05;
+
+  if (safeEsperado <= 0) {
     return {
-      excedeu: volumeRealMl > 0,
-      diferencaMl: Math.max(0, volumeRealMl),
-      percentualExcesso: volumeRealMl > 0 ? 100 : 0,
+      excedeu: safeReal > 0,
+      diferencaMl: safeReal,
+      percentualExcesso: safeReal > 0 ? 100 : 0,
       limiteMaximoPermitido: 0,
     };
   }
 
-  const limiteMaximoPermitido = volumeEsperadoMl * (1 + toleranciaPercentual);
-  const diferencaBruta = volumeRealMl - volumeEsperadoMl;
-  const excedeu = volumeRealMl > limiteMaximoPermitido;
+  const limiteMaximoPermitido = safeEsperado * (1 + safeTol);
+  const diferencaBruta = safeReal - safeEsperado;
+  const excedeu = safeReal > limiteMaximoPermitido;
 
   const diferencaMl = diferencaBruta > 0 ? diferencaBruta : 0;
-  const percentualExcesso = (diferencaMl / volumeEsperadoMl) * 100;
+  const percentualExcesso = (diferencaMl / safeEsperado) * 100;
 
   return {
     excedeu,
@@ -48,9 +52,13 @@ export function excedeTolerancia(
   volumeMeta: number,
   toleranciaPercentual: number = 0.05
 ): boolean {
-  if (volumeMeta <= 0) return volumeReal > 0;
-  const limiteMaximo = volumeMeta * (1 + toleranciaPercentual);
-  return volumeReal > limiteMaximo;
+  const safeReal = Number.isFinite(volumeReal) ? Math.max(0, volumeReal) : 0;
+  const safeMeta = Number.isFinite(volumeMeta) ? Math.max(0, volumeMeta) : 0;
+  const safeTol = Number.isFinite(toleranciaPercentual) && toleranciaPercentual >= 0 ? toleranciaPercentual : 0.05;
+
+  if (safeMeta <= 0) return safeReal > 0;
+  const limiteMaximo = safeMeta * (1 + safeTol);
+  return safeReal > limiteMaximo;
 }
 
 /**
@@ -62,7 +70,14 @@ export function calcularCustoExcesso(
   excessoMl: number,
   precoPorLitro: number
 ): number {
-  if (excessoMl <= 0 || precoPorLitro <= 0) return 0;
+  if (
+    !Number.isFinite(excessoMl) ||
+    !Number.isFinite(precoPorLitro) ||
+    excessoMl <= 0 ||
+    precoPorLitro <= 0
+  ) {
+    return 0;
+  }
   const custo = (excessoMl / 1000) * precoPorLitro;
   return Math.round(custo * 100) / 100;
 }

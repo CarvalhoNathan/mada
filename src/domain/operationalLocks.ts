@@ -38,7 +38,8 @@ export function obterCabineOperador(operador?: Partial<Operador> | null): {
  * - Assim que a aplicação é concluída (`aplicacaoConcluidaEm` definido ou `statusAplicacao === 'APLICACAO_CONCLUIDA'`),
  *   o equipamento é liberado imediatamente, mesmo que ainda existam embalagens com devolução pendente.
  */
-export function possuiAplicacaoAtiva(preparacao: Preparacao): boolean {
+export function possuiAplicacaoAtiva(preparacao?: Partial<Preparacao> | null): boolean {
+  if (!preparacao) return false;
   if (preparacao.status === 'PREPARACAO_ENCERRADA') {
     return false;
   }
@@ -75,8 +76,10 @@ export function buscarAplicacaoAtivaPorCabine(
   preparacoes: Preparacao[],
   cabineId: string
 ): Preparacao | undefined {
-  const normalizado = cabineId.trim().toUpperCase();
+  if (!Array.isArray(preparacoes) || !cabineId) return undefined;
+  const normalizado = String(cabineId).trim().toUpperCase();
   return preparacoes.find((prep) => {
+    if (!prep) return false;
     const prepCabine = (prep.cabineId || 'CABINE-01').trim().toUpperCase();
     return prepCabine === normalizado && possuiAplicacaoAtiva(prep);
   });

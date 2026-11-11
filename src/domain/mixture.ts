@@ -25,30 +25,33 @@ export function calcularFracoesMistura(
   itens: ItemReceitaParaCalculo[],
   volumeTotalMl: number
 ): FracaoCalculada[] {
-  if (volumeTotalMl <= 0) {
-    return itens.map((item) => ({
-      papel: item.papel,
-      nome: item.produtoNome || item.papel,
-      codigoProduto: item.codigoProduto || '',
-      proporcao: item.proporcao,
+  const safeVolume = Number.isFinite(volumeTotalMl) && volumeTotalMl > 0 ? volumeTotalMl : 0;
+  if (safeVolume <= 0 || !Array.isArray(itens)) {
+    return (itens || []).map((item) => ({
+      papel: item?.papel || '',
+      nome: item?.produtoNome || item?.papel || '',
+      codigoProduto: item?.codigoProduto || '',
+      proporcao: Number.isFinite(item?.proporcao) && (item?.proporcao ?? 0) > 0 ? (item.proporcao) : 0,
       volumeMl: 0,
       pesoGramas: 0,
-      densidade: item.densidade,
+      densidade: Number.isFinite(item?.densidade) && (item?.densidade ?? 0) > 0 ? (item.densidade) : 1,
     }));
   }
 
   return itens.map((item) => {
-    const volumeMl = Math.round(volumeTotalMl * item.proporcao);
-    const pesoGramas = Math.round(volumeMl * item.densidade);
+    const safeProporcao = Number.isFinite(item?.proporcao) && (item?.proporcao ?? 0) > 0 ? item.proporcao : 0;
+    const safeDensidade = Number.isFinite(item?.densidade) && (item?.densidade ?? 0) > 0 ? item.densidade : 1;
+    const volumeMl = Math.round(safeVolume * safeProporcao);
+    const pesoGramas = Math.round(volumeMl * safeDensidade);
 
     return {
-      papel: item.papel,
-      nome: item.produtoNome || item.papel,
-      codigoProduto: item.codigoProduto || '',
-      proporcao: item.proporcao,
+      papel: item?.papel || '',
+      nome: item?.produtoNome || item?.papel || '',
+      codigoProduto: item?.codigoProduto || '',
+      proporcao: safeProporcao,
       volumeMl,
       pesoGramas,
-      densidade: item.densidade,
+      densidade: safeDensidade,
     };
   });
 }
@@ -62,7 +65,12 @@ export function recalcularVolumePorComponente(
   volumeRealComponente: number,
   proporcaoComponente: number
 ): number {
-  if (proporcaoComponente <= 0 || volumeRealComponente <= 0) {
+  if (
+    !Number.isFinite(volumeRealComponente) ||
+    !Number.isFinite(proporcaoComponente) ||
+    proporcaoComponente <= 0 ||
+    volumeRealComponente <= 0
+  ) {
     return 0;
   }
   return Math.round(volumeRealComponente / proporcaoComponente);

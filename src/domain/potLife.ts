@@ -32,17 +32,20 @@ export interface CalculoPotLife {
  * Não inventa valores padrão caso não esteja cadastrado.
  */
 export function obterDuracaoPotLifeHomologada(
-  receita: Pick<Receita, 'potLifeMinutos' | 'itens'>,
+  receita?: Pick<Receita, 'potLifeMinutos' | 'itens'> | null,
   produtos: Produto[] = []
 ): number | null {
-  if (typeof receita.potLifeMinutos === 'number' && receita.potLifeMinutos > 0) {
+  if (!receita) return null;
+  if (typeof receita.potLifeMinutos === 'number' && Number.isFinite(receita.potLifeMinutos) && receita.potLifeMinutos > 0) {
     return receita.potLifeMinutos;
   }
 
-  for (const item of receita.itens) {
-    const prod = produtos.find((p) => p.id === item.produtoId);
-    if (prod && typeof prod.potLifeMinutos === 'number' && prod.potLifeMinutos > 0) {
-      return prod.potLifeMinutos;
+  if (Array.isArray(receita.itens)) {
+    for (const item of receita.itens) {
+      const prod = Array.isArray(produtos) ? produtos.find((p) => p.id === item?.produtoId) : undefined;
+      if (prod && typeof prod.potLifeMinutos === 'number' && Number.isFinite(prod.potLifeMinutos) && prod.potLifeMinutos > 0) {
+        return prod.potLifeMinutos;
+      }
     }
   }
 
@@ -59,12 +62,15 @@ export function calcularEstadoPotLife(
   agoraMs: number = Date.now(),
   procedimentoOficialValidado?: string
 ): CalculoPotLife {
-  const inicioMs = new Date(dosagemConcluidaEm).getTime();
-  const duracaoSegundos = Math.max(1, Math.round(potLifeMinutos * 60));
+  const agoraValido = Number.isFinite(agoraMs) ? agoraMs : Date.now();
+  const rawTime = dosagemConcluidaEm ? new Date(dosagemConcluidaEm).getTime() : NaN;
+  const inicioMs = Number.isFinite(rawTime) ? rawTime : agoraValido;
+  const safePotLife = Number.isFinite(potLifeMinutos) && potLifeMinutos > 0 ? potLifeMinutos : 20;
+  const duracaoSegundos = Math.max(1, Math.round(safePotLife * 60));
   const expiraEmMs = inicioMs + duracaoSegundos * 1000;
   const expiraEmIso = new Date(expiraEmMs).toISOString();
 
-  const segundosDecorridos = Math.max(0, Math.floor((agoraMs - inicioMs) / 1000));
+  const segundosDecorridos = Math.max(0, Math.floor((agoraValido - inicioMs) / 1000));
   const segundosRestantes = Math.max(0, duracaoSegundos - segundosDecorridos);
   const percentualConsumido = Math.min(
     100,
