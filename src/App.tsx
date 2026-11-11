@@ -1,19 +1,12 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import gsap from 'gsap';
 import {
   Operator,
-  PieceLot,
   RecipeState,
   ScreenId,
   Lote,
   Receita,
-  Movimentacao,
-  OrdemServico,
-  Preparacao,
   Produto,
-  StatusItemDevolucao,
-  LocalMistura,
-  ResiduoMisturaOcorrencia,
 } from './types';
 import { AppShell } from './components/ui/AppShell';
 import { StatusBanner } from './components/ui/StatusBanner';
@@ -65,7 +58,6 @@ import {
   MOCK_RECEITAS,
   MOCK_LOTES,
   MOCK_PRODUTOS,
-  MOCK_CHECKLIST_SOBRAS,
 } from './data';
 import {
   useConnectionStatus,
@@ -183,11 +175,7 @@ export const App: React.FC = () => {
     projectName,
     selectedEnvironment,
     pieceLot,
-    setSelectedOSNumber,
-    setClientName,
-    setProjectName,
     setSelectedEnvironment,
-    setPieceLot,
     handleSelectPieceLot,
     handleSelectOS,
   } = useOrderSelection({ setRecipe, showToast });
@@ -206,7 +194,6 @@ export const App: React.FC = () => {
     movimentacoes,
     preparacoes,
     residuosMistura,
-    activePreparacaoId,
     preparacoesPendentes,
     preparacoesEmConferencia,
     preparacoesHistorico,
