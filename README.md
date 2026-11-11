@@ -6,13 +6,13 @@
 
 Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas químicas dinâmicas, trava erros de dosagem, rastreia o consumo por cliente e ambiente, controla tempo de vida útil (*pot life*) e dá nova vida às sobras.
 
-[![Status](https://img.shields.io/badge/status-Versão%20Final%20Entregue-success)](#-status-e-roadmap)
+[![Status](https://img.shields.io/badge/status-Versão%20Final%20Entregue-success)](#status-e-roadmap)
 [![Demo Online](https://img.shields.io/badge/demo-GitHub%20Pages-2ea44f?logo=github&logoColor=white)](https://carvalhonathan.github.io/mada/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React%2019-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite%208-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
-[![UX](https://img.shields.io/badge/UX-tablet--first-3B82F6)](#-telas)
-[![Tests](https://img.shields.io/badge/Vitest-53%20passed-success?logo=vitest&logoColor=white)](#-testes-e-qualidade)
+[![UX](https://img.shields.io/badge/UX-tablet--first-3B82F6)](#telas)
+[![Tests](https://img.shields.io/badge/Vitest-53%20passed-success?logo=vitest&logoColor=white)](#testes-e-qualidade)
 
 🔗 **Acesse a Demonstração Online:** [https://carvalhonathan.github.io/mada/](https://carvalhonathan.github.io/mada/)
 
@@ -104,6 +104,7 @@ flowchart LR
 
 ---
 
+<a id="telas"></a>
 ## 🖼️ Telas e Módulos
 
 | Login Rápido | Dashboard Operacional | Vinculação de OS |
@@ -178,6 +179,7 @@ flowchart TB
 
 ---
 
+<a id="testes-e-qualidade"></a>
 ## 🧪 Testes e qualidade
 
 O projeto conta com ferramentas integradas de verificação estática, formatação e testes unitários automatizados com padrão industrial:
@@ -204,9 +206,10 @@ npm run build       # Gera os artefatos prontos e otimizados para produção na 
 
 ---
 
+<a id="status-e-roadmap"></a>
 ## 🚧 Status e roadmap
 
-> O projeto é um **MVP demonstrável e funcional**. A conexão final com o banco de produção da marcenaria está arquitetada e aguarda a concessão das credenciais do Supabase.
+> O projeto alcançou a **versão homologada para apresentação e entrega acadêmica**, com fluxo completo de ponta a ponta operando em dados locais. A integração com o Supabase de produção da marcenaria está modelada e arquitetada para a etapa de implantação fabril.
 
 ### ✅ Já implementado no MVP
 
@@ -260,7 +263,7 @@ Acesse a **[Central de Documentação (docs/README.md)](docs/README.md)** para o
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/carvalhonathan/mada.git
+git clone https://github.com/CarvalhoNathan/mada.git
 
 # 2. Acesse a pasta do projeto
 cd mada
