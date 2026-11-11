@@ -6,7 +6,7 @@
 
 Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas químicas dinâmicas, trava erros de dosagem, rastreia o consumo por cliente e ambiente, controla tempo de vida útil (*pot life*) e dá nova vida às sobras.
 
-[![Status](https://img.shields.io/badge/status-MVP%20em%20desenvolvimento-F59E0B)](#-status-e-roadmap)
+[![Status](https://img.shields.io/badge/status-Versão%20Final%20Entregue-success)](#-status-e-roadmap)
 [![Demo Online](https://img.shields.io/badge/demo-GitHub%20Pages-2ea44f?logo=github&logoColor=white)](https://carvalhonathan.github.io/mada/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React%2019-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -84,6 +84,7 @@ Não se trata de um sistema corporativo adaptado, mas de uma interface **projeta
 | ⏱️ **Monitor Regressivo de Pot Life (20 min)** | Cronômetro regressivo em tempo real com avisos sonoros/visuais e autodescarte orientado. | Protege contra a cura irreversível do PU na pistola e rateia o custo do refugo na OS. |
 | 📅 **Protocolo FEFO ("Use Primeiro")** | Indicação visual no Dashboard e na seleção de lotes da lata mais antiga que deve ser consumida. | Reduz drasticamente perdas de produtos caros vencendo esquecidos na prateleira. |
 | 🏷️ **Scanner Óptico Dual-Engine** | Câmera frontal com espelhamento nativo (para tablet em parede) e retículo laser animado. | Identificação instantânea de ordens de serviço e frascos sem precisar manusear o tablet. |
+| 🔒 **Barreira Anti-Bypass de Fluxo** | Stepper sequencial travado: impede avançar para dosagem sem seleção formal de Ordem de Serviço. | Garante 100% de conformidade operacional, eliminando misturas sem destino ou apontamento na obra. |
 | ♻️ **Etiquetagem e Saldo de Sobras** | Cálculo automático do volume restante na lata e emissão imediata de nova etiqueta com QR Code. | Latas abertas voltam ao almoxarifado devidamente quantificadas e rastreadas. |
 | 📊 **Painel Executivo & Auditoria Scrub** | Gráfico interativo tátil (*Scrub Chart*), KPIs em R$ e exportação de histórico em CSV. | Gestão executiva com total visibilidade do consumo previsto vs. realizado por obra. |
 
@@ -167,10 +168,11 @@ flowchart TB
 | :--- | :--- | :--- |
 | **Interface & Aplicação** | React 19, TypeScript, HTML5 semântico, CSS com Tokens | Implementado |
 | **Tipografia & Design** | Geist Sans & Geist Mono, Design System Industrial de Alto Contraste | Implementado |
-| **Ferramenta de Build** | Vite 8 (dev server em `localhost:3000`, HMR ultra rápido) | Implementado |
+| **Build & Performance** | Vite 8 + Route-level Code Splitting (`React.lazy`), bundle inicial de ~431 kB | Implementado |
+| **Arquitetura de Estado** | Custom Hooks modulares (`usePreparationWorkflow`, `useOrderSelection`, etc.) | Implementado |
 | **Camada de Dados (MVP)** | Repositórios em memória com persistência em `localStorage` | Implementado |
 | **Regras de Negócio** | Módulos determinísticos puros em TypeScript isolados | Implementado |
-| **Qualidade & Testes** | Vitest (25 testes unitários), ESLint 10 (Flat Config), Prettier | Implementado |
+| **Qualidade & Testes** | Vitest (53 testes unitários), ESLint 10 (Zero Warnings, Flat Config), Prettier | Implementado |
 | **Scanner QR Code** | Dual-Engine: `BarcodeDetector` nativo + decodificador canvas `jsQR` | Implementado |
 | **Banco de Dados Real** | PostgreSQL via Supabase (integração em modo de leitura) | Planejado |
 
@@ -178,18 +180,26 @@ flowchart TB
 
 ## 🧪 Testes e qualidade
 
-O projeto conta com ferramentas integradas de verificação estática, formatação e testes unitários automatizados:
+O projeto conta com ferramentas integradas de verificação estática, formatação e testes unitários automatizados com padrão industrial:
 
-- **Testes unitários (`npm run test`):** 25 testes em 5 arquivos com Vitest, cobrindo com rigor matemático as proporções de misturas, tolerâncias de dosagem, algoritmo FEFO e repositórios.
-- **Análise estática (`npm run lint`):** ESLint 10 configurado para TypeScript e React.
-- **Checagem estrita de tipos (`npm run typecheck`):** Validação com `tsc --noEmit`.
-- **Build de produção (`npm run build`):** Otimização e minificação pelo Vite.
+- **Testes unitários (`npm run test`):** **53 testes unitários em 8 arquivos** com Vitest, cobrindo com rigor matemático:
+  - `mixture.test.ts`: Proporcionalidade exata das 4 frações para volumes de 100 ml a 5.000 ml;
+  - `tolerance.test.ts`: Disparo rigoroso da trava quando o excesso ultrapassa 5% ou 200 ml e apuração financeira do refugo;
+  - `fefo.test.ts`: Algoritmo de ordenação por validade e alocação multi-lote FEFO;
+  - `potLife.test.ts`: Monitor de tempo útil de catalisação (20 min), persistência de sessão e autodescarte;
+  - `operationalLocks.test.ts`: Travas de cabine, esteira anti-bypass e proteção contra múltiplas preparações simultâneas;
+  - `returnFlow.test.ts`: Fluxo completo de conferência de sobras, pendências e encerramento;
+  - `leftover.test.ts`: Cálculo de saldo remanescente e rotulagem para reaproveitamento;
+  - `repositories.test.ts`: Integridade dos contratos de dados e repositórios locais.
+- **Análise estática (`npm run lint`):** ESLint 10 (Flat Config) rigoroso, alcançando **Zero Warnings** no projeto.
+- **Checagem estrita de tipos (`npm run typecheck`):** Validação estrita sem emissão com `tsc --noEmit`.
+- **Build otimizado (`npm run build`):** Empacotamento para produção com divisão de código por rotas e modais lazy.
 
 ```bash
-npm run test        # Executa a suíte de 25 testes unitários via Vitest
-npm run lint        # Validação de regras e consistência de código
-npm run typecheck   # Checagem rigorosa de tipos TypeScript
-npm run build       # Gera os artefatos prontos para produção na pasta dist/
+npm run test        # Executa a suíte completa de 53 testes unitários via Vitest
+npm run lint        # Validação estática de regras e consistência de código (0 avisos)
+npm run typecheck   # Checagem rigorosa de tipos TypeScript (tsc)
+npm run build       # Gera os artefatos prontos e otimizados para produção na pasta dist/
 ```
 
 ---
@@ -200,18 +210,20 @@ npm run build       # Gera os artefatos prontos para produção na pasta dist/
 
 ### ✅ Já implementado no MVP
 
-- [x] **Autenticação Tátil:** Teclado numérico PIN de 4 dígitos nos padrões Apple HIG, com resposta visual rápida e suporte a senha mestre de supervisor.
+- [x] **Autenticação Tátil:** Teclado numérico PIN de 4 dígitos nos padrões Apple HIG, com avatares cromáticos, resposta visual rápida e suporte a senha mestre de supervisor (`9999`).
 - [x] **Dashboard do Chão de Fábrica:** Painel de botões gigantes para operação em pé e card de aviso FEFO ("Use Primeiro").
-- [x] **Identificação de Ordem de Serviço:** Rastreabilidade estruturada em três níveis (Cliente → Projeto → Ambiente).
+- [x] **Identificação e Busca de OS (Spotlight Search):** Vinculação em 3 níveis (Cliente → Projeto → Ambiente), busca instantânea com scrollbar ergonômica fina e barreira anti-bypass.
 - [x] **Calculadora Dinâmica de Mistura:** Cálculo instantâneo das frações de Base, Catálise, Diluidor e Retardador por volume total desejado.
 - [x] **Dosagem em Béquer com Visualizador:** Visualização tátil do nível do líquido em tempo real, teclado numérico embutido e NumberStepper.
 - [x] **Trava Anti-Erro Crítico:** Modal de bloqueio que impede misturas erradas (+5% ou +200ml) sem autorização do encarregado.
 - [x] **Monitor de Pot Life (20 min):** Contagem regressiva em tempo real com avisos visuais de urgência e registro de autodescarte de refugo químico.
 - [x] **Devolução de Sobras:** Cálculo automático de saldo remanescente na lata e emissão de etiqueta de sobra com QR Code.
 - [x] **Scanner QR Dual-Engine com Mira Laser:** Câmera frontal com espelhamento para tablets em parede e suporte universal a Safari e Android.
-- [x] **Gestão de Estoque e Compras:** Visualização de inventário, cadastro/recebimento de novos lotes e lista de reposição para compras.
-- [x] **Painel Gerencial & Auditoria:** KPIs consolidados, gráfico interativo de consumo (*Scrub Chart*) e exportação do histórico em formato CSV.
-- [x] **Qualidade:** 25 testes unitários automatizados cobrindo lógica matemática e repositórios.
+- [x] **Gestão de Estoque e Compras:** Controle de estoque FEFO, cadastro/recebimento de novos lotes e geração de lista de solicitação de compras.
+- [x] **Painel Gerencial & Auditoria:** KPIs consolidados de cabines, gráfico interativo de consumo (*Scrub Chart*) e exportação do histórico em formato CSV.
+- [x] **Performance & Otimização Extrema:** Code splitting por rotas (`React.lazy`), reduzindo o bundle inicial para ~431 kB e acelerando o carregamento em redes fabris.
+- [x] **Arquitetura Reativa de Custom Hooks:** Extração da lógica de orquestração em hooks dedicados (`usePreparationWorkflow`, `useOrderSelection`, `usePotLifeTimer`, `usePurchasesRequests`).
+- [x] **Qualidade & Rigor Matemático:** 53 testes unitários automatizados em 8 suítes com 100% de aprovação e ESLint 10 com Zero Warnings.
 
 ### 📋 Próximos passos
 
