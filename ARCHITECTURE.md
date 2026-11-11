@@ -105,7 +105,7 @@ Ambientes fabris agressivos (solventes no ar, névoa de tinta, uso de luvas e ru
 
 ## 4. Dual-Engine de Leitura QR Code
 
-A leitura óptica de etiquetas e Ordens de Serviço é executada por um motor híbrido e resiliente ([`QrScannerModal.tsx`](src/components/ui/QrScannerModal.tsx)):
+A leitura óptica de etiquetas e Ordens de Serviço é executada por um motor híbrido e resiliente ([`QrScannerModal.tsx`](src/components/modals/QrScannerModal.tsx)):
 
 1. **Motor Primário (Hardware Nativo):** Utiliza a API `BarcodeDetector` nativa dos navegadores baseados em Chromium (Google Chrome e Edge no Android/Desktop), com decodificação direta por aceleração de GPU.
 2. **Motor Secundário (Fallback Canvas):** Caso a aplicação seja executada em navegadores sem suporte nativo à API (como Safari/iPadOS), o sistema ativa transparentemente um pipeline em tempo real com `requestAnimationFrame` renderizando os quadros de vídeo em um `<canvas>` invisível processado pela biblioteca leve `jsQR`.
@@ -140,38 +140,54 @@ mada/
 │   └── PROJETO.md                # Requisitos funcionais, SMART e cronograma
 ├── src/
 │   ├── components/
-│   │   └── ui/                   # Design System industrial e componentes reutilizáveis
+│   │   ├── modals/               # Diálogos e modais centralizados (lazy/code-split)
+│   │   │   ├── ModalCancelPrep.tsx         # Confirmação de descarte de preparo
+│   │   │   ├── ModalCriticalExcess.tsx     # Trava de segurança para excesso dosado
+│   │   │   ├── ModalNewBatch.tsx           # Cadastro rápido de novo lote em estoque
+│   │   │   ├── ModalOcorrenciaMistura.tsx  # Registro de resíduo de mistura pronta
+│   │   │   ├── ModalQrPackageResult.tsx    # Feedback de leitura de embalagens
+│   │   │   ├── ModalUseFirst.tsx           # Alerta de violação de FEFO
+│   │   │   └── QrScannerModal.tsx          # Scanner dual-engine (carregamento sob demanda)
+│   │   └── ui/                   # Design System industrial e componentes reutilizáveis táteis
+│   │       ├── AppShell.tsx           # Barra superior de status e contexto fabril
 │   │       ├── BeakerVisualizer.tsx   # Simulação gráfica de béquer com graduação em ml
-│   │       ├── ScrubChart.tsx         # Gráfico tátil de auditoria de consumo e sobras
 │   │       ├── NumericKeypad.tsx      # Teclado numérico industrial de 90px
 │   │       ├── PinInput.tsx           # Input acessível de PIN de 4 dígitos
-│   │       ├── QrScannerModal.tsx     # Scanner dual-engine com mira laser animada
 │   │       ├── PotLifeTimerBanner.tsx # Monitor de tempo útil de catalisação
+│   │       ├── ScrubChart.tsx         # Gráfico tátil de auditoria de consumo e sobras
 │   │       └── ...
 │   ├── data/                     # Camada de Repositórios (Repository Pattern)
 │   │   ├── __tests__/            # Testes de persistência de repositórios
 │   │   ├── mock/                 # Fonte de dados simulada com mockData.ts
 │   │   └── repositories.ts       # Contratos TypeScript dos repositórios
 │   ├── domain/                   # Motores de regra de negócio puros (TypeScript puro)
-│   │   ├── __tests__/            # Testes unitários com Vitest (mixture, tolerance, fefo, leftover)
+│   │   ├── __tests__/            # Testes unitários com Vitest (8 suítes com 44 testes)
 │   │   ├── fefo.ts               # Ordenação FEFO (First Expire, First Out)
 │   │   ├── leftover.ts           # Cálculo de volume e reaproveitamento de sobras
 │   │   ├── mixture.ts            # Cálculo proporcional de misturas químicas
+│   │   ├── operationalLocks.ts   # Travas de cabine e bloqueios operacionais
+│   │   ├── potLife.ts            # Ciclo de vida e ocorrências de pot life
+│   │   ├── qrIdentification.ts   # Classificação e parsing de QR Codes industriais
+│   │   ├── returnFlow.ts         # Fluxo completo de conferência e devolução
 │   │   └── tolerance.ts          # Tolerâncias e barreira anti-erro (+5% / +200ml)
-│   ├── hooks/                    # Hooks reutilizáveis (useConnectionStatus, etc.)
-│   ├── screens/                  # Telas operacionais e gerenciais
-│   │   ├── ScreenAuth.tsx        # Login rápido com operador e PIN
-│   │   ├── ScreenDashboard.tsx   # Painel tátil primário da cabine
-│   │   ├── ScreenOS.tsx          # Vinculação da OS (Cliente, Projeto, Ambiente)
-│   │   ├── ScreenRecipe.tsx      # Seleção e cálculo de receita química
-│   │   ├── ScreenDosing.tsx      # Dosagem com visualização de béquer
-│   │   ├── ScreenReturn.tsx      # Devolução de sobras e emissão de etiqueta QR
-│   │   ├── ScreenManager.tsx     # Visão executiva com KPIs e exportação CSV
-│   │   └── ScreenInventory.tsx   # Controle de lotes, reposição e lista de compras
+│   ├── hooks/                    # Hooks reutilizáveis e isolados de estado
+│   │   ├── useConnectionStatus.ts  # Monitoramento de status de rede online/offline
+│   │   ├── useOrderSelection.ts    # Seleção e vinculação de OS, lote e ambientes
+│   │   ├── usePotLifeTimer.ts      # Cronômetro regressivo e descarte do pot life
+│   │   └── usePurchasesRequests.ts # Gestão de solicitações de reposição
+│   ├── screens/                  # Telas operacionais e gerenciais modulares
+│   │   ├── ScreenAuth/           # Login rápido com teclado tátil e PIN
+│   │   ├── ScreenDashboard/      # Painel tátil primário da cabine
+│   │   ├── ScreenOS/             # Vinculação da OS (Cliente, Projeto, Ambiente)
+│   │   ├── ScreenRecipe/         # Seleção e cálculo de receita química
+│   │   ├── ScreenDosing/         # Dosagem guiada com béquer interativo
+│   │   ├── ScreenReturn/         # Devolução modularizada (conferência, histórico, etiqueta)
+│   │   ├── ScreenManager/        # Gestão executiva (cabines vivas, auditoria, KPIs, tabela)
+│   │   └── ScreenInventory/      # Controle de estoque FEFO e solicitações de compras
 │   ├── styles/                   # Folhas de estilo modulares e Design Tokens
 │   │   ├── screens/              # CSS específico de cada tela
 │   │   ├── design-system.css     # Estilos canônicos dos componentes táteis
-│   │   ├── shell.css             # Estrutura global, header e menu lateral
+│   │   ├── shell.css             # Estrutura global enxuta e barra fixa industrial
 │   │   └── tokens.css            # Variáveis CSS (cores, tipografia Geist, espaçamentos)
 │   ├── App.tsx                   # Máquina de estados principal da aplicação
 │   ├── main.tsx                  # Ponto de montagem React 19
@@ -185,7 +201,7 @@ mada/
 
 ## 7. Garantia de Qualidade & Testes Automatizados
 
-A estabilidade das regras de negócio matemáticas e da camada de persistência é assegurada por **25 testes unitários automatizados** executados via **Vitest**:
+A estabilidade das regras de negócio matemáticas e da camada de persistência é assegurada por **44 testes unitários automatizados** executados via **Vitest**:
 
 ```bash
 npm run test        # Executa as suítes de testes unitários
@@ -194,9 +210,12 @@ npm run typecheck   # Checagem de tipagem estrita com TypeScript (tsc --noEmit)
 npm run build       # Compilação e empacotamento otimizado para produção
 ```
 
-As suítes cobrem:
+As 8 suítes cobrem:
 1. `mixture.test.ts`: Proporcionalidade exata das 4 frações para volumes de 100 ml a 5.000 ml.
 2. `tolerance.test.ts`: Disparo rigoroso da trava quando o excesso ultrapassa 5% ou 200 ml.
 3. `fefo.test.ts`: Ordenação de prioridade de uso por validade e status de abertura do lote.
 4. `leftover.test.ts`: Cálculo de saldo e emissão de código de devolução.
-5. `repositories.test.ts`: Integridade dos contratos de dados da camada de repositórios.
+5. `potLife.test.ts`: Ciclo de vida da mistura catalisada, expiração e descarte técnico.
+6. `returnFlow.test.ts`: Workflow de conferência de sobras, pendências e encerramento.
+7. `operationalLocks.test.ts`: Travas de cabine e bloqueio de múltiplas preparações simultâneas.
+8. `repositories.test.ts`: Integridade dos contratos de dados e repositórios locais.
