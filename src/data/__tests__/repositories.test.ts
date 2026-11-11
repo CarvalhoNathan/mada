@@ -115,10 +115,8 @@ describe('MockOperadorRepository (Segurança e Autenticação de PIN)', () => {
   });
 
   it('deve blindar autenticação contra valores nulos, não numéricos ou tentativas de injeção', async () => {
-    // @ts-expect-error teste com tipo inválido
     expect(await operadorRepo.autenticar(NaN, '1234')).toBe(false);
-    // @ts-expect-error teste com tipo inválido
-    expect(await operadorRepo.autenticar(1, null)).toBe(false);
+    expect(await operadorRepo.autenticar(1, null as unknown as string)).toBe(false);
     expect(await operadorRepo.autenticar(1, undefined as unknown as string)).toBe(false);
     expect(await operadorRepo.autenticar(1, "' OR '1'='1")).toBe(false);
   });
@@ -129,7 +127,6 @@ describe('MockOperadorRepository (Segurança e Autenticação de PIN)', () => {
     expect(await operadorRepo.validarSupervisorPin(' 9999 ')).toBe(true); // com espaços aparados
     expect(await operadorRepo.validarSupervisorPin('8888')).toBe(true);
     expect(await operadorRepo.validarSupervisorPin('1234')).toBe(false);
-    // @ts-expect-error teste com tipo inválido
-    expect(await operadorRepo.validarSupervisorPin(null)).toBe(false);
+    expect(await operadorRepo.validarSupervisorPin(null as unknown as string)).toBe(false);
   });
 });

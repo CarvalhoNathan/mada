@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, X, FileSpreadsheet, Layers, Search } from 'lucide-react';
+import { Check, X, FileSpreadsheet, Layers, Search, Lock } from 'lucide-react';
 import { Ambiente, AmbienteOS, OrdemServico, PieceLot } from '../types';
 import { CountNumber } from '../components/ui/CountNumber';
 import { MOCK_ORDENS_SERVICO } from '../data/mock/mockData';
@@ -19,6 +19,8 @@ interface ScreenOSProps {
   onNavigate: (screen: 'dashboard' | 'recipe') => void;
   onOpenCancelPrep?: () => void;
   ambientes?: Ambiente[];
+  isOSConfirmed?: boolean;
+  onConfirmOS?: () => void;
 }
 
 export const ScreenOS: React.FC<ScreenOSProps> = ({
@@ -34,6 +36,8 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
   onSelectOS,
   onScanOS,
   onNavigate,
+  isOSConfirmed = true,
+  onConfirmOS,
 }) => {
   const [isOsModalOpen, setIsOsModalOpen] = useState(false);
   const [osSearchQuery, setOsSearchQuery] = useState('');

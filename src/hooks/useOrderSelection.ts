@@ -15,6 +15,19 @@ export function useOrderSelection({ setRecipe, showToast }: UseOrderSelectionPar
   const [projectName, setProjectName] = useState(MOCK_ORDENS_SERVICO[0].projetoNome);
   const [selectedEnvironment, setSelectedEnvironment] = useState(MOCK_ORDENS_SERVICO[0].ambienteNome);
   const [pieceLot, setPieceLot] = useState<PieceLot>(INITIAL_PIECE_LOT);
+  const [isOSConfirmed, setIsOSConfirmed] = useState(false);
+
+  const handleConfirmCurrentOS = useCallback(() => {
+    setIsOSConfirmed(true);
+    showToast(
+      `✓ ${selectedOSNumber} (${selectedEnvironment}) confirmada! Preparação liberada.`,
+      'success'
+    );
+  }, [selectedOSNumber, selectedEnvironment, showToast]);
+
+  const handleResetOSConfirmation = useCallback(() => {
+    setIsOSConfirmed(false);
+  }, []);
 
   const handleSelectPieceLot = useCallback(
     (lote: PieceLot, envName?: string) => {
@@ -49,6 +62,7 @@ export function useOrderSelection({ setRecipe, showToast }: UseOrderSelectionPar
       setProjectName(os.projetoNome);
       setSelectedEnvironment(envInicial);
       setPieceLot(loteInicial);
+      setIsOSConfirmed(true);
       const parsedVol = parseInt((loteInicial.volumeEstimado || '').replace(/\D/g, ''), 10);
       if (parsedVol >= 100 && parsedVol <= 5000) {
         setRecipe((prev) => ({ ...prev, totalVolume: parsedVol }));
@@ -67,6 +81,10 @@ export function useOrderSelection({ setRecipe, showToast }: UseOrderSelectionPar
     projectName,
     selectedEnvironment,
     pieceLot,
+    isOSConfirmed,
+    setIsOSConfirmed,
+    handleConfirmCurrentOS,
+    handleResetOSConfirmation,
     setSelectedOSNumber,
     setClientName,
     setProjectName,

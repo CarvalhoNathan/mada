@@ -137,7 +137,7 @@ export const MOCK_SUPERVISOR = {
   id: 99,
   nome: 'Fábio',
   pin: '9999',
-  pinAlternativo: '1234',
+  pinAlternativo: '8888',
 };
 
 export const MOCK_CLIENTES: Cliente[] = [
