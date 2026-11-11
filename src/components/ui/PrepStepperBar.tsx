@@ -1,10 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { Lock } from 'lucide-react';
 import { ScreenId } from '../../types';
 
 interface PrepStepperBarProps {
   currentScreen: 'os' | 'recipe' | 'dosing';
   onNavigate: (screen: ScreenId) => void;
+  isOSConfirmed?: boolean;
+  isRecipeConfirmed?: boolean;
+  onBlockedStepClick?: (stepId: 'os' | 'recipe' | 'dosing', reason: string) => void;
 }
 
 const STEPS: { id: 'os' | 'recipe' | 'dosing'; num: number; label: string }[] = [
@@ -18,10 +22,17 @@ const STEPS: { id: 'os' | 'recipe' | 'dosing'; num: number; label: string }[] = 
  * Segue a regra de Benji Taylor (motion.md #93 & #112):
  * "Keep header, outer surface and action positions steady while variable content changes inside"
  * "A selection ring or highlight moving between items uses Follow, so it keeps momentum when retargeted"
+ *
+ * Trava anti-bypass:
+ * - Etapa 2 bloqueada até que a Ordem de Serviço seja confirmada na Etapa 1.
+ * - Etapa 3 bloqueada até que uma receita seja escolhida/confirmada na Etapa 2.
  */
 export const PrepStepperBar: React.FC<PrepStepperBarProps> = ({
   currentScreen,
   onNavigate,
+  isOSConfirmed = true,
+  isRecipeConfirmed = false,
+  onBlockedStepClick,
 }) => {
   const pillRef = useRef<HTMLSpanElement>(null);
   const stepRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -90,7 +101,49 @@ export const PrepStepperBar: React.FC<PrepStepperBarProps> = ({
       {STEPS.map((step, idx) => {
         const isActive = step.id === currentScreen;
         const isCompleted = idx < activeIdx;
-        const isClickable = idx !== activeIdx && (isCompleted || idx === activeIdx + 1);
+
+        let canNavigate = false;
+        let blockReason = '';
+
+        if (step.id === 'os') {
+          // Voltar para O.S. é sempre liberado
+          canNavigate = !isActive;
+        } else if (step.id === 'recipe') {
+          if (currentScreen === 'dosing') {
+            // Voltar da dosagem para a receita é liberado
+            canNavigate = true;
+          } else if (currentScreen === 'os') {
+            canNavigate = isOSConfirmed;
+            if (!isOSConfirmed) {
+              blockReason =
+                'Passo obrigatório: Selecione ou confirme a Ordem de Serviço na Etapa 1 para liberar a Receita.';
+            }
+          }
+        } else if (step.id === 'dosing') {
+          if (!isOSConfirmed) {
+            canNavigate = false;
+            blockReason =
+              'Passo obrigatório: Selecione ou confirme a Ordem de Serviço na Etapa 1 antes da dosagem.';
+          } else if (!isRecipeConfirmed) {
+            canNavigate = false;
+            blockReason =
+              'Passo obrigatório: Escolha com qual produto/receita você vai preparar na Etapa 2 antes de avançar para a dosagem.';
+          } else {
+            canNavigate = !isActive;
+          }
+        }
+
+        const isLocked = !isActive && !canNavigate;
+        const isClickable = !isActive && canNavigate;
+
+        const handleStepInteraction = () => {
+          if (isActive) return;
+          if (canNavigate) {
+            onNavigate(step.id);
+          } else if (blockReason && onBlockedStepClick) {
+            onBlockedStepClick(step.id, blockReason);
+          }
+        };
 
         return (
           <React.Fragment key={step.id}>
@@ -108,22 +161,28 @@ export const PrepStepperBar: React.FC<PrepStepperBarProps> = ({
                 isClickable ? 'clickable' : 'pending'
               }`}
               aria-current={isActive ? 'step' : undefined}
-              role={isClickable ? 'button' : undefined}
-              tabIndex={isClickable ? 0 : undefined}
-              onClick={() => {
-                if (isClickable) onNavigate(step.id);
-              }}
+              role="button"
+              tabIndex={isClickable || isLocked ? 0 : undefined}
+              onClick={handleStepInteraction}
               onKeyDown={(e) => {
-                if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
+                if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  onNavigate(step.id);
+                  handleStepInteraction();
                 }
               }}
+              title={
+                isLocked
+                  ? blockReason || 'Etapa bloqueada'
+                  : isActive
+                  ? `Etapa atual: ${step.label}`
+                  : `Ir para ${step.label}`
+              }
               style={{
                 position: 'relative',
                 zIndex: 1,
                 background: 'transparent',
                 borderColor: 'transparent',
+                cursor: isClickable ? 'pointer' : isLocked ? 'not-allowed' : 'default',
               }}
             >
               <span
@@ -133,17 +192,33 @@ export const PrepStepperBar: React.FC<PrepStepperBarProps> = ({
                     ? 'var(--primary)'
                     : isCompleted
                     ? 'var(--ok-soft)'
+                    : isLocked
+                    ? 'rgba(245, 158, 11, 0.12)'
                     : 'rgba(255, 255, 255, 0.08)',
                   color: isActive
                     ? 'var(--primary-foreground)'
                     : isCompleted
                     ? '#4ade80'
+                    : isLocked
+                    ? '#fbbf24'
                     : 'var(--text-muted)',
+                  border: isLocked
+                    ? '1px solid rgba(245, 158, 11, 0.35)'
+                    : '1px solid transparent',
                   fontWeight: isActive ? 800 : 700,
-                  transition: 'background-color 0.3s ease, color 0.3s ease',
+                  transition: 'background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                {isCompleted ? '✓' : step.num}
+                {isCompleted ? (
+                  '✓'
+                ) : isLocked ? (
+                  <Lock size={11} strokeWidth={2.8} />
+                ) : (
+                  step.num
+                )}
               </span>
               <span className="os-step-text">{step.label}</span>
             </div>

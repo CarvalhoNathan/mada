@@ -17,6 +17,8 @@ interface ScreenRecipeProps {
   suggestedFinish?: string;
   lotes?: Lote[];
   initialConfirmed?: boolean;
+  isRecipeConfirmed?: boolean;
+  onRecipeConfirmedChange?: (confirmed: boolean) => void;
   onSelectRecipe?: (receita: Receita) => void;
   onSetTotalVolume: (vol: number) => void;
   onAdjustVolume: (delta: number) => void;
@@ -33,13 +35,17 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
   suggestedFinish,
   lotes,
   initialConfirmed = false,
+  isRecipeConfirmed: isRecipeConfirmedProp,
+  onRecipeConfirmedChange,
   onSelectRecipe,
   onSetTotalVolume,
   onAdjustVolume,
   onConfirmWeighing,
   onNavigate,
 }) => {
-  const [isRecipeConfirmed, setIsRecipeConfirmed] = useState<boolean>(initialConfirmed);
+  const [internalConfirmed, setInternalConfirmed] = useState<boolean>(initialConfirmed);
+  const isRecipeConfirmed =
+    isRecipeConfirmedProp !== undefined ? isRecipeConfirmedProp : internalConfirmed;
 
   const vol = recipe.totalVolume;
   const lotesEstoque = lotes && lotes.length > 0 ? lotes : MOCK_LOTES;
@@ -78,7 +84,8 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
     if (found && onSelectRecipe) {
       onSelectRecipe(found);
     }
-    setIsRecipeConfirmed(true);
+    setInternalConfirmed(true);
+    onRecipeConfirmedChange?.(true);
   };
 
   return (

@@ -314,7 +314,17 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
         </div>
 
         {/* Coluna Direita: Peça & Consumo Previsto */}
-        <div className="os-col-right">
+        <div
+          className="os-col-right"
+          style={
+            !isOSConfirmed
+              ? {
+                  opacity: 0.65,
+                  transition: 'opacity 0.2s ease',
+                }
+              : undefined
+          }
+        >
           {/* Card do Lote de Peças vinculado ao Ambiente selecionado */}
           <div className="os-card-surface">
             <div className="os-card-header-row">
@@ -359,6 +369,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                 type="button"
                 className="os-action-btn os-btn-secondary os-btn-full"
                 onClick={handleCycleRoomLot}
+                disabled={!isOSConfirmed}
                 title="Alternar entre os lotes de peças deste ambiente"
                 aria-label="Alternar lote de peças deste ambiente"
               >
@@ -445,12 +456,47 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
             type="button"
             className="os-bar-btn os-btn-continue"
             onClick={() => onNavigate('recipe')}
+            disabled={!isOSConfirmed}
+            style={
+              !isOSConfirmed
+                ? {
+                    opacity: 0.5,
+                    cursor: 'not-allowed',
+                    border: '1.5px solid rgba(245, 158, 11, 0.4)',
+                    background: 'rgba(245, 158, 11, 0.1)',
+                    color: '#fbbf24',
+                  }
+                : undefined
+            }
+            title={
+              isOSConfirmed
+                ? 'Ver receita e calcular mistura'
+                : 'Selecione ou confirme a Ordem de Serviço para avançar'
+            }
           >
-            <span>Ver receita e calcular mistura</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
+            {!isOSConfirmed ? (
+              <>
+                <Lock size={18} strokeWidth={2.4} />
+                <span>Selecione a O.S. para avançar</span>
+              </>
+            ) : (
+              <>
+                <span>Ver receita e calcular mistura</span>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </>
+            )}
           </button>
         </div>
       </footer>

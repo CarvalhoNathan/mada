@@ -131,6 +131,16 @@
   background-color: rgba(255, 255, 255, 0.05);
 }
 
+.os-step-pill.pending {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.os-step-pill.pending:hover {
+  background-color: transparent;
+  color: var(--text-muted);
+}
+
 .os-step-badge {
   width: 22px;
   height: 22px;

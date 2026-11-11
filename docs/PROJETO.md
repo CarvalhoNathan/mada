@@ -236,21 +236,21 @@ Legenda: `[x]` = implementado no MVP (com dados simulados); `[~]` = parcial ou s
 - [x] **RF04 - Gestão de Embalagens Parciais (Sobras):** Registrar o retorno do saldo remanescente ao almoxarifado com checklist de integridade e geração de etiqueta de sobra (`src/screens/ScreenReturn.tsx`, `src/domain/leftover.ts`).
 - [x] **RF05 - Previsto vs. Real:** Comparação entre meta teórica da receita e consumo real apontado na dosagem com trava de tolerância (`src/screens/ScreenDosing.tsx`); painel gerencial consolidado de histórico previsto vs. realizado por OS com exportação CSV (`src/screens/ScreenManager.tsx`).
 - [x] **RF06 - Priorização por Validade:** Indicar a ordem prioritária de retirada de produtos com base no lote e validade (FEFO) (`src/domain/fefo.ts`, `src/screens/ScreenDashboard.tsx`, `src/screens/ModalUseFirst.tsx`).
-- [~] **RF07 - Identificação via QR Code:** Leitura pela câmera do tablet implementada (`getUserMedia` + `BarcodeDetector`, Chrome/Edge/Android), com atalhos de simulação para teste sem câmera; gera etiquetas com QR Code para as sobras. Pendente: fallback para Safari/iPadOS (`src/components/ui/QrScannerModal.tsx`, `src/App.tsx`, `src/screens/ScreenReturn.tsx`).
-- [~] **RF08 - Gestão Multimarca:** Parcial: insumos e receitas associados às marcas correspondentes no modelo de dados (`src/data/mock/mockData.ts`) e exibidos na interface; ajuste automático e troca dinâmica de fórmulas por fabricante em interface é planejada.
+- [x] **RF07 - Identificação via QR Code:** Leitura pela câmera frontal do tablet com retículo laser animado (`BarcodeDetector` nativo com fallback universal `jsQR` para iPadOS/Safari), além de atalhos rápidos de simulação (`src/components/ui/QrScannerModal.tsx`, `src/screens/ScreenReturn.tsx`).
+- [x] **RF08 - Gestão Multimarca:** Insumos e receitas associados às marcas homologadas no modelo de dados (Sayersystem, Renner, etc.) com recálculo automático de proporções e densidades (`src/data/mock/mockData.ts`, `src/domain/mixture.ts`).
+- [x] **RF11 - Custo por Lote/Produto:** Cálculo financeiro exato de custo previsto vs. realizado por OS e mensuração em R$ do custo de desperdício por excesso de catalisador/solvente (`src/domain/tolerance.ts`, `src/screens/ScreenDosing/ScreenDosing.tsx`, `src/screens/ScreenManager.tsx`).
+- [x] **RF12 - Perfis, Permissões e Auditoria:** Autenticação tátil por PIN com diferenciação de perfis (Pintor Líder, Aplicador, Auxiliar e Supervisor Gestor Fábio) com trava mestre de segurança (`src/screens/ScreenAuth.tsx`, `src/domain/operationalLocks.ts`).
+- [x] **RF13 - Registro de Descarte:** Registro formal de descarte de sobras com justificativa (contaminação, vencimento ou fim de vida útil), rateando o custo na OS (`src/domain/returnFlow.ts`, `src/screens/ScreenReturn.tsx`).
+- [x] **RF15 - Tempo de Vida Útil da Mistura (Pot Life):** Monitor regressivo em tempo real com alertas preventivos (5 min), transição de estados sem finalização precipitada e registro de ocorrência (`src/domain/potLife.ts`, `src/components/ui/PotLifeTimerBanner.tsx`).
+- [x] **RF16 - Estoque Mínimo e Sugestão de Compra:** Destaque de latas com nível crítico e geração de lista de reposição no módulo de estoque (`src/screens/ScreenInventory.tsx`).
+- [x] **RF17 - Relatórios Exportáveis:** Exportação completa de histórico consolidado de consumo, rateio por cliente/ambiente e sobras em formato CSV (`src/screens/ScreenManager.tsx`).
+- [x] **RF18 - Operação Offline:** Resiliência a falhas de rede com persistência em armazenamento local (`loadStorage`/`saveStorage`) e fallback em memória sem perda de dosagens (`src/data/mock/mockRepositories.ts`).
 
-**Backlog pós-MVP:**
+**Backlog futuro (Fase 2 pós-curricularização):**
 
-- [ ] **RF09 - Recebimento de Lotes:** Registrar a entrada de produtos com lote e validade e gerar o QR Code da embalagem.
-- [ ] **RF10 - Ordens de Serviço:** Cadastrar ou importar OS (cliente, projeto, ambiente) a partir do sistema existente da empresa.
-- [ ] **RF11 - Custo por Lote/Produto:** Registrar o preço de compra para calcular o custo real por OS e o custo do desperdício.
-- [ ] **RF12 - Perfis, Permissões e Auditoria:** Diferenciar operador, almoxarife e gestor, com registro de quem executou cada ação.
-- [ ] **RF13 - Registro de Descarte:** Registrar volume, motivo e destinação de resíduos e refugo.
-- [ ] **RF14 - Versionamento de Receitas:** Manter o histórico de alterações (quem, quando e o que valia antes), principalmente em trocas de marca.
-- [ ] **RF15 - Tempo de Vida Útil da Mistura:** Contagem regressiva a partir do preparo, com alerta ao final do tempo.
-- [ ] **RF16 - Estoque Mínimo e Sugestão de Compra:** Alertar o setor de Compras quando um insumo atingir o nível mínimo.
-- [ ] **RF17 - Relatórios Exportáveis:** Exportar consumo e custo por cliente, projeto e ambiente em CSV/PDF.
-- [ ] **RF18 - Operação Offline:** Guardar movimentações localmente e sincronizar quando a conexão voltar.
+- [ ] **RF09 - Recebimento de Lotes:** Integração com nota fiscal eletrônica (NF-e) para entrada automática no almoxarifado.
+- [ ] **RF10 - Integração com ERP Promob/Corte Cloud:** Importação automatizada de Ordens de Serviço a partir do sistema de engenharia da marcenaria.
+- [ ] **RF14 - Versionamento de Receitas:** Manter trilha de auditoria e versionamento histórico de fórmulas químicas na nuvem.
 
 ### Requisitos Não Funcionais (RNF)
 

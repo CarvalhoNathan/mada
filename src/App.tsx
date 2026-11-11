@@ -167,6 +167,7 @@ export const App: React.FC = () => {
   // Receita de Mistura Homologada (Dinâmica)
   const [selectedRecipe, setSelectedRecipe] = useState<Receita>(MOCK_RECEITAS[0]);
   const [recipe, setRecipe] = useState<RecipeState>(INITIAL_RECIPE);
+  const [isRecipeConfirmed, setIsRecipeConfirmed] = useState(false);
 
   // Dados da OS e Lote gerenciados via hook especializado
   const {
@@ -175,6 +176,9 @@ export const App: React.FC = () => {
     projectName,
     selectedEnvironment,
     pieceLot,
+    isOSConfirmed,
+    handleConfirmCurrentOS,
+    handleResetOSConfirmation,
     setSelectedEnvironment,
     handleSelectPieceLot,
     handleSelectOS,
@@ -253,6 +257,12 @@ export const App: React.FC = () => {
         });
       }
 
+      // Ao iniciar fluxo de nova preparação vindo do dashboard, reinicia travas para exigir confirmação
+      if (currentScreen === 'dashboard' && targetScreen === 'os') {
+        handleResetOSConfirmation();
+        setIsRecipeConfirmed(false);
+      }
+
       // Bloqueio inteligente: impede iniciar nova preparação na mesma cabine enquanto houver aplicação ativa
       if (targetScreen === 'os' || targetScreen === 'recipe' || targetScreen === 'dosing') {
         const verificacao = verificarBloqueioNovaPreparacaoCabine(
@@ -270,9 +280,45 @@ export const App: React.FC = () => {
         }
       }
 
+      // Trava Etapa 1: impede avançar para 'recipe' sem antes selecionar/confirmar a Ordem de Serviço
+      if (targetScreen === 'recipe' && !isOSConfirmed) {
+        showToast(
+          'Passo obrigatório: Selecione ou confirme uma Ordem de Serviço antes de avançar para a receita.',
+          'warn'
+        );
+        return;
+      }
+
+      // Trava Etapa 2: impede pular para 'dosing' sem antes confirmar a O.S. e escolher a receita
+      if (targetScreen === 'dosing') {
+        if (!isOSConfirmed) {
+          showToast(
+            'Passo obrigatório: Selecione uma Ordem de Serviço na Etapa 1 antes de avançar para a dosagem.',
+            'warn'
+          );
+          return;
+        }
+        if (!isRecipeConfirmed) {
+          showToast(
+            'Passo obrigatório: Escolha com qual produto/receita você vai preparar antes de avançar para a dosagem.',
+            'warn'
+          );
+          return;
+        }
+      }
+
       setCurrentScreen(targetScreen);
     },
-    [preparacoes, cabineOperador, showToast, setActivePreparacaoId]
+    [
+      preparacoes,
+      cabineOperador,
+      showToast,
+      setActivePreparacaoId,
+      currentScreen,
+      isOSConfirmed,
+      isRecipeConfirmed,
+      handleResetOSConfirmation,
+    ]
   );
 
   const { isOnline, isServerLocal, isOffline } = useConnectionStatus();
@@ -381,6 +427,7 @@ export const App: React.FC = () => {
     handleSelectOS(osCompativel);
     setSelectedRecipe(receitaVinculada);
     setPreConfirmedRecipe(true);
+    setIsRecipeConfirmed(true);
     showToast(
       `✓ Lote prioritário ${batchCode} vinculado à ${osCompativel.numero} (${receitaVinculada.nome})!`,
       'success'
@@ -450,7 +497,13 @@ export const App: React.FC = () => {
 
         {/* Stepper Persistente nas 3 etapas da Cabine */}
         {(currentScreen === 'os' || currentScreen === 'recipe' || currentScreen === 'dosing') && (
-          <PrepStepperBar currentScreen={currentScreen} onNavigate={handleNavigate} />
+          <PrepStepperBar
+            currentScreen={currentScreen}
+            onNavigate={handleNavigate}
+            isOSConfirmed={isOSConfirmed}
+            isRecipeConfirmed={isRecipeConfirmed}
+            onBlockedStepClick={(_stepId, reason) => showToast(reason, 'warn')}
+          />
         )}
 
         {/* Roteamento de Telas com Transição Coreografada GSAP */}
@@ -571,6 +624,8 @@ export const App: React.FC = () => {
                 onScanOS={handleOpenQR}
                 onNavigate={handleNavigate}
                 onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
+                isOSConfirmed={isOSConfirmed}
+                onConfirmOS={handleConfirmCurrentOS}
               />
             )}
 
@@ -581,6 +636,8 @@ export const App: React.FC = () => {
                 suggestedFinish={pieceLot.acabamentoSugerido}
                 lotes={lotes}
                 initialConfirmed={preConfirmedRecipe}
+                isRecipeConfirmed={isRecipeConfirmed}
+                onRecipeConfirmedChange={setIsRecipeConfirmed}
                 onSelectRecipe={setSelectedRecipe}
                 onSetTotalVolume={handleSetTotalVolume}
                 onAdjustVolume={handleAdjustVolume}
