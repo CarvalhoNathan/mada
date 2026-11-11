@@ -161,7 +161,7 @@ mada/
 │   │   ├── mock/                 # Fonte de dados simulada com mockData.ts
 │   │   └── repositories.ts       # Contratos TypeScript dos repositórios
 │   ├── domain/                   # Motores de regra de negócio puros (TypeScript puro)
-│   │   ├── __tests__/            # Testes unitários com Vitest (8 suítes com 50 testes)
+│   │   ├── __tests__/            # Testes unitários com Vitest (8 suítes com 53 testes)
 │   │   ├── fefo.ts               # Ordenação FEFO (First Expire, First Out)
 │   │   ├── leftover.ts           # Cálculo de volume e reaproveitamento de sobras
 │   │   ├── mixture.ts            # Cálculo proporcional de misturas químicas
@@ -202,7 +202,7 @@ mada/
 
 ## 7. Garantia de Qualidade & Testes Automatizados
 
-A estabilidade das regras de negócio matemáticas e da camada de persistência é assegurada por **50 testes unitários automatizados** executados via **Vitest**:
+A estabilidade das regras de negócio matemáticas e da camada de persistência é assegurada por **53 testes unitários automatizados** executados via **Vitest**:
 
 ```bash
 npm run test        # Executa as suítes de testes unitários

@@ -123,7 +123,7 @@ flowchart LR
 Pronto para ver a solução em ação? Acesse a **[Demonstração Online no GitHub Pages](https://carvalhonathan.github.io/mada/)** e siga este roteiro guiado para testar os principais diferenciais do produto:
 
 1. **Entrada na Cabine:** No login, selecione um operador (ex: *Carlos Silva*) e digite o PIN `1234`.
-2. **Vinculação de OS:** Toque em `NOVA PREPARAÇÃO` e escolha uma Ordem de Serviço ou clique em `SIMULAR LEITURA QR` para carregar o cliente e ambiente automaticamente.
+2. **Vinculação de OS com Busca Spotlight:** Toque em `NOVA PREPARAÇÃO`, use o campo de busca em tempo real para filtrar instantaneamente por cliente, projeto ou ambiente (ex: *"Alphaville"*) e confirme a vinculação com a esteira travada contra bypass de etapas.
 3. **Cálculo da Mistura:** Selecione o acabamento desejado (ex: *Laca PU Alto Brilho Sayerlack*). Altere o volume total para `1.000 ml` e observe o recálculo dinâmico e proporcional das 4 frações (Base, Catálise PU, Diluidor e Retardador).
 4. **Trava Anti-Erro em Ação:** Na dosagem em béquer, adicione intencionalmente mais de +5% de produto em um componente. O **Modal de Bloqueio Crítico** impedirá o avanço. Digite o PIN de supervisor `9999` para autorizar a justificativa.
 5. **Monitor de Pot Life:** Conclua a preparação e veja o cronômetro regressivo de **20 minutos** entrar em ação no topo da aplicação, alertando sobre o tempo hábil antes da cura irreversível do PU.
