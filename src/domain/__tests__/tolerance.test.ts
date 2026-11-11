@@ -66,4 +66,30 @@ describe('Domain: tolerance (Verificação de Tolerância e Excesso)', () => {
     expect(calcularCustoExcesso(0, 120)).toBe(0);
     expect(calcularCustoExcesso(200, 0)).toBe(0);
   });
+
+  it('deve blindar verificação de tolerância e custos contra NaN, valores negativos e tipos inválidos', () => {
+    // NaN ou infinito em volumes
+    const resNan = verificarToleranciaExcesso(NaN, 250);
+    expect(resNan.excedeu).toBe(true);
+    expect(resNan.diferencaMl).toBe(250);
+
+    const resRealNan = verificarToleranciaExcesso(250, NaN);
+    expect(resRealNan.excedeu).toBe(false);
+    expect(resRealNan.diferencaMl).toBe(0);
+
+    // Valores negativos
+    const resNeg = verificarToleranciaExcesso(-100, -50);
+    expect(resNeg.excedeu).toBe(false);
+
+    // excedeTolerancia com valores inválidos
+    expect(excedeTolerancia(NaN, 100)).toBe(false);
+    expect(excedeTolerancia(100, NaN)).toBe(true);
+    expect(excedeTolerancia(-50, 100)).toBe(false);
+
+    // calcularCustoExcesso com NaN ou negativo
+    expect(calcularCustoExcesso(NaN, 120)).toBe(0);
+    expect(calcularCustoExcesso(200, NaN)).toBe(0);
+    expect(calcularCustoExcesso(-50, 120)).toBe(0);
+    expect(calcularCustoExcesso(200, -80)).toBe(0);
+  });
 });

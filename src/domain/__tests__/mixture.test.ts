@@ -85,4 +85,29 @@ describe('Domain: mixture (Cálculo de Mistura Química)', () => {
     expect(recalcularVolumePorComponente(450, 0)).toBe(0);
     expect(recalcularVolumePorComponente(-100, 0.25)).toBe(0);
   });
+
+  it('deve blindar cálculos contra NaN, Infinity e valores corrompidos', () => {
+    // VolumeTotal inválido (NaN ou Infinity)
+    const fracoesNan = calcularFracoesMistura(receita4Componentes, NaN);
+    expect(fracoesNan.every((f) => f.volumeMl === 0 && f.pesoGramas === 0)).toBe(true);
+
+    const fracoesInf = calcularFracoesMistura(receita4Componentes, Infinity);
+    expect(fracoesInf.every((f) => f.volumeMl === 0 && f.pesoGramas === 0)).toBe(true);
+
+    // Itens com proporções corrompidas
+    const receitaComNan: ItemReceitaParaCalculo[] = [
+      { papel: 'base', proporcao: NaN, densidade: 1.1 },
+      { papel: 'catalisador', proporcao: -0.5, densidade: NaN },
+    ];
+    const fracoesBlindadas = calcularFracoesMistura(receitaComNan, 1000);
+    expect(fracoesBlindadas[0].volumeMl).toBe(0);
+    expect(fracoesBlindadas[0].densidade).toBe(1.1);
+    expect(fracoesBlindadas[1].volumeMl).toBe(0);
+    expect(fracoesBlindadas[1].densidade).toBe(1); // fallback seguro para densidade neutra
+
+    // Recalcular com NaN ou Infinity
+    expect(recalcularVolumePorComponente(NaN, 0.25)).toBe(0);
+    expect(recalcularVolumePorComponente(450, NaN)).toBe(0);
+    expect(recalcularVolumePorComponente(Infinity, 0.25)).toBe(0);
+  });
 });

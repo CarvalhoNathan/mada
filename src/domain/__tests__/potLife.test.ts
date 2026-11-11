@@ -187,4 +187,20 @@ describe('Controle de Pot Life, Alertas e Registro de Resíduos da Mistura', () 
     expect(listados).toHaveLength(1);
     expect(listados[0].localMistura).toBe('pistola');
   });
+
+  it('deve blindar cálculo de Pot Life contra datas corrompidas ou parâmetros nulos', () => {
+    // Data de dosagem vazia ou corrompida: não deve retornar NaN
+    const estadoDataInvalida = calcularEstadoPotLife('data-invalida', 20, 1000000);
+    expect(Number.isFinite(estadoDataInvalida.duracaoSegundos)).toBe(true);
+    expect(Number.isFinite(estadoDataInvalida.segundosRestantes)).toBe(true);
+    expect(estadoDataInvalida.duracaoSegundos).toBe(1200); // 20 * 60
+
+    // potLifeMinutos inválido (NaN ou 0): fallback seguro
+    const estadoPotLifeZero = calcularEstadoPotLife(new Date().toISOString(), NaN);
+    expect(estadoPotLifeZero.duracaoSegundos).toBe(1200);
+
+    // obterDuracaoPotLifeHomologada com receita nula ou itens vazios
+    expect(obterDuracaoPotLifeHomologada(null, [])).toBeNull();
+    expect(obterDuracaoPotLifeHomologada({ potLifeMinutos: 0, itens: [] }, [])).toBeNull();
+  });
 });

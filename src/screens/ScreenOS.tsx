@@ -471,10 +471,10 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                       <div className="os-list-chips-container">
                         {ambientes.map((amb) => (
                           <span key={amb.id} className="os-list-env-chip">
-                            {amb.nome}
+                            <span style={{ opacity: 0.6 }}>📍</span> {amb.nome}
                           </span>
                         ))}
-                        <span className="os-modal-count-pill" style={{ marginLeft: '4px' }}>
+                        <span className="os-modal-count-pill" style={{ marginLeft: 'auto' }}>
                           {qtdAmbientes === 1 ? '1 ambiente' : `${qtdAmbientes} ambientes`}
                         </span>
                       </div>

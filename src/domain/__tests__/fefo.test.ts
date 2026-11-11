@@ -75,4 +75,21 @@ describe('Domain: fefo (Ordenação por Validade e Latas Abertas)', () => {
     expect(plano.alocacoes[1].volumeAlocadoMl).toBe(176);
     expect(plano.alocacoes[1].saldoRestanteLoteMl).toBe(824);
   });
+
+  it('deve blindar cálculo de validade contra datas inválidas ou formatos corrompidos', () => {
+    // Strings nulas, vazias ou formatos inválidos
+    expect(calcularDiasAteVencimento('')).toBe(999);
+    expect(calcularDiasAteVencimento('data-invalida')).toBe(999);
+    expect(calcularDiasAteVencimento('2026/11/05')).toBe(999);
+    expect(calcularDiasAteVencimento('2026-99-99')).toBe(999);
+
+    // alocarConsumoMultiLoteFEFO com volume zero ou negativo
+    const planoZero = alocarConsumoMultiLoteFEFO([], 0);
+    expect(planoZero.alocacoes).toHaveLength(0);
+    expect(planoZero.volumeFaltanteEstoqueMl).toBe(0);
+
+    const planoNegativo = alocarConsumoMultiLoteFEFO([], -500);
+    expect(planoNegativo.alocacoes).toHaveLength(0);
+    expect(planoNegativo.volumeFaltanteEstoqueMl).toBe(0);
+  });
 });

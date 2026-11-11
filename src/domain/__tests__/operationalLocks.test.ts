@@ -177,4 +177,20 @@ describe('Bloqueios Operacionais Inteligentes por Cabine/Equipamento', () => {
 
     await repoPosReload.resetar();
   });
+
+  it('deve blindar verificação de bloqueio contra listas nulas, indefinidas ou cabines vazias', () => {
+    // Listas nulas ou não-arrays
+    // @ts-expect-error teste com tipo inválido para resiliência de runtime
+    const checkNull = verificarBloqueioNovaPreparacaoCabine(null, 'CABINE-01');
+    expect(checkNull.permitido).toBe(true);
+
+    // Cabine vazia
+    const checkVazia = verificarBloqueioNovaPreparacaoCabine([], '');
+    expect(checkVazia.permitido).toBe(true);
+
+    // buscarAplicacaoAtivaPorCabine com parâmetros nulos
+    // @ts-expect-error teste de runtime
+    expect(buscarAplicacaoAtivaPorCabine(undefined, 'CABINE-01')).toBeUndefined();
+    expect(buscarAplicacaoAtivaPorCabine([], '')).toBeUndefined();
+  });
 });

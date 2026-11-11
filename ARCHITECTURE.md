@@ -161,7 +161,7 @@ mada/
 │   │   ├── mock/                 # Fonte de dados simulada com mockData.ts
 │   │   └── repositories.ts       # Contratos TypeScript dos repositórios
 │   ├── domain/                   # Motores de regra de negócio puros (TypeScript puro)
-│   │   ├── __tests__/            # Testes unitários com Vitest (8 suítes com 44 testes)
+│   │   ├── __tests__/            # Testes unitários com Vitest (8 suítes com 50 testes)
 │   │   ├── fefo.ts               # Ordenação FEFO (First Expire, First Out)
 │   │   ├── leftover.ts           # Cálculo de volume e reaproveitamento de sobras
 │   │   ├── mixture.ts            # Cálculo proporcional de misturas químicas
@@ -171,10 +171,11 @@ mada/
 │   │   ├── returnFlow.ts         # Fluxo completo de conferência e devolução
 │   │   └── tolerance.ts          # Tolerâncias e barreira anti-erro (+5% / +200ml)
 │   ├── hooks/                    # Hooks reutilizáveis e isolados de estado
-│   │   ├── useConnectionStatus.ts  # Monitoramento de status de rede online/offline
-│   │   ├── useOrderSelection.ts    # Seleção e vinculação de OS, lote e ambientes
-│   │   ├── usePotLifeTimer.ts      # Cronômetro regressivo e descarte do pot life
-│   │   └── usePurchasesRequests.ts # Gestão de solicitações de reposição
+│   │   ├── useConnectionStatus.ts    # Monitoramento de status de rede online/offline
+│   │   ├── useOrderSelection.ts      # Seleção e vinculação de OS, lote e ambientes
+│   │   ├── usePotLifeTimer.ts        # Cronômetro regressivo e descarte do pot life
+│   │   ├── usePreparationWorkflow.ts # Orquestrador de dosagens, baixas e encerramentos
+│   │   └── usePurchasesRequests.ts   # Gestão de solicitações de reposição
 │   ├── screens/                  # Telas operacionais e gerenciais modulares
 │   │   ├── ScreenAuth/           # Login rápido com teclado tátil e PIN
 │   │   ├── ScreenDashboard/      # Painel tátil primário da cabine
@@ -201,21 +202,21 @@ mada/
 
 ## 7. Garantia de Qualidade & Testes Automatizados
 
-A estabilidade das regras de negócio matemáticas e da camada de persistência é assegurada por **44 testes unitários automatizados** executados via **Vitest**:
+A estabilidade das regras de negócio matemáticas e da camada de persistência é assegurada por **50 testes unitários automatizados** executados via **Vitest**:
 
 ```bash
 npm run test        # Executa as suítes de testes unitários
 npm run lint        # Validação estática com ESLint 10 (Flat Config)
 npm run typecheck   # Checagem de tipagem estrita com TypeScript (tsc --noEmit)
-npm run build       # Compilação e empacotamento otimizado para produção
+npm run build       # Compilação e empacotamento otimizado para produção (Code-splitting)
 ```
 
 As 8 suítes cobrem:
-1. `mixture.test.ts`: Proporcionalidade exata das 4 frações para volumes de 100 ml a 5.000 ml.
-2. `tolerance.test.ts`: Disparo rigoroso da trava quando o excesso ultrapassa 5% ou 200 ml.
-3. `fefo.test.ts`: Ordenação de prioridade de uso por validade e status de abertura do lote.
-4. `leftover.test.ts`: Cálculo de saldo e emissão de código de devolução.
-5. `potLife.test.ts`: Ciclo de vida da mistura catalisada, expiração e descarte técnico.
+1. `mixture.test.ts`: Proporcionalidade exata das 4 frações para volumes de 100 ml a 5.000 ml e tolerâncias a entradas nulas/negativas.
+2. `tolerance.test.ts`: Disparo rigoroso da trava quando o excesso ultrapassa 5% ou 200 ml e cálculo de custo de refugo.
+3. `fefo.test.ts`: Ordenação de prioridade de uso por validade, status de abertura do lote e alocação multi-lote FEFO.
+4. `leftover.test.ts`: Cálculo de saldo residual e rotulagem para reaproveitamento no almoxarifado.
+5. `potLife.test.ts`: Ciclo de vida da mistura catalisada, contagem regressiva e descarte consciente.
 6. `returnFlow.test.ts`: Workflow de conferência de sobras, pendências e encerramento.
 7. `operationalLocks.test.ts`: Travas de cabine e bloqueio de múltiplas preparações simultâneas.
 8. `repositories.test.ts`: Integridade dos contratos de dados e repositórios locais.

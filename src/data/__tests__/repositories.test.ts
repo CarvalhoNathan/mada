@@ -93,3 +93,40 @@ describe('MockMovimentacaoRepository', () => {
     expect(mov3.tipo).toBe('DESCARTE');
   });
 });
+
+describe('MockOperadorRepository (Segurança e Autenticação de PIN)', () => {
+  let operadorRepo: MockOperadorRepository;
+
+  beforeEach(() => {
+    operadorRepo = new MockOperadorRepository();
+  });
+
+  it('deve autenticar pintor com PIN correto e rejeitar PIN incorreto', async () => {
+    // Carlos Silva (id 1, PIN "1234")
+    const authOk = await operadorRepo.autenticar(1, '1234');
+    expect(authOk).toBe(true);
+
+    const authFail = await operadorRepo.autenticar(1, '0000');
+    expect(authFail).toBe(false);
+  });
+
+  it('deve blindar autenticação contra valores nulos, não numéricos ou tentativas de injeção', async () => {
+    // @ts-expect-error teste com tipo inválido
+    expect(await operadorRepo.autenticar(NaN, '1234')).toBe(false);
+    // @ts-expect-error teste com tipo inválido
+    expect(await operadorRepo.autenticar(1, null)).toBe(false);
+    // @ts-expect-error teste com tipo inválido
+    expect(await operadorRepo.autenticar(1, undefined)).toBe(false);
+    expect(await operadorRepo.autenticar(1, "' OR '1'='1")).toBe(false);
+  });
+
+  it('deve validar PIN mestre do supervisor e rejeitar PINs inválidos', async () => {
+    // Fábio: PIN mestre "9999" ou alternativo "8888"
+    expect(await operadorRepo.validarSupervisorPin('9999')).toBe(true);
+    expect(await operadorRepo.validarSupervisorPin(' 9999 ')).toBe(true); // com espaços aparados
+    expect(await operadorRepo.validarSupervisorPin('8888')).toBe(true);
+    expect(await operadorRepo.validarSupervisorPin('1234')).toBe(false);
+    // @ts-expect-error teste com tipo inválido
+    expect(await operadorRepo.validarSupervisorPin(null)).toBe(false);
+  });
+});

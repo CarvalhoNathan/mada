@@ -23,18 +23,19 @@ import { PrepStepperBar } from './components/ui/PrepStepperBar';
 
 import { ScreenAuth } from './screens/ScreenAuth';
 import { ScreenDashboard } from './screens/ScreenDashboard';
-import { ScreenOS } from './screens/ScreenOS';
-import { ScreenRecipe } from './screens/ScreenRecipe';
-import { ScreenDosing } from './screens/ScreenDosing';
-import { ScreenReturn } from './screens/ScreenReturn';
 
-import {
-  ModalUseFirst,
-  ModalCancelPrep,
-  ModalQrPackageResult,
-  ModalOcorrenciaMistura,
-} from './components/modals';
-
+const ScreenOS = lazy(() =>
+  import('./screens/ScreenOS').then((m) => ({ default: m.ScreenOS }))
+);
+const ScreenRecipe = lazy(() =>
+  import('./screens/ScreenRecipe').then((m) => ({ default: m.ScreenRecipe }))
+);
+const ScreenDosing = lazy(() =>
+  import('./screens/ScreenDosing').then((m) => ({ default: m.ScreenDosing }))
+);
+const ScreenReturn = lazy(() =>
+  import('./screens/ScreenReturn').then((m) => ({ default: m.ScreenReturn }))
+);
 const ScreenInventory = lazy(() =>
   import('./screens/ScreenInventory').then((m) => ({ default: m.ScreenInventory }))
 );
@@ -44,6 +45,13 @@ const ScreenManager = lazy(() =>
 const QrScannerModal = lazy(() =>
   import('./components/modals/QrScannerModal').then((m) => ({ default: m.QrScannerModal }))
 );
+
+import {
+  ModalUseFirst,
+  ModalCancelPrep,
+  ModalQrPackageResult,
+  ModalOcorrenciaMistura,
+} from './components/modals';
 
 import {
   operadorRepository,
@@ -523,112 +531,122 @@ export const App: React.FC = () => {
             />
           )}
 
-          {currentScreen === 'os' && (
-            <ScreenOS
-              selectedOS={selectedOSNumber}
-              clientName={clientName}
-              projectName={projectName}
-              selectedEnvironment={selectedEnvironment}
-              onSelectEnvironment={setSelectedEnvironment}
-              pieceLot={pieceLot}
-              onSelectPieceLot={handleSelectPieceLot}
-              onChangePieceLot={() => {
-                const activeOSObj =
+          <Suspense
+            fallback={
+              <div
+                className="screen-content-area"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '400px',
+                  color: 'var(--text-muted)',
+                  fontSize: '18px',
+                }}
+              >
+                Carregando módulo...
+              </div>
+            }
+          >
+            {currentScreen === 'os' && (
+              <ScreenOS
+                selectedOS={selectedOSNumber}
+                clientName={clientName}
+                projectName={projectName}
+                selectedEnvironment={selectedEnvironment}
+                onSelectEnvironment={setSelectedEnvironment}
+                pieceLot={pieceLot}
+                onSelectPieceLot={handleSelectPieceLot}
+                onChangePieceLot={() => {
+                  const activeOSObj =
+                    MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOSNumber) ||
+                    MOCK_ORDENS_SERVICO[0];
+                  const amb =
+                    activeOSObj.ambientesObra?.find((a) => a.nome === selectedEnvironment) ||
+                    activeOSObj.ambientesObra?.[0];
+                  const lotesAmb = amb?.lotesPecas || [activeOSObj.pecaLote];
+                  if (lotesAmb.length > 1) {
+                    const idx = lotesAmb.findIndex(
+                      (l) => (l.titulo || l.title) === (pieceLot.titulo || pieceLot.title)
+                    );
+                    const nextLot = lotesAmb[(idx + 1) % lotesAmb.length];
+                    handleSelectPieceLot(nextLot, amb?.nome || selectedEnvironment);
+                  }
+                }}
+                onChangeOS={() => {
+                  osRepository.listar().then((ordens) => {
+                    const currentIdx = ordens.findIndex((o) => o.numero === selectedOSNumber);
+                    const alternada = ordens[(currentIdx + 1) % ordens.length] || ordens[0];
+                    handleSelectOS(alternada);
+                  });
+                }}
+                onSelectOS={handleSelectOS}
+                onScanOS={handleOpenQR}
+                onNavigate={handleNavigate}
+                onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
+              />
+            )}
+
+            {currentScreen === 'recipe' && (
+              <ScreenRecipe
+                recipe={recipe}
+                activeRecipe={selectedRecipe}
+                suggestedFinish={pieceLot.acabamentoSugerido}
+                lotes={lotes}
+                initialConfirmed={preConfirmedRecipe}
+                onSelectRecipe={setSelectedRecipe}
+                onSetTotalVolume={handleSetTotalVolume}
+                onAdjustVolume={handleAdjustVolume}
+                onConfirmWeighing={handleStartDosing}
+                onNavigate={handleNavigate}
+                onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
+              />
+            )}
+
+            {currentScreen === 'dosing' && (
+              <ScreenDosing
+                recipe={recipe}
+                activeRecipe={selectedRecipe}
+                operator={selectedOperator}
+                activeOS={
                   MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOSNumber) ||
-                  MOCK_ORDENS_SERVICO[0];
-                const amb =
-                  activeOSObj.ambientesObra?.find((a) => a.nome === selectedEnvironment) ||
-                  activeOSObj.ambientesObra?.[0];
-                const lotesAmb = amb?.lotesPecas || [activeOSObj.pecaLote];
-                if (lotesAmb.length > 1) {
-                  const idx = lotesAmb.findIndex(
-                    (l) => (l.titulo || l.title) === (pieceLot.titulo || pieceLot.title)
-                  );
-                  const nextLot = lotesAmb[(idx + 1) % lotesAmb.length];
-                  handleSelectPieceLot(nextLot, amb?.nome || selectedEnvironment);
+                  MOCK_ORDENS_SERVICO[0]
                 }
-              }}
-              onChangeOS={() => {
-                osRepository.listar().then((ordens) => {
-                  const currentIdx = ordens.findIndex((o) => o.numero === selectedOSNumber);
-                  const alternada = ordens[(currentIdx + 1) % ordens.length] || ordens[0];
-                  handleSelectOS(alternada);
-                });
-              }}
-              onSelectOS={handleSelectOS}
-              onScanOS={handleOpenQR}
-              onNavigate={handleNavigate}
-              onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
-            />
-          )}
+                lotes={lotes}
+                onNavigate={handleNavigate}
+                onCompleteDosing={handleCompleteDosing}
+                onSetTotalVolume={handleSetTotalVolume}
+                onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
+                showToast={showToast}
+              />
+            )}
 
-          {currentScreen === 'recipe' && (
-            <ScreenRecipe
-              recipe={recipe}
-              activeRecipe={selectedRecipe}
-              suggestedFinish={pieceLot.acabamentoSugerido}
-              lotes={lotes}
-              initialConfirmed={preConfirmedRecipe}
-              onSelectRecipe={setSelectedRecipe}
-              onSetTotalVolume={handleSetTotalVolume}
-              onAdjustVolume={handleAdjustVolume}
-              onConfirmWeighing={handleStartDosing}
-              onNavigate={handleNavigate}
-              onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
-            />
-          )}
+            {currentScreen === 'return' && (
+              <ScreenReturn
+                operator={selectedOperator}
+                lotes={lotes}
+                activeOS={
+                  MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOSNumber) ||
+                  MOCK_ORDENS_SERVICO[0]
+                }
+                activePreparacao={activePreparacao}
+                preparacoesPendentes={preparacoesPendentes}
+                preparacoesEmConferencia={preparacoesEmConferencia}
+                preparacoesHistorico={preparacoesHistorico}
+                residuosMistura={residuosMistura}
+                preparacaoAtivaCabine={preparacaoAtivaCabine}
+                onSelectPreparacao={(prep) => setActivePreparacaoId(prep.id)}
+                onRegisterItemReturn={handleRegisterItemReturn}
+                onMarkStickerPrinted={handleMarkStickerPrinted}
+                onFinishPreparacao={handleFinishPreparacao}
+                onFinishApplication={handleFinishApplication}
+                onOpenOccurrenceModal={() => setIsOccurrenceModalOpen(true)}
+                onNavigate={handleNavigate}
+                showToast={showToast}
+              />
+            )}
 
-          {currentScreen === 'dosing' && (
-            <ScreenDosing
-              recipe={recipe}
-              activeRecipe={selectedRecipe}
-              operator={selectedOperator}
-              activeOS={
-                MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOSNumber) ||
-                MOCK_ORDENS_SERVICO[0]
-              }
-              lotes={lotes}
-              onNavigate={handleNavigate}
-              onCompleteDosing={handleCompleteDosing}
-              onSetTotalVolume={handleSetTotalVolume}
-              onOpenCancelPrep={() => setIsCancelPrepModalOpen(true)}
-              showToast={showToast}
-            />
-          )}
-
-          {currentScreen === 'return' && (
-            <ScreenReturn
-              operator={selectedOperator}
-              lotes={lotes}
-              activeOS={
-                MOCK_ORDENS_SERVICO.find((o) => o.numero === selectedOSNumber) ||
-                MOCK_ORDENS_SERVICO[0]
-              }
-              activePreparacao={activePreparacao}
-              preparacoesPendentes={preparacoesPendentes}
-              preparacoesEmConferencia={preparacoesEmConferencia}
-              preparacoesHistorico={preparacoesHistorico}
-              residuosMistura={residuosMistura}
-              preparacaoAtivaCabine={preparacaoAtivaCabine}
-              onSelectPreparacao={(prep) => setActivePreparacaoId(prep.id)}
-              onRegisterItemReturn={handleRegisterItemReturn}
-              onMarkStickerPrinted={handleMarkStickerPrinted}
-              onFinishPreparacao={handleFinishPreparacao}
-              onFinishApplication={handleFinishApplication}
-              onOpenOccurrenceModal={() => setIsOccurrenceModalOpen(true)}
-              onNavigate={handleNavigate}
-              showToast={showToast}
-            />
-          )}
-
-          {currentScreen === 'inventory' && (
-            <Suspense
-              fallback={
-                <div style={{ padding: '24px', color: 'var(--text-muted)' }}>
-                  Carregando estoque...
-                </div>
-              }
-            >
+            {currentScreen === 'inventory' && (
               <ScreenInventory
                 lotes={lotes}
                 preparacoes={preparacoes}
@@ -644,17 +662,9 @@ export const App: React.FC = () => {
                   setLotes(lotesAtualizados);
                 }}
               />
-            </Suspense>
-          )}
+            )}
 
-          {currentScreen === 'manager' && (
-            <Suspense
-              fallback={
-                <div style={{ padding: '24px', color: 'var(--text-muted)' }}>
-                  Carregando painel do gestor...
-                </div>
-              }
-            >
+            {currentScreen === 'manager' && (
               <ScreenManager
                 operator={selectedOperator}
                 onNavigate={handleNavigate}
@@ -687,8 +697,8 @@ export const App: React.FC = () => {
                   );
                 }}
               />
-            </Suspense>
-          )}
+            )}
+          </Suspense>
         </div>
 
         {/* Modal de Latas que vencem primeiro ("Use Primeiro") */}

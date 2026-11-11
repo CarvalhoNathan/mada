@@ -49,12 +49,14 @@ export class MockOperadorRepository implements OperadorRepository {
   }
 
   async autenticar(operadorId: number, pin: string): Promise<boolean> {
+    if (!Number.isFinite(operadorId) || typeof pin !== 'string') return false;
     const op = this.operadores.find(o => o.id === operadorId);
-    if (!op) return false;
-    return op.pin === pin;
+    if (!op || !op.pin) return false;
+    return op.pin === pin.trim();
   }
 
   async validarSupervisorPin(pin: string): Promise<boolean> {
+    if (typeof pin !== 'string') return false;
     const limpo = pin.trim();
     return limpo === MOCK_SUPERVISOR.pin || limpo === MOCK_SUPERVISOR.pinAlternativo;
   }

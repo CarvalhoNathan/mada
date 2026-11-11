@@ -48,8 +48,9 @@ export function calcularDiasAteVencimento(validade: string, dataReferencia: Date
   const parts = validade.split('-').map(Number);
   if (parts.length !== 3 || parts.some((p) => !Number.isFinite(p) || p < 0)) return 999;
   const [ano, mes, dia] = parts;
+  if (mes < 1 || mes > 12 || dia < 1 || dia > 31) return 999;
   const dataVal = new Date(ano, mes - 1, dia);
-  if (isNaN(dataVal.getTime())) return 999;
+  if (isNaN(dataVal.getTime()) || dataVal.getDate() !== dia) return 999;
   // Zera horas para comparação puramente por dias
   const dataRef = new Date(dataReferencia.getFullYear(), dataReferencia.getMonth(), dataReferencia.getDate());
   const diffMs = dataVal.getTime() - dataRef.getTime();

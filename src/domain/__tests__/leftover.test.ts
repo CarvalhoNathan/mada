@@ -27,4 +27,18 @@ describe('Domain: leftover (Cálculo de Devolução de Sobras)', () => {
     const saldoNeg = calcularSaldoDevolucao(-50, 1000);
     expect(saldoNeg.volumeMl).toBe(0);
   });
+
+  it('deve blindar cálculo de sobra contra NaN e parâmetros corrompidos', () => {
+    const saldoNan = calcularSaldoDevolucao(NaN, 1000);
+    expect(saldoNan.volumeMl).toBe(0);
+    expect(saldoNan.porcentagemPreenchimento).toBe(0);
+    expect(saldoNan.pesoEstimadoGramas).toBe(0);
+
+    const saldoMaxNan = calcularSaldoDevolucao(500, NaN);
+    expect(saldoMaxNan.volumeMl).toBe(500); // fallback para lata padrão de 1000 ml
+    expect(saldoMaxNan.porcentagemPreenchimento).toBe(50);
+
+    const saldoDensidadeNeg = calcularSaldoDevolucao(200, 1000, -0.9);
+    expect(saldoDensidadeNeg.pesoEstimadoGramas).toBe(190); // fallback para densidade padrão 0.95
+  });
 });
