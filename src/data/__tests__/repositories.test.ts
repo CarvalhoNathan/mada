@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MockLoteRepository, MockMovimentacaoRepository } from '../mock/mockRepositories';
+import {
+  MockLoteRepository,
+  MockMovimentacaoRepository,
+  MockOperadorRepository,
+} from '../mock/mockRepositories';
 
 describe('MockLoteRepository & Ciclo de Sobras', () => {
   let loteRepo: MockLoteRepository;
@@ -115,8 +119,7 @@ describe('MockOperadorRepository (Segurança e Autenticação de PIN)', () => {
     expect(await operadorRepo.autenticar(NaN, '1234')).toBe(false);
     // @ts-expect-error teste com tipo inválido
     expect(await operadorRepo.autenticar(1, null)).toBe(false);
-    // @ts-expect-error teste com tipo inválido
-    expect(await operadorRepo.autenticar(1, undefined)).toBe(false);
+    expect(await operadorRepo.autenticar(1, undefined as unknown as string)).toBe(false);
     expect(await operadorRepo.autenticar(1, "' OR '1'='1")).toBe(false);
   });
 
