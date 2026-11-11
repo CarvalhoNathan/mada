@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { KeyRound, Shield, Lock } from 'lucide-react';
+import { KeyRound, Shield, Lock, User } from 'lucide-react';
 import gsap from 'gsap';
 import { Operator } from '../../types';
 import { PIN_ERRO_SIMULADO, MOCK_SUPERVISOR } from '../../data';
@@ -47,35 +47,49 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   useEffect(() => {
     if (!layoutRef.current) return;
     const ctx = gsap.context(() => {
-      gsap.from('.auth-column-header', {
-        y: -10,
-        opacity: 0,
-        duration: 0.28,
-        ease: 'power2.out',
-      });
-      gsap.from('.operator-card-apple', {
-        x: -16,
-        opacity: 0,
-        duration: 0.24,
-        stagger: 0.045,
-        ease: 'power2.out',
-        delay: 0.04,
-      });
-      gsap.from('.auth-action-buttons-row', {
-        y: 10,
-        opacity: 0,
-        duration: 0.22,
-        ease: 'power2.out',
-        delay: 0.16,
-      });
-      if (pinCardRef.current) {
-        gsap.from(pinCardRef.current, {
-          x: 16,
-          opacity: 0,
-          duration: 0.3,
+      gsap.fromTo(
+        '.auth-column-header',
+        { y: -10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out', clearProps: 'all' }
+      );
+      gsap.fromTo(
+        '.operator-card-apple',
+        { x: -16, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          duration: 0.24,
+          stagger: 0.045,
           ease: 'power2.out',
-          delay: 0.08,
-        });
+          delay: 0.04,
+          clearProps: 'all',
+        }
+      );
+      gsap.fromTo(
+        '.auth-action-buttons-row',
+        { y: 10, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.22,
+          ease: 'power2.out',
+          delay: 0.16,
+          clearProps: 'all',
+        }
+      );
+      if (pinCardRef.current) {
+        gsap.fromTo(
+          pinCardRef.current,
+          { x: 16, opacity: 0 },
+          {
+            x: 0,
+            opacity: 1,
+            duration: 0.3,
+            ease: 'power2.out',
+            delay: 0.08,
+            clearProps: 'all',
+          }
+        );
       }
     }, layoutRef);
 
@@ -214,8 +228,8 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
         gsap.killTweensOf(cardEl);
         gsap.fromTo(
           cardEl,
-          { scale: 0.98 },
-          { scale: 1, duration: 0.22, ease: 'back.out(2)' }
+          { scale: 0.985 },
+          { scale: 1, duration: 0.16, ease: 'power2.out', clearProps: 'all' }
         );
       }
 
@@ -223,8 +237,8 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
         gsap.killTweensOf(pinCardRef.current);
         gsap.fromTo(
           pinCardRef.current,
-          { scale: 0.985 },
-          { scale: 1, duration: 0.25, ease: 'back.out(1.8)' }
+          { scale: 0.99 },
+          { scale: 1, duration: 0.2, ease: 'power2.out', clearProps: 'all' }
         );
       }
     },
@@ -241,8 +255,8 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
         gsap.killTweensOf(btnEl);
         gsap.fromTo(
           btnEl,
-          { scale: 0.96 },
-          { scale: 1, duration: 0.2, ease: 'back.out(2)' }
+          { scale: 0.97 },
+          { scale: 1, duration: 0.16, ease: 'power2.out', clearProps: 'all' }
         );
       }
 
@@ -250,8 +264,8 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
         gsap.killTweensOf(pinCardRef.current);
         gsap.fromTo(
           pinCardRef.current,
-          { scale: 0.985 },
-          { scale: 1, duration: 0.25, ease: 'back.out(1.8)' }
+          { scale: 0.99 },
+          { scale: 1, duration: 0.2, ease: 'power2.out', clearProps: 'all' }
         );
       }
     },
@@ -309,12 +323,8 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                 ? 'is-manager'
                 : hasPickedOperator
                 ? 'is-ready'
-                : ''
+                : 'is-idle'
             }`}
-            style={{
-              opacity: hasPickedOperator || isManagerAuthMode ? 1 : 0.78,
-              transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-            }}
           >
             <div className="auth-pin-card-header">
               {isManagerAuthMode ? (
@@ -360,9 +370,9 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                   >
                     <KeyRound size={13} strokeWidth={2.4} /> Terminal Liberado
                   </div>
-                  <h2 className="auth-pin-title">Digite seu PIN, {firstName}</h2>
+                  <h2 className="auth-pin-title">Olá, {firstName}! Digite seu PIN</h2>
                   <p className="auth-pin-hint">
-                    Insira seus 4 dígitos para autorizar a estação
+                    Insira seus 4 dígitos para liberar a cabine
                   </p>
                 </>
               ) : (
@@ -371,41 +381,64 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '6px',
-                      padding: '4px 12px',
+                      gap: '8px',
+                      padding: '5px 14px',
                       borderRadius: '999px',
-                      background: 'rgba(245, 158, 11, 0.12)',
-                      border: '1px solid rgba(245, 158, 11, 0.35)',
-                      color: '#FBBF24',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.10)',
+                      color: 'var(--text-muted)',
                       fontSize: '12px',
-                      fontWeight: 700,
+                      fontWeight: 600,
                       marginBottom: '6px',
                     }}
                   >
-                    <Lock size={13} strokeWidth={2.4} /> Aguardando seleção de operador
+                    <User size={13} strokeWidth={2.4} />
+                    <span>Aguardando identificação</span>
                   </div>
-                  <h2 className="auth-pin-title">Selecione seu perfil</h2>
+                  <h2 className="auth-pin-title" style={{ opacity: 0.9 }}>Selecione seu perfil</h2>
                   <p className="auth-pin-hint">
-                    Toque no seu nome na lista ao lado para liberar o teclado
+                    Toque no seu nome na lista para liberar seu PIN
                   </p>
                 </>
               )}
             </div>
 
-            <PinInput
-              length={4}
-              value={pinEntered}
-              hasError={hasError}
-              isSuccess={isSuccess}
-              errorMessage="PIN incorreto. Tente novamente."
-            />
+            {/* Alternância Dinâmica: Skeleton no Estado Inicial vs Teclado e PIN Reais ao Selecionar */}
+            {!hasPickedOperator && !isManagerAuthMode ? (
+              <div style={{ width: '100%', marginTop: '4px' }} aria-hidden="true">
+                {/* Skeleton dos 4 Dots de PIN */}
+                <div className="auth-dots-skeleton-row">
+                  <div className="auth-dot-skeleton" />
+                  <div className="auth-dot-skeleton" />
+                  <div className="auth-dot-skeleton" />
+                  <div className="auth-dot-skeleton" />
+                </div>
 
-            <NumericKeypad
-              onDigit={handleDigit}
-              onBackspace={handleBackspace}
-              onClear={handleClear}
-              disabled={(!hasPickedOperator && !isManagerAuthMode) || isOffline}
-            />
+                {/* Skeleton do Teclado Numérico 3x4 */}
+                <div className="auth-keypad-skeleton-grid">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className="auth-keypad-skeleton-cell" />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <>
+                <PinInput
+                  length={4}
+                  value={pinEntered}
+                  hasError={hasError}
+                  isSuccess={isSuccess}
+                  errorMessage="PIN incorreto. Tente novamente."
+                />
+
+                <NumericKeypad
+                  onDigit={handleDigit}
+                  onBackspace={handleBackspace}
+                  onClear={handleClear}
+                  disabled={isOffline}
+                />
+              </>
+            )}
           </div>
         </section>
       </div>
