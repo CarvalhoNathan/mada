@@ -306,8 +306,7 @@ Projeto de curricularização acadêmica desenvolvido para o curso de **Tecnolog
 
 ## 📄 Licença e Uso
 
-Projeto acadêmico e profissional em processo de homologação junto à empresa parceira. Todos os direitos reservados. Proibida a reprodução ou uso comercial sem autorização prévia.  
-&copy; 2026 Nathan Carvalho.
+Projeto acadêmico e profissional em processo de homologação junto à empresa parceira. Todos os direitos reservados. Proibida a reprodução ou uso comercial sem autorização prévia.
 
 ---
 
