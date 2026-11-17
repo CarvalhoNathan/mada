@@ -6,6 +6,7 @@ import {
   ClipboardCheck,
   History,
   Beaker,
+  Printer,
 } from 'lucide-react';
 import {
   Preparacao,
@@ -138,6 +139,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
         devolvidosEstoque: 0,
         embalagensEsgotadas: 0,
         descartadosRefugo: 0,
+        etiquetasPendentes: 0,
         podeFinalizarPreparacao: false,
         todosDefinitivamenteConcluidos: false,
         proximoItemPendenteId: null,
@@ -331,12 +333,46 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
     }
   };
 
-  // Encerramento formal da preparação inteira
+  // Impressão em lote de todas as etiquetas térmicas pendentes
+  const handlePrintAllStickers = async () => {
+    if (!preparacaoAtual || !onMarkStickerPrinted) return;
+    const pendentes = preparacaoAtual.itensDevolucao.filter(
+      (it) => it.status === 'DEVOLVIDO_AO_ESTOQUE' && !it.etiquetaImpressa
+    );
+    if (pendentes.length === 0) {
+      showToast('Todas as embalagens devolvidas já possuem etiqueta térmica impressa.', 'info');
+      return;
+    }
+
+    for (const it of pendentes) {
+      await onMarkStickerPrinted(preparacaoAtual.id, it.id);
+    }
+    showToast(
+      `🖨️ ${pendentes.length} etiqueta(s) térmica(s) Zebra enviada(s) para impressão!`,
+      'info'
+    );
+  };
+
+  // Encerramento formal da preparação inteira com garantia de rastreabilidade
   const handleFinishAll = async () => {
     if (!preparacaoAtual || !progresso.podeFinalizarPreparacao) {
       showToast('Resolva todos os componentes pendentes antes de encerrar a preparação.', 'warn');
       return;
     }
+
+    // Trava de rastreabilidade física: garante que todas as latas devolvidas ao estoque tenham sua etiqueta impressa
+    if (progresso.etiquetasPendentes > 0 && onMarkStickerPrinted) {
+      for (const it of preparacaoAtual.itensDevolucao) {
+        if (it.status === 'DEVOLVIDO_AO_ESTOQUE' && !it.etiquetaImpressa) {
+          await onMarkStickerPrinted(preparacaoAtual.id, it.id);
+        }
+      }
+      showToast(
+        `🖨️ ${progresso.etiquetasPendentes} etiqueta(s) térmica(s) Zebra impressa(s) e registradas automaticamente!`,
+        'info'
+      );
+    }
+
     if (onFinishPreparacao) {
       await onFinishPreparacao(preparacaoAtual.id);
     }
@@ -728,9 +764,34 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
           {preparacaoAtual && (
             <span style={{ fontSize: '15px', color: 'var(--text-muted)', fontWeight: 600 }}>
               {progresso.podeFinalizarPreparacao
-                ? '✓ Todos os componentes resolvidos!'
+                ? progresso.etiquetasPendentes > 0
+                  ? `✓ Resolvidos • ${progresso.etiquetasPendentes} etiqueta(s) pendente(s)`
+                  : '✓ Todos os componentes e etiquetas concluídos!'
                 : `Faltam ${progresso.pendentes} de ${progresso.totalComponentes} componentes`}
             </span>
+          )}
+
+          {preparacaoAtual && progresso.podeFinalizarPreparacao && progresso.etiquetasPendentes > 0 && (
+            <button
+              type="button"
+              className="os-bar-btn"
+              onClick={handlePrintAllStickers}
+              style={{
+                background: '#FEF3C7',
+                border: '1px solid #D97706',
+                color: '#92400E',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '0 16px',
+                minHeight: '44px',
+              }}
+              title="Imprimir etiquetas Zebra com QR Code para todas as sobras homologadas"
+            >
+              <Printer size={18} strokeWidth={2.4} />
+              <span>Imprimir Todas as Etiquetas ({progresso.etiquetasPendentes})</span>
+            </button>
           )}
 
           {preparacaoAtual && (

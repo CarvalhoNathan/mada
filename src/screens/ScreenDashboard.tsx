@@ -70,9 +70,16 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
       (p.cabineId || 'CABINE-01').toUpperCase() ===
       (operator.cabineId || 'CABINE-01').toUpperCase()
   );
+  const prepComSobrasCabine = preparacoesPendentes.find(
+    (p) =>
+      (p.cabineId || 'CABINE-01').toUpperCase() ===
+        (operator.cabineId || 'CABINE-01').toUpperCase() &&
+      p.itensDevolucao.some((it) => it.status === 'PENDENTE')
+  );
   const prepMaisRecentePendente =
-    preparacaoAtivaCabine || prepDaCabineOperador || preparacoesPendentes[0];
+    preparacaoAtivaCabine || prepComSobrasCabine || prepDaCabineOperador || preparacoesPendentes[0];
   const cabineOcupadaPorAplicacao = Boolean(preparacaoAtivaCabine);
+  const cabineBloqueadaPorSobras = !cabineOcupadaPorAplicacao && Boolean(prepComSobrasCabine);
 
   return (
     <div className="boardui-dash-container">
@@ -116,13 +123,23 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
 
       {/* 3. Grade das 3 Ações Operacionais da Cabine */}
       <div className="boardui-cards-grid" role="group" aria-label="Ações da cabine de pintura">
-        {/* Card 1 (HERO): Nova Preparação (com bloqueio inteligente por cabine se houver aplicação ativa) */}
+        {/* Card 1 (HERO): Nova Preparação (com bloqueio inteligente por cabine se houver aplicação ativa ou sobras pendentes) */}
         <button
           type="button"
           className="boardui-card primary-card"
-          onClick={() => onNavigate('os')}
+          onClick={() => {
+            if (cabineBloqueadaPorSobras && prepComSobrasCabine) {
+              if (onResumePreparacao) {
+                onResumePreparacao(prepComSobrasCabine);
+              } else {
+                onNavigate('return');
+              }
+            } else {
+              onNavigate('os');
+            }
+          }}
           style={
-            cabineOcupadaPorAplicacao
+            cabineOcupadaPorAplicacao || cabineBloqueadaPorSobras
               ? {
                   borderColor: 'rgba(245, 158, 11, 0.55)',
                 }
@@ -131,7 +148,7 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
         >
           <div className="boardui-card-top">
             <div className="boardui-card-icon primary-icon" aria-hidden="true">
-              {cabineOcupadaPorAplicacao ? (
+              {cabineOcupadaPorAplicacao || cabineBloqueadaPorSobras ? (
                 <Lock size={28} strokeWidth={2.2} />
               ) : (
                 <FlaskConical size={28} strokeWidth={2.2} />
@@ -147,19 +164,31 @@ export const ScreenDashboard: React.FC<ScreenDashboardProps> = ({
                 ? `Aplicação ativa em andamento na ${
                     preparacaoAtivaCabine.cabineNome || 'Cabine'
                   } (${preparacaoAtivaCabine.ordemServicoNumero}). Conclua a aplicação na pistola para liberar nova mistura.`
+                : cabineBloqueadaPorSobras && prepComSobrasCabine
+                ? `Sobras pendentes na ${
+                    prepComSobrasCabine.cabineNome || 'Cabine'
+                  } (${prepComSobrasCabine.ordemServicoNumero}). Devolva e etiquete as embalagens da bancada para liberar nova preparação.`
                 : 'Vincule a Ordem de Serviço, calcule a receita homologada e pese os componentes com trava anti-erro.'}
             </p>
           </div>
 
           <div className="boardui-card-bottom">
-            <span className={`boardui-pill-badge ${cabineOcupadaPorAplicacao ? 'amber-badge' : 'blue-badge'}`}>
+            <span
+              className={`boardui-pill-badge ${
+                cabineOcupadaPorAplicacao || cabineBloqueadaPorSobras ? 'amber-badge' : 'blue-badge'
+              }`}
+            >
               {cabineOcupadaPorAplicacao && preparacaoAtivaCabine
                 ? `${preparacaoAtivaCabine.cabineNome || 'Cabine'} ocupada (${preparacaoAtivaCabine.ordemServicoNumero})`
+                : cabineBloqueadaPorSobras && prepComSobrasCabine
+                ? `Sobras pendentes (${prepComSobrasCabine.ordemServicoNumero})`
                 : `${totalOrdensFila} OS na fila de pintura`}
             </span>
             <span className="boardui-card-meta">
               {cabineOcupadaPorAplicacao && preparacaoAtivaCabine
                 ? `Receita ativa: ${preparacaoAtivaCabine.receitaNome}`
+                : cabineBloqueadaPorSobras && prepComSobrasCabine
+                ? 'Toque para devolver as sobras e liberar'
                 : `Próxima: ${ultimaOrdem.ambienteNome} (${ultimaOrdem.clienteNome})`}
             </span>
           </div>

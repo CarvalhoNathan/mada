@@ -275,6 +275,7 @@ export interface ProgressoDevolucao {
   devolvidosEstoque: number;
   embalagensEsgotadas: number;
   descartadosRefugo: number;
+  etiquetasPendentes: number;
   podeFinalizarPreparacao: boolean;
   todosDefinitivamenteConcluidos: boolean;
   proximoItemPendenteId: string | null;
@@ -292,6 +293,9 @@ export function calcularProgressoDevolucao(preparacao: Preparacao): ProgressoDev
   const emConferencia = itens.filter((i) => i.status === 'PENDENTE_DE_CONFERENCIA').length;
   const pendentes = itens.filter((i) => i.status === 'PENDENTE').length;
   const concluidosDefinitivos = devolvidosEstoque + embalagensEsgotadas + descartadosRefugo;
+  const etiquetasPendentes = itens.filter(
+    (i) => i.status === 'DEVOLVIDO_AO_ESTOQUE' && !i.etiquetaImpressa
+  ).length;
 
   // Quando não restam itens PENDENTE, a etapa do operador na bancada está concluída
   const todosProcessados = totalComponentes > 0 && pendentes === 0;
@@ -308,6 +312,7 @@ export function calcularProgressoDevolucao(preparacao: Preparacao): ProgressoDev
     devolvidosEstoque,
     embalagensEsgotadas,
     descartadosRefugo,
+    etiquetasPendentes,
     podeFinalizarPreparacao: todosProcessados,
     todosDefinitivamenteConcluidos,
     proximoItemPendenteId: proximoPendente ? proximoPendente.id : null,
@@ -428,12 +433,13 @@ export function registrarMovimentacaoComponente(
   }
 
   // Se for uma aprovação direta da conferência técnica para retorno ao estoque, homologa os critérios obrigatórios
+  const criterios = Array.isArray(criteriosAplicaveis) ? criteriosAplicaveis : [];
   const checklistEfetivo: Record<string, boolean> = aprovacaoConferenciaTecnica
-    ? criteriosAplicaveis.reduce((acc, c) => ({ ...acc, [c.id]: true }), { ...checklistAprovado })
-    : checklistAprovado;
+    ? criterios.reduce((acc, c) => ({ ...acc, [c.id]: true }), { ...checklistAprovado })
+    : (checklistAprovado || {});
 
   // Se o destino for DEVOLVIDO_AO_ESTOQUE, validar checklist obrigatório e saldo > 0
-  const obrigatorios = criteriosAplicaveis.filter((c) => c.obrigatorio);
+  const obrigatorios = criterios.filter((c) => c.obrigatorio);
   const reprovado = obrigatorios.find((c) => !checklistEfetivo[c.id]);
 
   if (destino === 'DEVOLVIDO_AO_ESTOQUE') {
@@ -526,6 +532,30 @@ export function registrarImpressaoEtiquetaComponente(
 ): Preparacao {
   const itens = preparacao.itensDevolucao.map((it) => {
     if (it.id !== itemId) return it;
+    const cleanLote = it.loteCodigo.replace(/^#+/, '');
+    return {
+      ...it,
+      etiquetaImpressa: true,
+      loteSobraGeradoCodigo: it.loteSobraGeradoCodigo || `#${cleanLote}-SOBRA-0${it.receitaItemId}`,
+      codigoEtiquetaGerada: it.codigoEtiquetaGerada || `#SOBRA-${cleanLote}-${it.receitaItemId}`,
+    };
+  });
+
+  return {
+    ...preparacao,
+    itensDevolucao: itens,
+  };
+}
+
+/**
+ * Registra a impressão em lote de todas as etiquetas térmicas para componentes devolvidos ao estoque
+ * ou aguardando conferência, garantindo rastreabilidade com QR Code antes do encerramento da preparação.
+ */
+export function registrarImpressaoTodasEtiquetas(preparacao: Preparacao): Preparacao {
+  const itens = preparacao.itensDevolucao.map((it) => {
+    if (it.status !== 'DEVOLVIDO_AO_ESTOQUE' && it.status !== 'PENDENTE_DE_CONFERENCIA') {
+      return it;
+    }
     const cleanLote = it.loteCodigo.replace(/^#+/, '');
     return {
       ...it,

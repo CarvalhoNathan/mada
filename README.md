@@ -12,7 +12,7 @@ Sistema web _tablet-first_ para marcenarias de alto padrão: calcula misturas qu
 [![React](https://img.shields.io/badge/React%2019-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite%208-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![UX](https://img.shields.io/badge/UX-tablet--first-3B82F6)](#telas)
-[![Tests](https://img.shields.io/badge/Vitest-53%20passed-success?logo=vitest&logoColor=white)](#testes-e-qualidade)
+[![Tests](https://img.shields.io/badge/Vitest-55%20passed-success?logo=vitest&logoColor=white)](#testes-e-qualidade)
 
 🔗 **Acesse a Demonstração Online:** [https://carvalhonathan.github.io/mada/](https://carvalhonathan.github.io/mada/)
 
@@ -85,6 +85,8 @@ Não se trata de um sistema corporativo adaptado, mas de uma interface **projeta
 | 📅 **Protocolo FEFO ("Use Primeiro")** | Indicação visual no Dashboard e na seleção de lotes da lata mais antiga que deve ser consumida. | Reduz drasticamente perdas de produtos caros vencendo esquecidos na prateleira. |
 | 🏷️ **Scanner Óptico Dual-Engine** | Câmera frontal com espelhamento nativo (para tablet em parede) e retículo laser animado. | Identificação instantânea de ordens de serviço e frascos sem precisar manusear o tablet. |
 | 🔒 **Barreira Anti-Bypass de Fluxo** | Stepper sequencial travado: impede avançar para dosagem sem seleção formal de Ordem de Serviço. | Garante 100% de conformidade operacional, eliminando misturas sem destino ou apontamento na obra. |
+| 🛡️ **Trava Anti-Abandono de Bancada** | Bloqueio impeditivo no Dashboard: proíbe iniciar nova OS na cabine se houver embalagens pendentes de devolução da OS anterior. | Impede que o operador abandone latas abertas na bancada ou comece outro móvel sem devolver as sobras. |
+| 🖨️ **Checklist & Rastreabilidade Térmica** | Checklist físico obrigatório para retorno ao estoque e emissão automática em lote de etiquetas Zebra com QR Code. | Nenhuma sobra retorna à prateleira sem inspeção de vedação/pureza e sem etiqueta física homologada. |
 | ♻️ **Etiquetagem e Saldo de Sobras** | Cálculo automático do volume restante na lata e emissão imediata de nova etiqueta com QR Code. | Latas abertas voltam ao almoxarifado devidamente quantificadas e rastreadas. |
 | 📊 **Painel Executivo & Auditoria Scrub** | Gráfico interativo tátil (*Scrub Chart*), KPIs em R$ e exportação de histórico em CSV. | Gestão executiva com total visibilidade do consumo previsto vs. realizado por obra. |
 
@@ -173,8 +175,10 @@ flowchart TB
 | **Arquitetura de Estado** | Custom Hooks modulares (`usePreparationWorkflow`, `useOrderSelection`, etc.) | Implementado |
 | **Camada de Dados (MVP)** | Repositórios em memória com persistência em `localStorage` | Implementado |
 | **Regras de Negócio** | Módulos determinísticos puros em TypeScript isolados | Implementado |
-| **Qualidade & Testes** | Vitest (53 testes unitários), ESLint 10 (Zero Warnings, Flat Config), Prettier | Implementado |
+| **Qualidade & Testes** | Vitest (55 testes unitários), ESLint 10 (Zero Warnings, Flat Config), Prettier | Implementado |
 | **Scanner QR Code** | Dual-Engine: `BarcodeDetector` nativo + decodificador canvas `jsQR` | Implementado |
+| **PWA & Offline** | Service Worker, manifesto standalone, ícones de alta resolução e fluxo de instalação | Implementado |
+| **Temas & Acessibilidade** | Alternância dinâmica entre Modo Escuro e Claro com tokens industriais e persistência | Implementado |
 | **Banco de Dados Real** | PostgreSQL via Supabase (integração em modo de leitura) | Planejado |
 
 ---
@@ -184,7 +188,7 @@ flowchart TB
 
 O projeto conta com ferramentas integradas de verificação estática, formatação e testes unitários automatizados com padrão industrial:
 
-- **Testes unitários (`npm run test`):** **53 testes unitários em 8 arquivos** com Vitest, cobrindo com rigor matemático:
+- **Testes unitários (`npm run test`):** **55 testes unitários em 8 arquivos** com Vitest, cobrindo com rigor matemático:
   - `mixture.test.ts`: Proporcionalidade exata das 4 frações para volumes de 100 ml a 5.000 ml;
   - `tolerance.test.ts`: Disparo rigoroso da trava quando o excesso ultrapassa 5% ou 200 ml e apuração financeira do refugo;
   - `fefo.test.ts`: Algoritmo de ordenação por validade e alocação multi-lote FEFO;
@@ -192,13 +196,13 @@ O projeto conta com ferramentas integradas de verificação estática, formataç
   - `operationalLocks.test.ts`: Travas de cabine, esteira anti-bypass e proteção contra múltiplas preparações simultâneas;
   - `returnFlow.test.ts`: Fluxo completo de conferência de sobras, pendências e encerramento;
   - `leftover.test.ts`: Cálculo de saldo remanescente e rotulagem para reaproveitamento;
-  - `repositories.test.ts`: Integridade dos contratos de dados e repositórios locais.
+  - `repositories.test.ts`: Integridade dos contratos de dados, repositórios locais e validações de operadores.
 - **Análise estática (`npm run lint`):** ESLint 10 (Flat Config) rigoroso, alcançando **Zero Warnings** no projeto.
 - **Checagem estrita de tipos (`npm run typecheck`):** Validação estrita sem emissão com `tsc --noEmit`.
 - **Build otimizado (`npm run build`):** Empacotamento para produção com divisão de código por rotas e modais lazy.
 
 ```bash
-npm run test        # Executa a suíte completa de 53 testes unitários via Vitest
+npm run test        # Executa a suíte completa de 55 testes unitários via Vitest
 npm run lint        # Validação estática de regras e consistência de código (0 avisos)
 npm run typecheck   # Checagem rigorosa de tipos TypeScript (tsc)
 npm run build       # Gera os artefatos prontos e otimizados para produção na pasta dist/
@@ -224,9 +228,12 @@ npm run build       # Gera os artefatos prontos e otimizados para produção na 
 - [x] **Scanner QR Dual-Engine com Mira Laser:** Câmera frontal com espelhamento para tablets em parede e suporte universal a Safari e Android.
 - [x] **Gestão de Estoque e Compras:** Controle de estoque FEFO, cadastro/recebimento de novos lotes e geração de lista de solicitação de compras.
 - [x] **Painel Gerencial & Auditoria:** KPIs consolidados de cabines, gráfico interativo de consumo (*Scrub Chart*) e exportação do histórico em formato CSV.
-- [x] **Performance & Otimização Extrema:** Code splitting por rotas (`React.lazy`), reduzindo o bundle inicial para ~431 kB e acelerando o carregamento em redes fabris.
-- [x] **Arquitetura Reativa de Custom Hooks:** Extração da lógica de orquestração em hooks dedicados (`usePreparationWorkflow`, `useOrderSelection`, `usePotLifeTimer`, `usePurchasesRequests`).
-- [x] **Qualidade & Rigor Matemático:** 53 testes unitários automatizados em 8 suítes com 100% de aprovação e ESLint 10 com Zero Warnings.
+- [x] **Cadastro e Gestão de Operadores:** Módulo administrativo no painel gerencial para criação e vinculação de operadores por cabine com PIN tátil.
+- [x] **PWA de Alto Padrão:** Manifesto standalone, ícones vetoriais de alta resolução, service worker com cache offline e fluxo de instalação guiada para iOS/Android.
+- [x] **Alternância de Tema (Dark / Light):** Suporte nativo a temas industriais com tokens de contraste adaptativo e prevenção de flash de carregamento.
+- [x] **Performance & Otimização Extrema:** Code splitting por rotas (`React.lazy`), reduzindo o bundle inicial para ~443 kB e acelerando o carregamento em redes fabris.
+- [x] **Arquitetura Reativa de Custom Hooks:** Extração da lógica de orquestração em hooks dedicados (`usePreparationWorkflow`, `useOrderSelection`, `usePotLifeTimer`, `usePurchasesRequests`, `usePwaInstall`, `useTheme`).
+- [x] **Qualidade & Rigor Matemático:** 55 testes unitários automatizados em 8 suítes com 100% de aprovação e ESLint 10 com Zero Warnings.
 
 ### 📋 Próximos passos
 

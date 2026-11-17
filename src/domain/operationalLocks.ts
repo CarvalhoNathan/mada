@@ -31,12 +31,53 @@ export function obterCabineOperador(operador?: Partial<Operador> | null): {
 }
 
 /**
+ * Determina se uma preparação ainda possui embalagens com devolução pendente na bancada da cabine.
+ * Regra:
+ * - Se a preparação foi encerrada formalmente ou teve todas as suas devoluções concluídas, não há pendências.
+ * - Se restarem itens com status 'PENDENTE', significa que as embalagens ainda estão abertas ou aguardando
+ *   conferência de volume e etiquetagem de devolução pelo operador na bancada da cabine.
+ */
+export function possuiSobrasPendentesDevolucao(preparacao?: Partial<Preparacao> | null): boolean {
+  if (!preparacao) return false;
+  if (
+    preparacao.status === 'PREPARACAO_ENCERRADA' ||
+    preparacao.status === 'DEVOLUCAO_CONCLUIDA' ||
+    preparacao.statusDevolucao === 'DEVOLUCAO_CONCLUIDA'
+  ) {
+    return false;
+  }
+
+  if (!Array.isArray(preparacao.itensDevolucao) || preparacao.itensDevolucao.length === 0) {
+    return false;
+  }
+
+  return preparacao.itensDevolucao.some((it) => it.status === 'PENDENTE');
+}
+
+/**
+ * Busca se existe uma preparação com sobras/embalagens pendentes de devolução em uma cabine específica.
+ */
+export function buscarPreparacaoComSobrasPendentesPorCabine(
+  preparacoes: Preparacao[],
+  cabineId: string
+): Preparacao | undefined {
+  if (!Array.isArray(preparacoes) || !cabineId) return undefined;
+  const normalizado = String(cabineId).trim().toUpperCase();
+  return preparacoes.find((prep) => {
+    if (!prep) return false;
+    const prepCabine = (prep.cabineId || 'CABINE-01').trim().toUpperCase();
+    return prepCabine === normalizado && possuiSobrasPendentesDevolucao(prep);
+  });
+}
+
+/**
  * Determina se uma preparação ainda está com aplicação ativa ocupando a cabine/pistola.
  * Regra fundamental:
  * - Enquanto `aplicacaoConcluidaEm` não for registrado (e a preparação não estiver encerrada),
  *   a cabine/equipamento permanece ocupada pela aplicação (inclusive se o Pot Life expirar).
  * - Assim que a aplicação é concluída (`aplicacaoConcluidaEm` definido ou `statusAplicacao === 'APLICACAO_CONCLUIDA'`),
- *   o equipamento é liberado imediatamente, mesmo que ainda existam embalagens com devolução pendente.
+ *   a pistola/equipamento é desocupada, porém a bancada da cabine só é liberada para uma NOVA preparação
+ *   quando as embalagens utilizadas forem conferidas e devolvidas/etiquetadas.
  */
 export function possuiAplicacaoAtiva(preparacao?: Partial<Preparacao> | null): boolean {
   if (!preparacao) return false;
@@ -87,14 +128,19 @@ export function buscarAplicacaoAtivaPorCabine(
 
 /**
  * Verifica se é permitido iniciar uma nova preparação ou operação conflitante na cabine informada.
+ * Regras:
+ * 1. Prioridade máxima: bloqueia se houver uma aplicação em andamento ocupando a cabine/pistola.
+ * 2. Trava anti-abandono de bancada: bloqueia se a preparação anterior ainda possuir embalagens
+ *    pendentes de devolução e etiquetagem na bancada da cabine, orientando o operador a devolver
+ *    as sobras antes de iniciar uma nova preparação.
  */
 export function verificarBloqueioNovaPreparacaoCabine(
   preparacoes: Preparacao[],
   cabineId: string,
   cabineNome: string = cabineId
 ): ResultadoVerificacaoBloqueio {
+  // 1. Checagem de aplicação ativa ocupando a cabine
   const ativa = buscarAplicacaoAtivaPorCabine(preparacoes, cabineId);
-
   if (ativa) {
     return {
       permitido: false,
@@ -102,6 +148,19 @@ export function verificarBloqueioNovaPreparacaoCabine(
       cabineNome: ativa.cabineNome || cabineNome,
       preparacaoAtiva: ativa,
       motivoBloqueio: `Bloqueio operacional (${ativa.cabineNome || cabineNome}): existe uma aplicação em andamento para a ${ativa.ordemServicoNumero} (${ativa.receitaNome}). Conclua a aplicação atual antes de iniciar uma nova preparação nesta cabine.`,
+    };
+  }
+
+  // 2. Checagem de sobras/embalagens pendentes de devolução da OS anterior na cabine
+  const prepComSobras = buscarPreparacaoComSobrasPendentesPorCabine(preparacoes, cabineId);
+  if (prepComSobras) {
+    const pendentesCount = prepComSobras.itensDevolucao.filter((it) => it.status === 'PENDENTE').length;
+    return {
+      permitido: false,
+      cabineId,
+      cabineNome: prepComSobras.cabineNome || cabineNome,
+      preparacaoAtiva: prepComSobras,
+      motivoBloqueio: `Bloqueio de sobras pendentes (${prepComSobras.cabineNome || cabineNome}): a ${prepComSobras.ordemServicoNumero} possui ${pendentesCount} ${pendentesCount === 1 ? 'embalagem pendente' : 'embalagens pendentes'} de devolução e etiquetagem. Conclua a devolução das sobras antes de iniciar uma nova preparação.`,
     };
   }
 

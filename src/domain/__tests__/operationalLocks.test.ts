@@ -4,8 +4,14 @@ import {
   verificarPermissaoDevolucaoDuranteAplicacao,
   verificarPermissaoConsultaNaoConflitante,
   buscarAplicacaoAtivaPorCabine,
+  buscarPreparacaoComSobrasPendentesPorCabine,
+  possuiSobrasPendentesDevolucao,
 } from '../operationalLocks';
-import { criarPreparacaoDevolucao, registrarConclusaoAplicacao } from '../returnFlow';
+import {
+  criarPreparacaoDevolucao,
+  registrarConclusaoAplicacao,
+  registrarMovimentacaoComponente,
+} from '../returnFlow';
 import {
   MOCK_ORDENS_SERVICO,
   MOCK_RECEITAS,
@@ -59,9 +65,9 @@ describe('Bloqueios Operacionais Inteligentes por Cabine/Equipamento', () => {
     expect(verificarPermissaoConsultaNaoConflitante().permitido).toBe(true);
   });
 
-  it('deve liberar imediatamente o bloqueio da cabine ao concluir a aplicação, mesmo com devoluções de embalagens pendentes', () => {
+  it('deve bloquear nova preparação se a preparação anterior na cabine tiver sobras pendentes de devolução, liberando apenas quando todas forem resolvidas', () => {
     const prepCabine1 = criarPreparacaoDevolucao({
-      id: 'PREP-CAB1-LIBERACAO',
+      id: 'PREP-CAB1-SOBRAS-PENDENTES',
       ordemServico: os1,
       receita,
       operador: opCabine1,
@@ -72,27 +78,65 @@ describe('Bloqueios Operacionais Inteligentes por Cabine/Equipamento', () => {
       cabineNome: 'Cabine 01',
     });
 
-    expect(buscarAplicacaoAtivaPorCabine([prepCabine1], 'CABINE-01')).toBeDefined();
-
-    // Conclui a aplicação na pistola, mas mantém todas as 4 embalagens PENDENTE de devolução
-    const prepAplicacaoConcluida = registrarConclusaoAplicacao(
+    // 1. Conclui a aplicação da pintura na pistola
+    const prepPosAplicacao = registrarConclusaoAplicacao(
       prepCabine1,
       '2026-11-08T17:15:00.000Z'
     );
 
-    expect(prepAplicacaoConcluida.statusAplicacao).toBe('APLICACAO_CONCLUIDA');
-    expect(prepAplicacaoConcluida.statusDevolucao).toBe('DEVOLUCAO_PENDENTE');
-    expect(
-      prepAplicacaoConcluida.itensDevolucao.every((it) => it.status === 'PENDENTE')
-    ).toBe(true);
+    expect(prepPosAplicacao.statusAplicacao).toBe('APLICACAO_CONCLUIDA');
+    expect(prepPosAplicacao.statusDevolucao).toBe('DEVOLUCAO_PENDENTE');
+    expect(possuiSobrasPendentesDevolucao(prepPosAplicacao)).toBe(true);
+    expect(buscarPreparacaoComSobrasPendentesPorCabine([prepPosAplicacao], 'CABINE-01')).toBeDefined();
 
-    // Cabine 01 já está liberada para nova preparação!
-    const checkPosConclusao = verificarBloqueioNovaPreparacaoCabine(
-      [prepAplicacaoConcluida],
+    // 2. Trava anti-abandono: tenta iniciar nova preparação com embalagens ainda pendentes na bancada
+    const checkComSobras = verificarBloqueioNovaPreparacaoCabine(
+      [prepPosAplicacao],
       'CABINE-01',
       'Cabine 01'
     );
-    expect(checkPosConclusao.permitido).toBe(true);
+    expect(checkComSobras.permitido).toBe(false);
+    expect(checkComSobras.motivoBloqueio).toContain('Bloqueio de sobras pendentes');
+    expect(checkComSobras.motivoBloqueio).toContain(os1.numero);
+
+    // Cabine 02 opera de forma independente e não é bloqueada
+    const checkCabine2 = verificarBloqueioNovaPreparacaoCabine(
+      [prepPosAplicacao],
+      'CABINE-02',
+      'Cabine 02'
+    );
+    expect(checkCabine2.permitido).toBe(true);
+
+    // 3. O operador resolve todas as embalagens (devolução ao estoque / esgotadas)
+    let prepResolvida = prepPosAplicacao;
+    for (const item of prepPosAplicacao.itensDevolucao) {
+      const res = registrarMovimentacaoComponente({
+        preparacao: prepResolvida,
+        itemId: item.id,
+        saldoRestanteMl: 200,
+        destino: 'DEVOLVIDO_AO_ESTOQUE',
+        checklistAprovado: {
+          'lata-limpa': true,
+          'tampa-vedada': true,
+          'sem-contaminacao': true,
+          'rotulo-legivel': true,
+        },
+        operador: opCabine1,
+        criteriosAplicaveis: [],
+      });
+      prepResolvida = res.preparacaoAtualizada;
+    }
+
+    expect(possuiSobrasPendentesDevolucao(prepResolvida)).toBe(false);
+
+    // 4. Agora que todas as sobras foram conferidas e devolvidas, a Cabine 01 está liberada para a próxima OS!
+    const checkLiberado = verificarBloqueioNovaPreparacaoCabine(
+      [prepResolvida],
+      'CABINE-01',
+      'Cabine 01'
+    );
+    expect(checkLiberado.permitido).toBe(true);
+    expect(checkLiberado.preparacaoAtiva).toBeUndefined();
   });
 
   it('deve impedir que o operador inicie devolução de sobras não relacionadas enquanto aplica na cabine', () => {
