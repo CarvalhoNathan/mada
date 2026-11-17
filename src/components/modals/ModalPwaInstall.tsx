@@ -10,6 +10,8 @@ interface ModalPwaInstallProps {
 export const ModalPwaInstall: React.FC<ModalPwaInstallProps> = ({ isOpen, onClose }) => {
   const { isInstalled, isIos, hasPrompt, promptInstall } = usePwaInstall();
   const [installState, setInstallState] = React.useState<'idle' | 'installing' | 'success' | 'dismissed'>('idle');
+  const [imgError, setImgError] = React.useState(false);
+  const iconUrl = `${import.meta.env.BASE_URL || '/'}pwa-192x192.png`.replace(/\/\//g, '/');
 
   if (!isOpen) return null;
 
@@ -109,16 +111,48 @@ export const ModalPwaInstall: React.FC<ModalPwaInstallProps> = ({ isOpen, onClos
             borderRadius: '14px',
           }}
         >
-          <img
-            src="/pwa-192x192.png"
-            alt="Ícone Mada Químicos"
-            style={{
-              width: '54px',
-              height: '54px',
-              borderRadius: '12px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.35)',
-            }}
-          />
+          {!imgError ? (
+            <img
+              src={iconUrl}
+              alt="Ícone Mada Químicos"
+              onError={() => setImgError(true)}
+              style={{
+                width: '54px',
+                height: '54px',
+                minWidth: '54px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.35)',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: '54px',
+                height: '54px',
+                minWidth: '54px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #111827 0%, #030712 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.35)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '2px',
+                flexShrink: 0,
+              }}
+              aria-label="Ícone Mada Químicos"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 2v7.31L4.14 20a2 2 0 0 0 1.72 3h12.28a2 2 0 0 0 1.72-3L14 9.31V2"/>
+                <path d="M8.5 2h7"/>
+                <path d="M7 16h10"/>
+              </svg>
+              <span style={{ fontSize: '9px', fontWeight: 900, letterSpacing: '1px', color: '#E2E8F0', lineHeight: 1 }}>MADA</span>
+            </div>
+          )}
           <div>
             <strong style={{ display: 'block', fontSize: '0.98rem', color: 'var(--text)' }}>
               Mada Químicos
