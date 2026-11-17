@@ -1,6 +1,9 @@
 import React from 'react';
-import { ChevronsUpDown, Clock, Wifi, WifiOff, Sparkles } from 'lucide-react';
+import { ChevronsUpDown, Clock, Wifi, WifiOff, Sparkles, Sun, Moon, Download } from 'lucide-react';
 import { ScreenId } from '../../types';
+import { useTheme } from '../../hooks/useTheme';
+import { usePwaInstall } from '../../hooks/usePwaInstall';
+import { ModalPwaInstall } from '../modals/ModalPwaInstall';
 
 export interface OperatorInfo {
   name: string;
@@ -54,6 +57,10 @@ export const AppShell: React.FC<AppShellProps> = ({
 }) => {
   const [isCleaning, setIsCleaning] = React.useState(false);
   const [countdown, setCountdown] = React.useState(15);
+  const { theme, toggleTheme } = useTheme();
+  const isLight = theme === 'light';
+  const { isInstalled } = usePwaInstall();
+  const [isInstallModalOpen, setIsInstallModalOpen] = React.useState(false);
 
   // Relógio Industrial em Tempo Real (Permanente em todas as telas)
   const [currentTime, setCurrentTime] = React.useState<string>(() => {
@@ -137,6 +144,32 @@ export const AppShell: React.FC<AppShellProps> = ({
             )}
             <span>{isWifiConnected && isServerLocal ? 'Balança & Estoque Online' : 'Terminal Offline'}</span>
           </div>
+
+          {/* Botão Interativo: Instalar App na Tela Inicial (visível quando não está em modo standalone) */}
+          {!isInstalled && (
+            <button
+              type="button"
+              className="boardui-clean-btn boardui-install-btn"
+              onClick={() => setIsInstallModalOpen(true)}
+              title="Adicionar à tela inicial"
+              aria-label="Adicionar à tela inicial"
+            >
+              <Download size={15} strokeWidth={2.2} />
+              <span>Instalar</span>
+            </button>
+          )}
+
+          {/* Botão Interativo: Alternar Modo Claro / Escuro */}
+          <button
+            type="button"
+            className="boardui-clean-btn boardui-theme-btn"
+            onClick={toggleTheme}
+            title={isLight ? 'Ativar modo escuro' : 'Ativar modo claro'}
+            aria-label={isLight ? 'Ativar modo escuro' : 'Ativar modo claro'}
+            aria-pressed={isLight}
+          >
+            {isLight ? <Moon size={16} strokeWidth={2.2} /> : <Sun size={16} strokeWidth={2.2} />}
+          </button>
 
           {/* Botão Interativo: Limpeza de Tela */}
           <button
@@ -258,6 +291,12 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
         </div>
       )}
+
+      {/* Modal de Instalação PWA / Adicionar à Tela Inicial */}
+      <ModalPwaInstall
+        isOpen={isInstallModalOpen}
+        onClose={() => setIsInstallModalOpen(false)}
+      />
     </div>
   );
 };
