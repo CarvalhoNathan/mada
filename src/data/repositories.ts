@@ -13,8 +13,10 @@ import {
 export interface OperadorRepository {
   listar(): Promise<Operador[]>;
   buscarPorId(id: number): Promise<Operador | undefined>;
+  adicionar(operador: Omit<Operador, 'id'>): Promise<Operador>;
   autenticar(operadorId: number, pin: string): Promise<boolean>;
   validarSupervisorPin(pin: string): Promise<boolean>;
+  resetar(): Promise<void>;
 }
 
 export interface OsRepository {

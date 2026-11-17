@@ -21,10 +21,14 @@ import { ManagerLiveCabins } from './ManagerLiveCabins';
 import { ManagerKpiCards } from './ManagerKpiCards';
 import { ManagerTechnicalAudit } from './ManagerTechnicalAudit';
 import { ManagerConsolidatedTable } from './ManagerConsolidatedTable';
+import { ManagerOperatorsSection } from './ManagerOperatorsSection';
+import { ModalNewOperator } from './ModalNewOperator';
 
 export const ScreenManager: React.FC<ScreenManagerProps> = ({
   onNavigate,
   operator,
+  operators = MOCK_OPERADORES,
+  onAddOperator,
   showToast,
   movimentacoes = [],
   lotes = [],
@@ -37,13 +41,14 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
   onResetDemoData,
 }) => {
   const [periodo, setPeriodo] = useState<'7d' | '30d' | '90d'>('30d');
+  const [isNewOperatorModalOpen, setIsNewOperatorModalOpen] = useState(false);
   const multiplicadorPeriodo = periodo === '7d' ? 0.35 : periodo === '90d' ? 2.8 : 1;
 
   // Converte movimentações reais registradas na sessão em linhas de auditoria no topo
   const todosLotes = lotes.length > 0 ? lotes : MOCK_LOTES;
   const linhasAoVivo: RowOSConsumo[] = movimentacoes.map((mov, idx) => {
     const osRef = MOCK_ORDENS_SERVICO.find((o) => o.id === mov.ordemServicoId) || MOCK_ORDENS_SERVICO[0];
-    const opRef = MOCK_OPERADORES.find((o) => o.id === mov.operadorId) || operator;
+    const opRef = operators.find((o) => o.id === mov.operadorId) || operator;
     const loteRef = todosLotes.find((l) => l.id === mov.loteId);
     const isDescarte = mov.tipo === 'DESCARTE';
     const isDevolucao = mov.tipo === 'DEVOLUCAO';
@@ -317,7 +322,26 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
       {/* 5. Tabela Detalhada por O.S. */}
       <ManagerConsolidatedTable historicoCombinado={historicoCombinado} />
 
-      {/* 6. Rodapé Fixo Padronizado */}
+      {/* 6. Gestão de Operadores da Cabine */}
+      <ManagerOperatorsSection
+        operators={operators}
+        onOpenNewOperatorModal={() => setIsNewOperatorModalOpen(true)}
+      />
+
+      <ModalNewOperator
+        isOpen={isNewOperatorModalOpen}
+        onClose={() => setIsNewOperatorModalOpen(false)}
+        showToast={showToast}
+        onConfirm={async (novoOperador) => {
+          if (onAddOperator) {
+            await onAddOperator(novoOperador);
+          } else {
+            showToast('Cadastro de operador indisponível no modo atual.', 'warn');
+          }
+        }}
+      />
+
+      {/* 7. Rodapé Fixo Padronizado */}
       <footer className="os-bottom-bar-minimal">
         <div className="os-bottom-left">
           <button

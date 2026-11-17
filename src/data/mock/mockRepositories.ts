@@ -48,6 +48,38 @@ export class MockOperadorRepository implements OperadorRepository {
     return this.operadores.find(o => o.id === id);
   }
 
+  async adicionar(dados: Omit<Operador, 'id'>): Promise<Operador> {
+    const nomeLimpo = dados.nome.trim();
+    const papelLimpo = dados.papel.trim();
+    const pinLimpo = dados.pin.trim();
+
+    if (!nomeLimpo) {
+      throw new Error('Nome do operador é obrigatório.');
+    }
+    if (!papelLimpo) {
+      throw new Error('Função/papel do operador é obrigatória.');
+    }
+    if (!/^\d{4}$/.test(pinLimpo)) {
+      throw new Error('O PIN do operador deve conter exatamente 4 dígitos numéricos.');
+    }
+
+    const nextId = this.operadores.reduce((max, o) => Math.max(max, o.id), 0) + 1;
+    const novoOperador: Operador = {
+      id: nextId,
+      nome: nomeLimpo,
+      papel: papelLimpo,
+      name: nomeLimpo,
+      role: papelLimpo,
+      cabineId: dados.cabineId || 'CABINE-01',
+      cabineNome: dados.cabineNome || 'Cabine 01',
+      avatar: dados.avatar || '',
+      pin: pinLimpo,
+    };
+
+    this.operadores.push(novoOperador);
+    return { ...novoOperador };
+  }
+
   async autenticar(operadorId: number, pin: string): Promise<boolean> {
     if (!Number.isFinite(operadorId) || typeof pin !== 'string') return false;
     const op = this.operadores.find(o => o.id === operadorId);
@@ -59,6 +91,10 @@ export class MockOperadorRepository implements OperadorRepository {
     if (typeof pin !== 'string') return false;
     const limpo = pin.trim();
     return limpo === MOCK_SUPERVISOR.pin || limpo === MOCK_SUPERVISOR.pinAlternativo;
+  }
+
+  async resetar(): Promise<void> {
+    this.operadores = [...MOCK_OPERADORES];
   }
 }
 

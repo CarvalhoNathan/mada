@@ -711,6 +711,14 @@ export const App: React.FC = () => {
             {currentScreen === 'manager' && (
               <ScreenManager
                 operator={selectedOperator}
+                operators={operators}
+                onAddOperator={async (novoOperador) => {
+                  const criado = await operadorRepository.adicionar(novoOperador);
+                  const listaAtualizada = await operadorRepository.listar();
+                  setOperators(listaAtualizada);
+                  showToast(`✓ Operador "${criado.nome}" cadastrado com sucesso!`, 'success');
+                  return criado;
+                }}
                 onNavigate={handleNavigate}
                 showToast={showToast}
                 movimentacoes={movimentacoes}
@@ -722,21 +730,27 @@ export const App: React.FC = () => {
                 procedimentosPotLife={procedimentosPotLife}
                 onSaveProcedimentoPotLife={handleSaveProcedimentoPotLife}
                 onResetDemoData={async () => {
+                  await operadorRepository.resetar();
                   await loteRepository.resetar();
                   await movimentacaoRepository.resetar();
                   await preparacaoRepository.resetar();
                   await residuoMisturaRepository.resetar();
+                  const opsReset = await operadorRepository.listar();
                   const lotesReset = await loteRepository.listar();
                   const movsReset = await movimentacaoRepository.listar();
                   const prepsReset = await preparacaoRepository.listar();
                   const residuosReset = await residuoMisturaRepository.listar();
+                  setOperators(opsReset);
+                  if (opsReset.length > 0 && !opsReset.some((o) => o.id === selectedOperator.id)) {
+                    setSelectedOperator(opsReset[0]);
+                  }
                   setLotes(lotesReset);
                   setMovimentacoes(movsReset);
                   setPreparacoes(prepsReset);
                   setResiduosMistura(residuosReset);
                   setActivePreparacaoId(null);
                   showToast(
-                    '✓ Saldos de estoque, preparações e histórico restaurados para o estado inicial!',
+                    '✓ Saldos de estoque, preparações, operadores e histórico restaurados para o estado inicial!',
                     'success'
                   );
                 }}

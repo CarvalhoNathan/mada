@@ -107,6 +107,7 @@ export const AuthOperatorList: React.FC<AuthOperatorListProps> = ({
 
           const isAna = opName.toLowerCase().includes('ana');
           const isCarlos = opName.toLowerCase().includes('carlos');
+          const isMarcos = opName.toLowerCase().includes('marcos');
           const opAvatarKey = isCarlos ? 'carlos' : isAna ? 'ana' : 'marcos';
 
           let liveStatusLabel: string;
@@ -132,9 +133,12 @@ export const AuthOperatorList: React.FC<AuthOperatorListProps> = ({
               liveStatusLabel = 'Cabine 01 livre p/ nova O.S.';
               liveStatusTone = 'info-blue';
             }
-          } else {
+          } else if (isMarcos) {
             liveStatusLabel = `${totalSobrasFefo} sobras prioritárias FEFO na bancada`;
             liveStatusTone = 'warn-amber';
+          } else {
+            liveStatusLabel = `${op.cabineNome || 'Cabine 01'} • Pronto para operar`;
+            liveStatusTone = 'info-blue';
           }
 
           const badgeStyles =

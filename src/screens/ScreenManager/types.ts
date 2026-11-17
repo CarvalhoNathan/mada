@@ -11,6 +11,8 @@ import {
 export interface ScreenManagerProps {
   onNavigate: (screen: ScreenId) => void;
   operator: Operador;
+  operators?: Operador[];
+  onAddOperator?: (operador: Omit<Operador, 'id'>) => Promise<Operador | void>;
   showToast: (msg: string, type?: 'info' | 'success' | 'warn' | 'danger') => void;
   movimentacoes?: Movimentacao[];
   lotes?: Lote[];

@@ -129,4 +129,48 @@ describe('MockOperadorRepository (Segurança e Autenticação de PIN)', () => {
     expect(await operadorRepo.validarSupervisorPin('1234')).toBe(false);
     expect(await operadorRepo.validarSupervisorPin(null as unknown as string)).toBe(false);
   });
+
+  it('deve cadastrar novo operador, permitir autenticação com seu PIN e restaurar no reset', async () => {
+    const iniciais = await operadorRepo.listar();
+    const criado = await operadorRepo.adicionar({
+      nome: 'João Mendes',
+      papel: 'Aplicador PU • Cabine 02',
+      cabineId: 'CABINE-02',
+      cabineNome: 'Cabine 02',
+      avatar: '',
+      pin: '4321',
+    });
+
+    expect(criado.id).toBeGreaterThan(iniciais.length);
+    expect(criado.nome).toBe('João Mendes');
+    expect(await operadorRepo.autenticar(criado.id, '4321')).toBe(true);
+    expect(await operadorRepo.autenticar(criado.id, '1234')).toBe(false);
+
+    const aposCadastro = await operadorRepo.listar();
+    expect(aposCadastro.length).toBe(iniciais.length + 1);
+
+    await operadorRepo.resetar();
+    const aposReset = await operadorRepo.listar();
+    expect(aposReset.length).toBe(iniciais.length);
+  });
+
+  it('deve rejeitar cadastro de operador sem nome ou com PIN inválido', async () => {
+    await expect(
+      operadorRepo.adicionar({
+        nome: '   ',
+        papel: 'Aplicador PU',
+        avatar: '',
+        pin: '4321',
+      })
+    ).rejects.toThrow();
+
+    await expect(
+      operadorRepo.adicionar({
+        nome: 'João Mendes',
+        papel: 'Aplicador PU',
+        avatar: '',
+        pin: '12',
+      })
+    ).rejects.toThrow();
+  });
 });
