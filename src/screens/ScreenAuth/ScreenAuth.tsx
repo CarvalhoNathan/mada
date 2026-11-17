@@ -7,7 +7,6 @@ import { PinInput } from '../../components/ui/PinInput';
 import { NumericKeypad } from '../../components/ui/NumericKeypad';
 import { ScreenAuthProps } from './types';
 import { AuthOperatorList } from './AuthOperatorList';
-import { AuthHelpModal } from './AuthHelpModal';
 
 export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   operators,
@@ -25,7 +24,6 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
   const [pinEntered, setPinEntered] = useState<string>('');
   const [hasError, setHasError] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
-  const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
   const [shakeOperatorList, setShakeOperatorList] = useState<boolean>(false);
 
   const layoutRef = useRef<HTMLDivElement>(null);
@@ -311,7 +309,6 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           cabine2SecRestantes={cabine2SecRestantes}
           onSelectOperator={handleSelectOperatorWithMotion}
           onSelectManager={handleSelectManagerWithMotion}
-          onOpenHelpModal={() => setIsHelpModalOpen(true)}
         />
 
         {/* Coluna da Direita: Teclado Numérico & PIN */}
@@ -442,25 +439,6 @@ export const ScreenAuth: React.FC<ScreenAuthProps> = ({
           </div>
         </section>
       </div>
-
-      {/* Modal de Suporte da Cabine & PINs Demo */}
-      <AuthHelpModal
-        isOpen={isHelpModalOpen}
-        onClose={() => setIsHelpModalOpen(false)}
-        onSelectPin={(pin, isManager) => {
-          setIsHelpModalOpen(false);
-          if (isManager) {
-            setIsManagerAuthMode(true);
-            setHasPickedOperator(false);
-            setPinEntered(pin);
-            setTimeout(() => handleSubmit(pin, selectedOperator, true), 120);
-          } else {
-            setHasPickedOperator(true);
-            setPinEntered(pin);
-            setTimeout(() => handleSubmit(pin, selectedOperator), 120);
-          }
-        }}
-      />
     </div>
   );
 };

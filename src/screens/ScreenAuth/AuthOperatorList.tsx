@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Shield, KeyRound } from 'lucide-react';
+import { Check, Shield } from 'lucide-react';
 import { Operator, Lote, Preparacao } from '../../types';
 import { MOCK_LOTES } from '../../data';
 
@@ -15,7 +15,6 @@ interface AuthOperatorListProps {
   cabine2SecRestantes: number;
   onSelectOperator: (op: Operator, el: HTMLElement) => void;
   onSelectManager: (el: HTMLElement) => void;
-  onOpenHelpModal: () => void;
 }
 
 function getInitials(name: string): string {
@@ -45,7 +44,6 @@ export const AuthOperatorList: React.FC<AuthOperatorListProps> = ({
   cabine2SecRestantes,
   onSelectOperator,
   onSelectManager,
-  onOpenHelpModal,
 }) => {
   const selectedName = selectedOperator.nome || selectedOperator.name || 'Operador';
 
@@ -216,16 +214,6 @@ export const AuthOperatorList: React.FC<AuthOperatorListProps> = ({
             <Shield size={13} strokeWidth={2.4} />
           </div>
           <span>Painel do Gestor (Fábio)</span>
-        </button>
-
-        <button
-          type="button"
-          className="auth-help-btn"
-          onClick={onOpenHelpModal}
-          title="Ver PINs para demonstração e suporte"
-        >
-          <KeyRound size={15} strokeWidth={2.2} aria-hidden="true" />
-          <span>PINs Demo</span>
         </button>
       </div>
     </section>
