@@ -167,7 +167,7 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
                     borderRadius: '999px',
                     background: 'rgba(16, 185, 129, 0.16)',
                     border: '1px solid rgba(16, 185, 129, 0.4)',
-                    color: '#4ade80',
+                    color: 'var(--tint-green)',
                     marginLeft: '4px',
                   }}
                 >
@@ -196,7 +196,7 @@ export const ScreenRecipe: React.FC<ScreenRecipeProps> = ({
                 : '1px solid rgba(245, 158, 11, 0.42)',
               fontSize: '12px',
               fontWeight: 600,
-              color: isEtapaPrimer ? '#93c5fd' : '#fcd34d',
+              color: isEtapaPrimer ? 'var(--tint-blue-soft)' : '#fcd34d',
             }}
           >
             <AlertTriangle size={14} strokeWidth={2.4} style={{ flexShrink: 0 }} />

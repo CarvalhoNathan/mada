@@ -36,8 +36,8 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
           maxWidth: '680px',
           width: '94%',
           borderRadius: '24px',
-          backgroundColor: '#131418',
-          border: '1px solid rgba(255, 255, 255, 0.14)',
+          backgroundColor: 'var(--surface-1)',
+          border: '1px solid rgba(var(--overlay-rgb), 0.14)',
           boxShadow: '0 28px 72px -12px rgba(0, 0, 0, 0.90)',
           overflow: 'hidden',
           display: 'flex',
@@ -48,8 +48,8 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
         <header
           style={{
             padding: '22px 28px',
-            background: 'rgba(255, 255, 255, 0.02)',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            background: 'rgba(var(--overlay-rgb), 0.02)',
+            borderBottom: '1px solid rgba(var(--overlay-rgb), 0.08)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -80,7 +80,7 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
                 style={{
                   margin: 0,
                   fontSize: '21px',
-                  color: '#FAFAFA',
+                  color: 'var(--text)',
                   fontWeight: 700,
                   letterSpacing: '-0.015em',
                   lineHeight: 1.25,
@@ -92,7 +92,7 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
                 style={{
                   margin: '4px 0 0',
                   fontSize: '14px',
-                  color: '#A1A1AA',
+                  color: 'var(--text-muted)',
                   lineHeight: 1.2,
                 }}
               >
@@ -114,7 +114,7 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
               background: 'transparent',
               border: 'none',
               borderRadius: '10px',
-              color: '#71717A',
+              color: 'var(--text-tertiary)',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
               flexShrink: 0,
@@ -129,7 +129,7 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
           <p
             style={{
               fontSize: '16px',
-              color: '#D4D4D8',
+              color: 'var(--text)',
               lineHeight: 1.6,
               margin: 0,
             }}
@@ -149,7 +149,7 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
             }}
           >
             <Trash2 size={18} color="#EF4444" style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: '14px', color: '#A1A1AA', lineHeight: 1.45 }}>
+            <span style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
               Todo o volume já colocado no béquer precisará ser descartado ou pesado novamente do zero.
             </span>
           </div>
@@ -162,8 +162,8 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
             gap: '16px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            background: 'rgba(255, 255, 255, 0.015)',
+            borderTop: '1px solid rgba(var(--overlay-rgb), 0.08)',
+            background: 'rgba(var(--overlay-rgb), 0.015)',
           }}
         >
           {/* Botão Secundário: Continuar Pesando */}
@@ -174,9 +174,9 @@ export const ModalCancelPrep: React.FC<ModalCancelPrepProps> = ({
               minHeight: '64px',
               padding: '0 20px',
               borderRadius: '14px',
-              backgroundColor: '#1F2026',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              color: '#FAFAFA',
+              backgroundColor: 'var(--surface-2)',
+              border: '1px solid rgba(var(--overlay-rgb), 0.15)',
+              color: 'var(--text)',
               fontSize: '16px',
               fontWeight: 600,
               cursor: 'pointer',

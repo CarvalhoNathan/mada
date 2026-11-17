@@ -79,7 +79,7 @@ export const ReturnKeypadModal: React.FC<ReturnKeypadModalProps> = ({
               width: '38px',
               height: '38px',
               borderRadius: '10px',
-              background: 'rgba(255, 255, 255, 0.06)',
+              background: 'rgba(var(--overlay-rgb), 0.06)',
               border: '1px solid var(--border)',
               color: 'var(--text-muted)',
               fontSize: '18px',
@@ -96,7 +96,7 @@ export const ReturnKeypadModal: React.FC<ReturnKeypadModalProps> = ({
         <div
           style={{
             height: '74px',
-            background: 'rgba(0, 0, 0, 0.35)',
+            background: 'var(--surface-inset)',
             border: '2px solid var(--primary)',
             borderRadius: '14px',
             display: 'flex',

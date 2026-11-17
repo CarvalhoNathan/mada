@@ -64,7 +64,7 @@ export const TabPurchases: React.FC<TabPurchasesProps> = ({
               width: '56px',
               height: '56px',
               borderRadius: '16px',
-              background: 'rgba(255, 255, 255, 0.05)',
+              background: 'rgba(var(--overlay-rgb), 0.05)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -124,7 +124,7 @@ export const TabPurchases: React.FC<TabPurchasesProps> = ({
                         fontSize: '11px',
                         fontWeight: 700,
                         background: s.urgencia === 'alta' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                        color: s.urgencia === 'alta' ? '#f87171' : '#fbbf24',
+                        color: s.urgencia === 'alta' ? 'var(--tint-red)' : 'var(--tint-amber)',
                       }}
                     >
                       {s.urgencia === 'alta' ? 'Urgente' : 'Normal'}
@@ -155,7 +155,7 @@ export const TabPurchases: React.FC<TabPurchasesProps> = ({
                     borderRadius: 'var(--radius-button)',
                     border: '1px solid var(--ok-border)',
                     background: 'var(--ok-soft)',
-                    color: '#4ade80',
+                    color: 'var(--tint-green)',
                     fontSize: '13px',
                     fontWeight: 700,
                     cursor: 'pointer',

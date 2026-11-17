@@ -20,7 +20,7 @@ function cleanMessage(text: string): string {
 
 /**
  * Toast - Notificações Flutuantes Padrão BoardUI
- * Pílula em vidro fosco (#16171B) posicionada na parte inferior central (bottom: 28px)
+ * Pílula em vidro fosco (var(--surface-1)) posicionada na parte inferior central (bottom: 28px)
  * para NUNCA sobrepor o cabeçalho, chips de rede ou áreas de ação.
  */
 export const Toast: React.FC<ToastProps> = ({
@@ -106,14 +106,14 @@ export const Toast: React.FC<ToastProps> = ({
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 9999,
-        backgroundColor: '#16171b',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
+        backgroundColor: 'var(--surface-1)',
+        border: '1px solid rgba(var(--overlay-rgb), 0.12)',
         borderRadius: '9999px',
         padding: '8px 18px 8px 10px',
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
-        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), 0 0 1px rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), 0 0 1px rgba(var(--overlay-rgb), 0.2)',
         animation: 'boarduiToastSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         pointerEvents: 'auto',
         maxWidth: '90vw',
@@ -141,7 +141,7 @@ export const Toast: React.FC<ToastProps> = ({
         style={{
           fontSize: '14px',
           fontWeight: 600,
-          color: '#ededed',
+          color: 'var(--text)',
           lineHeight: 1.3,
           letterSpacing: '-0.01em',
         }}
@@ -160,7 +160,7 @@ export const Toast: React.FC<ToastProps> = ({
           style={{
             background: 'transparent',
             border: 'none',
-            color: '#71717a',
+            color: 'var(--text-tertiary)',
             fontSize: '14px',
             cursor: 'pointer',
             padding: '2px',

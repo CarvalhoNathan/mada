@@ -81,7 +81,7 @@ export const AuthHelpModal: React.FC<AuthHelpModalProps> = ({
                   borderRadius: '8px',
                   background: 'rgba(16, 185, 129, 0.14)',
                   border: '1px solid rgba(16, 185, 129, 0.32)',
-                  color: '#34d399',
+                  color: 'var(--tint-emerald)',
                   flexShrink: 0,
                 }}
               >
@@ -116,7 +116,7 @@ export const AuthHelpModal: React.FC<AuthHelpModalProps> = ({
                   borderRadius: '8px',
                   background: 'rgba(245, 158, 11, 0.14)',
                   border: '1px solid rgba(245, 158, 11, 0.32)',
-                  color: '#fbbf24',
+                  color: 'var(--tint-amber)',
                   flexShrink: 0,
                 }}
               >
@@ -151,7 +151,7 @@ export const AuthHelpModal: React.FC<AuthHelpModalProps> = ({
                   borderRadius: '8px',
                   background: 'rgba(239, 68, 68, 0.14)',
                   border: '1px solid rgba(239, 68, 68, 0.32)',
-                  color: '#f87171',
+                  color: 'var(--tint-red)',
                   flexShrink: 0,
                 }}
               >

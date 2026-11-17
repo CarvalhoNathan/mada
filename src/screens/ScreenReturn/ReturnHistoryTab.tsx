@@ -46,7 +46,7 @@ export const ReturnHistoryTab: React.FC<ReturnHistoryTabProps> = ({
                   {oc.quantidadeRestanteMl !== undefined ? ` • Volume: ${oc.quantidadeRestanteMl} ml` : ''} •
                   Pot Life: <strong>{oc.situacaoPotLife}</strong>
                 </span>
-                <span style={{ color: '#FDE68A', display: 'block', marginTop: '4px' }}>
+                <span style={{ color: 'var(--tint-amber-soft)', display: 'block', marginTop: '4px' }}>
                   Ocorrência: {oc.ocorrenciaRelacionada}
                 </span>
               </div>
@@ -102,7 +102,7 @@ export const ReturnHistoryTab: React.FC<ReturnHistoryTabProps> = ({
                   fontWeight: 700,
                   background: 'rgba(16, 185, 129, 0.16)',
                   border: '1px solid rgba(16, 185, 129, 0.45)',
-                  color: '#4ADE80',
+                  color: 'var(--tint-green)',
                 }}
               >
                 ✓ Devolução Concluída ({prep.itensDevolucao.length}/{prep.itensDevolucao.length} embalagens)

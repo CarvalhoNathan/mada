@@ -30,21 +30,21 @@ const TONE_STYLES: Record<
   ok: {
     bg: 'var(--ok-soft)',
     border: 'var(--ok-border)',
-    text: '#4ade80',
+    text: 'var(--tint-green)',
   },
   warn: {
     bg: 'var(--warn-soft)',
     border: 'var(--warn-border)',
-    text: '#fbbf24',
+    text: 'var(--tint-amber)',
   },
   danger: {
     bg: 'var(--danger-soft)',
     border: 'var(--danger-border)',
-    text: '#f87171',
+    text: 'var(--tint-red)',
   },
   neutral: {
     bg: 'var(--card-hover)',
-    border: 'rgba(255, 255, 255, 0.14)',
+    border: 'rgba(var(--overlay-rgb), 0.14)',
     text: 'var(--text)',
   },
 };

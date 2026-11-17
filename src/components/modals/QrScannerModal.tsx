@@ -342,13 +342,13 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               position: 'relative',
               width: '100%',
               height: '210px',
-              background: '#090a0d',
+              background: 'var(--surface-sunken)',
               borderRadius: '16px',
               overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
+              border: '1px solid rgba(var(--overlay-rgb), 0.12)',
               boxShadow: 'inset 0 0 20px rgba(0, 0, 0, 0.8)',
             }}
           >
@@ -417,7 +417,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                         marginTop: '10px',
                         fontSize: '13px',
                         fontWeight: 700,
-                        color: '#4ade80',
+                        color: 'var(--tint-green)',
                         fontFamily: 'var(--font-mono)',
                         background: 'rgba(0, 0, 0, 0.6)',
                         padding: '3px 8px',
@@ -448,8 +448,8 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                     width: '48px',
                     height: '48px',
                     borderRadius: '12px',
-                    background: 'rgba(255, 255, 255, 0.06)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    background: 'rgba(var(--overlay-rgb), 0.06)',
+                    border: '1px solid rgba(var(--overlay-rgb), 0.12)',
                     color: 'var(--text)',
                     display: 'flex',
                     alignItems: 'center',
@@ -462,7 +462,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                 <strong style={{ color: 'var(--text)', display: 'block', marginBottom: '4px' }}>
                   Câmera em modo de bancada
                 </strong>
-                <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: cameraError ? '#f87171' : 'var(--text-tertiary)' }}>
+                <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: cameraError ? 'var(--tint-red)' : 'var(--text-tertiary)' }}>
                   {cameraError || 'Aponte o código QR ou clique em uma das etiquetas abaixo para teste rápido.'}
                 </p>
 
@@ -477,8 +477,8 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                     padding: '0 14px',
                     borderRadius: '8px',
                     fontSize: '13px',
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    background: 'rgba(var(--overlay-rgb), 0.08)',
+                    border: '1px solid rgba(var(--overlay-rgb), 0.15)',
                     color: 'var(--text)',
                   }}
                 >
@@ -508,7 +508,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   color: 'var(--text)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(var(--overlay-rgb), 0.15)',
                   borderRadius: '20px',
                   padding: '5px 12px',
                   fontSize: '12px',
@@ -532,7 +532,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                     backdropFilter: 'blur(12px)',
                     WebkitBackdropFilter: 'blur(12px)',
                     color: torchOn ? '#000' : 'var(--text)',
-                    border: torchOn ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
+                    border: torchOn ? 'none' : '1px solid rgba(var(--overlay-rgb), 0.15)',
                     borderRadius: '20px',
                     padding: '5px 12px',
                     fontSize: '12px',

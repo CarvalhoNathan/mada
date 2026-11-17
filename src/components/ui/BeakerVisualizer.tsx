@@ -153,19 +153,19 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
           <defs>
             {/* Gradiente Azul (Em dosagem) */}
             <linearGradient id="liquid-blue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#38BDF8" />
+              <stop offset="0%" stopColor="var(--tint-sky)" />
               <stop offset="100%" stopColor="#1D4ED8" />
             </linearGradient>
 
             {/* Gradiente Verde (Meta Conforme) */}
             <linearGradient id="liquid-green" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#4ADE80" />
+              <stop offset="0%" stopColor="var(--tint-green)" />
               <stop offset="100%" stopColor="#059669" />
             </linearGradient>
 
             {/* Gradiente Vermelho (Excesso Crítico) */}
             <linearGradient id="liquid-red" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#F87171" />
+              <stop offset="0%" stopColor="var(--tint-red)" />
               <stop offset="100%" stopColor="#B91C1C" />
             </linearGradient>
 
@@ -190,7 +190,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
           {/* 1. Fundo do Vidro */}
           <path
             d={`M 6 6 L ${beakerWidth - 6} 6 L ${beakerWidth - 6} ${beakerHeight - 8} C ${beakerWidth - 6} ${beakerHeight - 2} ${beakerWidth - 10} ${beakerHeight - 2} ${beakerWidth - 14} ${beakerHeight - 2} L 14 ${beakerHeight - 2} C 10 ${beakerHeight - 2} 6 ${beakerHeight - 2} 6 ${beakerHeight - 8} Z`}
-            fill="rgba(255, 255, 255, 0.03)"
+            fill="rgba(var(--overlay-rgb), 0.03)"
           />
 
           {/* 2. Líquido com Menisco Graduado */}
@@ -212,7 +212,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
                 cy={beakerHeight - 4 - liquidHeight}
                 rx={beakerWidth / 2 - 6}
                 ry="3"
-                fill="rgba(255, 255, 255, 0.35)"
+                fill="rgba(var(--overlay-rgb), 0.35)"
               />
             </g>
           )}
@@ -224,7 +224,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
             y1={beakerHeight - (25 / 110) * (beakerHeight - 8) - 4}
             x2="15"
             y2={beakerHeight - (25 / 110) * (beakerHeight - 8) - 4}
-            stroke="rgba(255, 255, 255, 0.28)"
+            stroke="rgba(var(--overlay-rgb), 0.28)"
             strokeWidth="1.5"
           />
           {/* Marca de 50% */}
@@ -233,7 +233,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
             y1={beakerHeight - (50 / 110) * (beakerHeight - 8) - 4}
             x2="18"
             y2={beakerHeight - (50 / 110) * (beakerHeight - 8) - 4}
-            stroke="rgba(255, 255, 255, 0.35)"
+            stroke="rgba(var(--overlay-rgb), 0.35)"
             strokeWidth="1.5"
           />
           {/* Marca de 75% */}
@@ -242,7 +242,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
             y1={beakerHeight - (75 / 110) * (beakerHeight - 8) - 4}
             x2="15"
             y2={beakerHeight - (75 / 110) * (beakerHeight - 8) - 4}
-            stroke="rgba(255, 255, 255, 0.28)"
+            stroke="rgba(var(--overlay-rgb), 0.28)"
             strokeWidth="1.5"
           />
 
@@ -252,7 +252,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
             y1={targetLineY}
             x2={beakerWidth - 6}
             y2={targetLineY}
-            stroke={isWithin ? '#4ADE80' : isExceeded ? '#EF4444' : 'rgba(255, 255, 255, 0.65)'}
+            stroke={isWithin ? 'var(--tint-green)' : isExceeded ? '#EF4444' : 'rgba(var(--overlay-rgb), 0.65)'}
             strokeWidth="2"
             strokeDasharray={isWithin || isExceeded ? 'none' : '3 2'}
           />
@@ -292,7 +292,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
             y1="14"
             x2={beakerWidth - 9}
             y2={beakerHeight - 16}
-            stroke="rgba(255, 255, 255, 0.2)"
+            stroke="rgba(var(--overlay-rgb), 0.2)"
             strokeWidth="1.5"
             strokeLinecap="round"
           />
@@ -307,7 +307,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
             fontSize: '11px',
             fontWeight: 800,
             letterSpacing: '0.04em',
-            color: isWithin ? '#4ADE80' : isExceeded ? '#F87171' : 'var(--text-muted)',
+            color: isWithin ? 'var(--tint-green)' : isExceeded ? 'var(--tint-red)' : 'var(--text-muted)',
             lineHeight: 1,
             whiteSpace: 'nowrap',
             display: 'flex',
@@ -337,7 +337,7 @@ export const BeakerVisualizer: React.FC<BeakerVisualizerProps> = ({
             fontSize: '18px',
             fontWeight: 800,
             lineHeight: 1,
-            color: isExceeded ? '#EF4444' : isWithin ? '#10B981' : value > 0 ? '#38BDF8' : 'var(--text-muted)',
+            color: isExceeded ? '#EF4444' : isWithin ? '#10B981' : value > 0 ? 'var(--tint-sky)' : 'var(--text-muted)',
           }}
         >
           {roundedPct}%

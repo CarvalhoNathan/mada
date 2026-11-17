@@ -11,7 +11,7 @@
   --bg-app: var(--bg);
   --bg-card: var(--card);
   --bg-card-alt: var(--card-hover);
-  --header-bg: #0b0f14;
+  --header-bg: var(--surface-sunken);
   --header-border: var(--border);
   
   --primary-light: var(--primary-soft);
@@ -261,19 +261,19 @@ body {
 
 #appToast.toast-success {
   border-color: var(--ok);
-  background-color: #0b2214;
+  background-color: var(--ok-surface);
   color: var(--ok);
 }
 
 #appToast.toast-warn {
   border-color: var(--warn);
-  background-color: #261a06;
+  background-color: var(--warn-surface);
   color: var(--warn);
 }
 
 #appToast.toast-danger {
   border-color: var(--danger);
-  background-color: #270f0f;
+  background-color: var(--danger-surface);
   color: var(--danger);
 }
 
@@ -330,11 +330,11 @@ body {
   right: 0;
   min-height: 76px;
   height: auto;
-  background-color: rgba(18, 19, 22, 0.96);
+  background-color: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1.5px solid var(--border);
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-subtle);
   padding: 12px clamp(16px, 3vw, 32px);
   display: flex;
   align-items: center;
@@ -400,7 +400,7 @@ body {
 }
 
 .demo-nav-bar {
-  background: #0f172a;
+  background: var(--surface-sunken);
   padding: 10px 24px;
   display: flex;
   align-items: center;
@@ -410,9 +410,9 @@ body {
 }
 
 .demo-chip-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
+  background: rgba(var(--overlay-rgb), 0.1);
+  border: 1px solid rgba(var(--overlay-rgb), 0.2);
+  color: var(--text);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   font-size: 0.78rem;
@@ -441,8 +441,8 @@ body {
 .boardui-top-header {
   height: 58px;
   min-height: 58px;
-  background-color: #0c0d10;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--surface-sunken);
+  border-bottom: 1px solid rgba(var(--overlay-rgb), 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -462,12 +462,12 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background-color: #fafafa;
-  color: #0a0a0c;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 16px rgba(var(--overlay-rgb), 0.2);
 }
 
 .boardui-brand-icon svg {
@@ -483,7 +483,7 @@ body {
 .boardui-brand-name {
   font-size: 16px;
   font-weight: 700;
-  color: #f4f4f6;
+  color: var(--text);
   margin: 0;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -492,7 +492,7 @@ body {
 .boardui-brand-sub {
   font-size: 12px;
   font-weight: 500;
-  color: #71717a;
+  color: var(--text-tertiary);
   line-height: 1.1;
 }
 
@@ -501,11 +501,11 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(var(--overlay-rgb), 0.03);
+  border: 1px solid rgba(var(--overlay-rgb), 0.08);
   border-radius: 10px;
   padding: 6px 14px;
-  color: #71717a;
+  color: var(--text-tertiary);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -514,19 +514,19 @@ body {
 }
 
 .boardui-search-pill:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: #a1a1aa;
+  background-color: rgba(var(--overlay-rgb), 0.06);
+  border-color: rgba(var(--overlay-rgb), 0.16);
+  color: var(--text-muted);
 }
 
 .boardui-search-kbd {
   font-size: 11px;
   font-weight: 600;
-  color: #71717a;
-  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text-tertiary);
+  background-color: rgba(var(--overlay-rgb), 0.06);
   padding: 2px 6px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(var(--overlay-rgb), 0.06);
   margin-left: 4px;
 }
 
@@ -545,8 +545,8 @@ body {
   height: 36px;
   padding: 0 12px;
   border-radius: var(--radius-button);
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(var(--overlay-rgb), 0.04);
+  border: 1px solid rgba(var(--overlay-rgb), 0.08);
   color: var(--text-muted);
   font-family: inherit;
   font-size: 13px;
@@ -574,13 +574,13 @@ body {
 }
 
 .boardui-status-pill.is-online {
-  color: #34d399;
+  color: var(--tint-emerald);
   background-color: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.28);
 }
 
 .boardui-status-pill.is-offline {
-  color: #f87171;
+  color: var(--tint-red);
   background-color: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.28);
 }
@@ -597,7 +597,7 @@ body {
 }
 
 .boardui-status-indicator.offline {
-  color: #f87171;
+  color: var(--tint-red);
 }
 
 .boardui-header-divider {
@@ -660,9 +660,29 @@ body {
 }
 
 .boardui-clean-btn:hover {
-  background-color: #282a32;
+  background-color: var(--surface-3);
   color: var(--text);
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(var(--overlay-rgb), 0.16);
+}
+
+/* Alternador de tema: mesmo estilo do "Limpar tela", formato quadrado 36x36 */
+.boardui-theme-btn {
+  width: 36px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Botão de Instalar App PWA na Tela Inicial */
+.boardui-install-btn {
+  background-color: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #38BDF8;
+}
+
+.boardui-install-btn:hover {
+  background-color: rgba(37, 99, 235, 0.22);
+  border-color: rgba(37, 99, 235, 0.55);
+  color: #60A5FA;
 }
 
 /* Perfil do Operador BoardUI (Botão Interativo com mesma altura 36px e raio 10px do Limpar tela) */
@@ -682,8 +702,8 @@ body {
 }
 
 .boardui-operator-pill:hover {
-  background-color: #282a32;
-  border-color: rgba(255, 255, 255, 0.16);
+  background-color: var(--surface-3);
+  border-color: rgba(var(--overlay-rgb), 0.16);
 }
 
 .boardui-operator-avatar {
@@ -692,7 +712,7 @@ body {
   border-radius: var(--radius-badge);
   background-color: var(--primary-soft);
   border: 1px solid var(--primary-border);
-  color: #93c5fd;
+  color: var(--tint-blue-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -722,8 +742,8 @@ body {
 }
 
 .boardui-operator-avatar--auth {
-  background-color: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(var(--overlay-rgb), 0.06);
+  border-color: rgba(var(--overlay-rgb), 0.12);
   color: var(--text-muted);
   font-size: 10px;
 }
@@ -821,7 +841,7 @@ body {
 
 .boardui-nav-action-btn:hover {
   background-color: var(--card-hover);
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(var(--overlay-rgb), 0.18);
 }
 
 .boardui-nav-action-btn:focus-visible {
@@ -967,7 +987,7 @@ body {
 
 .boardui-card:hover {
   background-color: var(--card-hover);
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(var(--overlay-rgb), 0.18);
   transform: translateY(-2px);
 }
 
@@ -1094,8 +1114,8 @@ body {
 .boardui-bottom-bar {
   height: 64px;
   min-height: 64px;
-  background-color: #0c0d10;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--surface-sunken);
+  border-top: 1px solid rgba(var(--overlay-rgb), 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1107,10 +1127,10 @@ body {
 .boardui-btn-secondary {
   height: 44px;
   padding: 0 20px;
-  background-color: #1a1b20;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--surface-2);
+  border: 1px solid rgba(var(--overlay-rgb), 0.08);
   border-radius: 12px;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -1121,8 +1141,8 @@ body {
 }
 
 .boardui-btn-secondary:hover {
-  background-color: #24252b;
-  color: #ededed;
+  background-color: var(--surface-3);
+  color: var(--text);
 }
 
 .boardui-btn-primary {
@@ -1170,7 +1190,7 @@ body {
 
 .boardui-toast-pill:hover {
   transform: translate(-50%, -2px);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 0 1px rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 0 1px rgba(var(--overlay-rgb), 0.3) !important;
 }
 
 /* ==========================================================================
@@ -1301,6 +1321,28 @@ body {
 
 /* Telas Estreitas / Mobile Grande (<= 680px: empilhamento vertical completo) */
 @media (max-width: 680px) {
+  .boardui-top-header {
+    padding: 8px 12px;
+  }
+
+  .boardui-header-clock {
+    display: none;
+  }
+
+  .boardui-brand-sub {
+    display: none;
+  }
+
+  .boardui-header-right {
+    gap: 6px;
+  }
+
+  .boardui-clean-btn {
+    height: 32px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
   .auth-layout-minimal {
     grid-template-columns: 1fr;
     align-content: start;

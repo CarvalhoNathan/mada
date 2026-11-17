@@ -906,7 +906,7 @@ export const App: React.FC = () => {
                     style={{
                       padding: '14px 16px',
                       borderRadius: '12px',
-                      background: 'rgba(255,255,255,0.03)',
+                      background: 'rgba(var(--overlay-rgb), 0.03)',
                       border: '1px solid var(--border)',
                     }}
                   >
@@ -932,7 +932,7 @@ export const App: React.FC = () => {
                     style={{
                       padding: '14px 16px',
                       borderRadius: '12px',
-                      background: 'rgba(255,255,255,0.03)',
+                      background: 'rgba(var(--overlay-rgb), 0.03)',
                       border: '1px solid var(--border)',
                     }}
                   >
@@ -943,13 +943,13 @@ export const App: React.FC = () => {
                       style={{
                         fontSize: '20px',
                         fontWeight: 800,
-                        color: itensPendentesTurno > 0 ? '#FBBF24' : '#34D399',
+                        color: itensPendentesTurno > 0 ? 'var(--tint-amber)' : 'var(--tint-emerald)',
                         marginTop: '4px',
                       }}
                     >
                       {itensResolvidosTurno} resolvidas{' '}
                       {itensPendentesTurno > 0 && (
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#FBBF24' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--tint-amber)' }}>
                           • {itensPendentesTurno} pend.
                         </span>
                       )}
@@ -965,7 +965,7 @@ export const App: React.FC = () => {
                       background: 'rgba(16, 185, 129, 0.1)',
                       border: '1px solid rgba(16, 185, 129, 0.35)',
                       fontSize: '13px',
-                      color: '#34D399',
+                      color: 'var(--tint-emerald)',
                       fontWeight: 600,
                     }}
                   >
@@ -1016,7 +1016,7 @@ export const App: React.FC = () => {
                           borderRadius: '10px',
                           border: '1px solid rgba(245, 158, 11, 0.45)',
                           background: 'rgba(245, 158, 11, 0.14)',
-                          color: '#FBBF24',
+                          color: 'var(--tint-amber)',
                           fontSize: '13px',
                           fontWeight: 700,
                           cursor: 'pointer',

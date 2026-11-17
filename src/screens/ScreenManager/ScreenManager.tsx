@@ -254,7 +254,7 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
               minHeight: '52px',
               padding: '0 20px',
               background: 'rgba(59, 130, 246, 0.14)',
-              color: '#60A5FA',
+              color: 'var(--tint-blue)',
               border: '1.5px solid rgba(59, 130, 246, 0.4)',
               borderRadius: '12px',
               fontSize: '16px',

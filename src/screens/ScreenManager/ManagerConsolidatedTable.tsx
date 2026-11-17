@@ -90,7 +90,7 @@ export const ManagerConsolidatedTable: React.FC<ManagerConsolidatedTableProps> =
               <div>
                 <span style={{ fontSize: '13px', fontWeight: 600, display: 'block' }}>{row.acabamento}</span>
                 {row.justificativa && (
-                  <span style={{ fontSize: '12px', color: '#fbbf24', fontWeight: 600, display: 'block', marginTop: '2px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--tint-amber)', fontWeight: 600, display: 'block', marginTop: '2px' }}>
                     ↳ {row.justificativa}
                   </span>
                 )}
@@ -121,7 +121,7 @@ export const ManagerConsolidatedTable: React.FC<ManagerConsolidatedTableProps> =
                       height: '6px',
                       width: '100%',
                       borderRadius: '4px',
-                      background: 'rgba(255, 255, 255, 0.08)',
+                      background: 'rgba(var(--overlay-rgb), 0.08)',
                       overflow: 'hidden',
                       marginTop: '5px',
                     }}
@@ -163,7 +163,7 @@ export const ManagerConsolidatedTable: React.FC<ManagerConsolidatedTableProps> =
                   fontSize: '12px',
                   fontWeight: 700,
                   background: row.status === 'conforme' ? 'var(--ok-soft)' : 'var(--danger-soft)',
-                  color: row.status === 'conforme' ? '#4ade80' : '#f87171',
+                  color: row.status === 'conforme' ? 'var(--tint-green)' : 'var(--tint-red)',
                   border: `1px solid ${row.status === 'conforme' ? 'var(--ok-border)' : 'var(--danger-border)'}`,
                   display: 'inline-flex',
                   alignItems: 'center',

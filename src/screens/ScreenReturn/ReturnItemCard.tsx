@@ -91,7 +91,7 @@ export const ReturnItemCard: React.FC<ReturnItemCardProps> = ({
             borderRadius: '10px',
             background: 'rgba(245, 158, 11, 0.14)',
             border: '1px solid rgba(245, 158, 11, 0.45)',
-            color: '#FBBF24',
+            color: 'var(--tint-amber)',
             fontSize: '13px',
             fontWeight: 600,
             display: 'flex',
@@ -183,7 +183,7 @@ export const ReturnItemCard: React.FC<ReturnItemCardProps> = ({
               isZeroVolume
                 ? {
                     borderColor: 'var(--ok)',
-                    color: '#4ade80',
+                    color: 'var(--tint-green)',
                     background: 'rgba(16, 185, 129, 0.14)',
                   }
                 : undefined
@@ -236,7 +236,7 @@ export const ReturnItemCard: React.FC<ReturnItemCardProps> = ({
             gap: '4px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4ADE80', fontWeight: 800, fontSize: '15px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--tint-green)', fontWeight: 800, fontSize: '15px' }}>
             <PackageCheck size={18} strokeWidth={2.4} />
             <span>Embalagem Esgotada • Nenhuma sobra física (0 ml)</span>
           </div>
@@ -287,7 +287,7 @@ export const ReturnItemCard: React.FC<ReturnItemCardProps> = ({
                 borderRadius: '8px',
                 background: 'rgba(239, 68, 68, 0.12)',
                 border: '1px solid rgba(239, 68, 68, 0.35)',
-                color: '#FCA5A5',
+                color: 'var(--tint-red-soft)',
                 fontSize: '13px',
                 fontWeight: 600,
               }}

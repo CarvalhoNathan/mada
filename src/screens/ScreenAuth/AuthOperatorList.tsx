@@ -142,18 +142,18 @@ export const AuthOperatorList: React.FC<AuthOperatorListProps> = ({
               ? {
                   background: 'rgba(16, 185, 129, 0.14)',
                   border: '1px solid rgba(16, 185, 129, 0.38)',
-                  color: '#34D399',
+                  color: 'var(--tint-emerald)',
                 }
               : liveStatusTone === 'warn-amber'
               ? {
                   background: 'rgba(245, 158, 11, 0.12)',
                   border: '1px solid rgba(245, 158, 11, 0.32)',
-                  color: '#FBBF24',
+                  color: 'var(--tint-amber)',
                 }
               : {
                   background: 'rgba(59, 130, 246, 0.12)',
                   border: '1px solid rgba(59, 130, 246, 0.3)',
-                  color: '#60A5FA',
+                  color: 'var(--tint-blue)',
                 };
 
           return (

@@ -113,7 +113,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
               border: prepAtivaCabine1
                 ? '1px solid rgba(16, 185, 129, 0.35)'
                 : '1px solid rgba(59, 130, 246, 0.3)',
-              color: prepAtivaCabine1 ? '#34D399' : '#60A5FA',
+              color: prepAtivaCabine1 ? 'var(--tint-emerald)' : 'var(--tint-blue)',
             }}
           >
             {prepAtivaCabine1 ? '● EM APLICAÇÃO AO VIVO' : '● LIVRE P/ NOVA PREPARAÇÃO'}
@@ -126,7 +126,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
               style={{
                 padding: '10px 14px',
                 borderRadius: '10px',
-                background: 'rgba(255,255,255,0.03)',
+                background: 'rgba(var(--overlay-rgb), 0.03)',
                 border: '1px solid var(--border)',
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -149,7 +149,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
                     fontSize: '18px',
                     fontWeight: 800,
                     fontFamily: 'var(--font-mono)',
-                    color: cabine1RemainingSec < 300 ? '#EF4444' : '#34D399',
+                    color: cabine1RemainingSec < 300 ? '#EF4444' : 'var(--tint-emerald)',
                   }}
                 >
                   {formatMmSs(cabine1RemainingSec)}
@@ -162,7 +162,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
               style={{
                 height: '6px',
                 borderRadius: '999px',
-                background: 'rgba(255,255,255,0.08)',
+                background: 'rgba(var(--overlay-rgb), 0.08)',
                 overflow: 'hidden',
               }}
             >
@@ -173,7 +173,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
                   background:
                     cabine1RemainingSec < 300
                       ? '#EF4444'
-                      : 'linear-gradient(90deg, #10B981, #34D399)',
+                      : 'linear-gradient(90deg, #10B981, var(--tint-emerald))',
                   transition: 'width 0.8s linear',
                 }}
               />
@@ -184,7 +184,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
             style={{
               padding: '12px 14px',
               borderRadius: '10px',
-              background: 'rgba(255,255,255,0.02)',
+              background: 'rgba(var(--overlay-rgb), 0.02)',
               border: '1px dashed var(--border)',
               display: 'flex',
               justifyContent: 'space-between',
@@ -202,7 +202,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
                 borderRadius: '8px',
                 background: 'rgba(59, 130, 246, 0.14)',
                 border: '1px solid rgba(59, 130, 246, 0.35)',
-                color: '#60A5FA',
+                color: 'var(--tint-blue)',
                 fontSize: '12px',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -255,7 +255,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
               fontWeight: 800,
               background: 'rgba(16, 185, 129, 0.14)',
               border: '1px solid rgba(16, 185, 129, 0.35)',
-              color: '#34D399',
+              color: 'var(--tint-emerald)',
             }}
           >
             ● EM APLICAÇÃO AO VIVO
@@ -266,7 +266,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
           style={{
             padding: '10px 14px',
             borderRadius: '10px',
-            background: 'rgba(255,255,255,0.03)',
+            background: 'rgba(var(--overlay-rgb), 0.03)',
             border: '1px solid var(--border)',
             display: 'flex',
             justifyContent: 'space-between',
@@ -288,7 +288,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
                 fontSize: '18px',
                 fontWeight: 800,
                 fontFamily: 'var(--font-mono)',
-                color: '#34D399',
+                color: 'var(--tint-emerald)',
               }}
             >
               {formatMmSs(cabine2RealSec)}
@@ -301,7 +301,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
           style={{
             height: '6px',
             borderRadius: '999px',
-            background: 'rgba(255,255,255,0.08)',
+            background: 'rgba(var(--overlay-rgb), 0.08)',
             overflow: 'hidden',
           }}
         >
@@ -309,7 +309,7 @@ export const ManagerLiveCabins: React.FC<ManagerLiveCabinsProps> = ({
             style={{
               width: `${Math.min(100, Math.max(5, (cabine2RealSec / cabine2TotalSec) * 100))}%`,
               height: '100%',
-              background: 'linear-gradient(90deg, #10B981, #34D399)',
+              background: 'linear-gradient(90deg, #10B981, var(--tint-emerald))',
               transition: 'width 0.8s linear',
             }}
           />

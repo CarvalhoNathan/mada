@@ -80,7 +80,7 @@ export const ManagerKpiCards: React.FC<ManagerKpiCardsProps> = ({
       {/* 3. Seção de Integração com ERP */}
       <div
         style={{
-          background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(20, 24, 33, 0.95) 100%)',
+          background: 'linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, var(--surface-fade) 100%)',
           border: '1.5px solid rgba(16, 185, 129, 0.4)',
           borderRadius: '14px',
           padding: '16px 22px',

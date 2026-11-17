@@ -113,8 +113,8 @@ export const ModalOcorrenciaMistura: React.FC<ModalOcorrenciaMisturaProps> = ({
           maxHeight: '88vh',
           overflowY: 'auto',
           borderRadius: '18px',
-          backgroundColor: '#141519',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
+          backgroundColor: 'var(--surface-1)',
+          border: '1px solid rgba(var(--overlay-rgb), 0.12)',
           boxShadow: '0 24px 60px rgba(0, 0, 0, 0.75)',
           padding: '20px 24px',
         }}
@@ -140,7 +140,7 @@ export const ModalOcorrenciaMistura: React.FC<ModalOcorrenciaMisturaProps> = ({
                   ? 'rgba(239, 68, 68, 0.2)'
                   : 'rgba(245, 158, 11, 0.2)',
                 border: `1.5px solid ${isPotLifeExpirado ? '#EF4444' : '#F59E0B'}`,
-                color: isPotLifeExpirado ? '#FCA5A5' : '#FDE68A',
+                color: isPotLifeExpirado ? 'var(--tint-red-soft)' : 'var(--tint-amber-soft)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -196,7 +196,7 @@ export const ModalOcorrenciaMistura: React.FC<ModalOcorrenciaMisturaProps> = ({
             border: `1.5px solid ${
               isPotLifeExpirado ? 'rgba(239, 68, 68, 0.45)' : 'rgba(245, 158, 11, 0.45)'
             }`,
-            color: isPotLifeExpirado ? '#FCA5A5' : '#FDE68A',
+            color: isPotLifeExpirado ? 'var(--tint-red-soft)' : 'var(--tint-amber-soft)',
             fontSize: '14px',
             fontWeight: 600,
             marginBottom: '14px',
@@ -291,7 +291,7 @@ export const ModalOcorrenciaMistura: React.FC<ModalOcorrenciaMisturaProps> = ({
                 borderRadius: '8px',
                 border: '1px solid var(--border)',
                 background: quantidadeConhecida ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg)',
-                color: quantidadeConhecida ? '#6EE7B7' : 'var(--text-muted)',
+                color: quantidadeConhecida ? 'var(--tint-emerald-soft)' : 'var(--text-muted)',
                 fontSize: '13px',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -479,7 +479,7 @@ export const ModalOcorrenciaMistura: React.FC<ModalOcorrenciaMisturaProps> = ({
                   fontSize: '13px',
                   color: 'var(--text-muted)',
                   padding: '4px 0',
-                  borderTop: '1px solid rgba(255,255,255,0.06)',
+                  borderTop: '1px solid rgba(var(--overlay-rgb), 0.06)',
                 }}
               >
                 <strong>

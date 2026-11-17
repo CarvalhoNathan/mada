@@ -141,7 +141,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                 style={{
                   background: 'rgba(245, 158, 11, 0.2)',
                   border: '1px solid rgba(245, 158, 11, 0.45)',
-                  color: '#fbbf24',
+                  color: 'var(--tint-amber)',
                   borderRadius: '8px',
                   padding: '5px 12px',
                   fontSize: '12px',
@@ -230,7 +230,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                     ? {
                         background: 'rgba(245, 158, 11, 0.16)',
                         border: '1.5px solid rgba(245, 158, 11, 0.5)',
-                        color: '#fbbf24',
+                        color: 'var(--tint-amber)',
                       }
                     : undefined
                 }
@@ -391,7 +391,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                   minHeight: '48px',
                   padding: '10px 14px',
                   borderRadius: '12px',
-                  background: 'rgba(255, 255, 255, 0.03)',
+                  background: 'rgba(var(--overlay-rgb), 0.03)',
                   border: '1px solid var(--border)',
                   color: 'var(--text-muted)',
                   fontSize: '14px',
@@ -464,7 +464,7 @@ export const ScreenOS: React.FC<ScreenOSProps> = ({
                     cursor: 'not-allowed',
                     border: '1.5px solid rgba(245, 158, 11, 0.4)',
                     background: 'rgba(245, 158, 11, 0.1)',
-                    color: '#fbbf24',
+                    color: 'var(--tint-amber)',
                   }
                 : undefined
             }

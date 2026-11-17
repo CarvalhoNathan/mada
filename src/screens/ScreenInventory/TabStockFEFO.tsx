@@ -90,7 +90,7 @@ export const TabStockFEFO: React.FC<TabStockFEFOProps> = ({
           <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)' }}>
             Latas abertas (giro FEFO)
           </span>
-          <span style={{ fontSize: '26px', fontWeight: 800, color: '#fbbf24', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: '26px', fontWeight: 800, color: 'var(--tint-amber)', whiteSpace: 'nowrap' }}>
             <CountNumber value={totalSobrasAtivas} format={(n) => `${Math.round(n)} latas`} />
           </span>
           <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
@@ -112,7 +112,7 @@ export const TabStockFEFO: React.FC<TabStockFEFOProps> = ({
           <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)' }}>
             Lotes em nível crítico (&lt;1L)
           </span>
-          <span style={{ fontSize: '26px', fontWeight: 800, color: totalCriticos > 0 ? '#f87171' : '#4ade80', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: '26px', fontWeight: 800, color: totalCriticos > 0 ? 'var(--tint-red)' : 'var(--tint-green)', whiteSpace: 'nowrap' }}>
             <CountNumber value={totalCriticos} format={(n) => `${Math.round(n)} itens`} />
           </span>
           <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
@@ -248,7 +248,7 @@ export const TabStockFEFO: React.FC<TabStockFEFOProps> = ({
                         statusVal.nivel === 'urgente'
                           ? 'rgba(239, 68, 68, 0.2)'
                           : 'rgba(245, 158, 11, 0.2)',
-                      color: statusVal.nivel === 'urgente' ? '#f87171' : '#fbbf24',
+                      color: statusVal.nivel === 'urgente' ? 'var(--tint-red)' : 'var(--tint-amber)',
                       border: `1px solid ${statusVal.nivel === 'urgente' ? '#ef4444' : '#f59e0b'}`,
                     }}
                   >
@@ -277,7 +277,7 @@ export const TabStockFEFO: React.FC<TabStockFEFOProps> = ({
                         borderRadius: '6px',
                         background: 'rgba(59, 130, 246, 0.12)',
                         border: '1px solid rgba(59, 130, 246, 0.3)',
-                        color: '#93c5fd',
+                        color: 'var(--tint-blue-soft)',
                         fontSize: '12px',
                         fontWeight: 600,
                       }}
@@ -300,7 +300,7 @@ export const TabStockFEFO: React.FC<TabStockFEFOProps> = ({
                       flex: 1,
                       height: '7px',
                       borderRadius: '4px',
-                      background: 'rgba(255, 255, 255, 0.08)',
+                      background: 'rgba(var(--overlay-rgb), 0.08)',
                       overflow: 'hidden',
                     }}
                   >

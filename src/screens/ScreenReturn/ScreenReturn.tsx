@@ -544,7 +544,7 @@ export const ScreenReturn: React.FC<ScreenReturnProps> = ({
                       background: isSelected
                         ? isResolvedOk
                           ? 'rgba(16, 185, 129, 0.12)'
-                          : 'rgba(255, 255, 255, 0.08)'
+                          : 'rgba(var(--overlay-rgb), 0.08)'
                         : 'var(--card)',
                       border: isSelected
                         ? `2px solid ${isResolvedOk ? 'var(--ok)' : 'var(--primary)'}`

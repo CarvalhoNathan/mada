@@ -194,13 +194,13 @@ export const PrepStepperBar: React.FC<PrepStepperBarProps> = ({
                     ? 'var(--ok-soft)'
                     : isLocked
                     ? 'rgba(245, 158, 11, 0.12)'
-                    : 'rgba(255, 255, 255, 0.08)',
+                    : 'rgba(var(--overlay-rgb), 0.08)',
                   color: isActive
                     ? 'var(--primary-foreground)'
                     : isCompleted
-                    ? '#4ade80'
+                    ? 'var(--tint-green)'
                     : isLocked
-                    ? '#fbbf24'
+                    ? 'var(--tint-amber)'
                     : 'var(--text-muted)',
                   border: isLocked
                     ? '1px solid rgba(245, 158, 11, 0.35)'

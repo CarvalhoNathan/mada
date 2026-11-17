@@ -51,7 +51,7 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
               style={{
                 background: 'rgba(245, 158, 11, 0.14)',
                 border: '1px solid rgba(245, 158, 11, 0.35)',
-                color: '#fbbf24',
+                color: 'var(--tint-amber)',
               }}
             >
               <AlertTriangle size={22} strokeWidth={2.4} />
@@ -81,7 +81,7 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
           {lotesPrioritarios.length === 0 ? (
             <div className="os-list-empty-feedback" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
               <CheckCircle2 size={36} color="#10B981" />
-              <div style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff' }}>Nenhuma lata aberta pendente</div>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)' }}>Nenhuma lata aberta pendente</div>
               <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
                 Todas as embalagens no estoque estão lacradas ou dentro da validade adequada.
               </p>
@@ -110,7 +110,7 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
                     </div>
                     <div className="usefirst-meta-row">
                       <span className="usefirst-meta-shelf">
-                        <MapPin size={13} strokeWidth={2.4} color="#60a5fa" /> {lote.prateleira}
+                        <MapPin size={13} strokeWidth={2.4} color="var(--tint-blue)" /> {lote.prateleira}
                       </span>
                       <span className="usefirst-meta-sep">•</span>
                       <span>
@@ -146,8 +146,8 @@ export const ModalUseFirst: React.FC<ModalUseFirstProps> = ({
               height: '42px',
               padding: '0 22px',
               borderRadius: '12px',
-              background: 'rgba(255, 255, 255, 0.07)',
-              border: '1px solid rgba(255, 255, 255, 0.14)',
+              background: 'rgba(var(--overlay-rgb), 0.07)',
+              border: '1px solid rgba(var(--overlay-rgb), 0.14)',
               color: 'var(--text)',
               fontWeight: 600,
               fontSize: '14px',

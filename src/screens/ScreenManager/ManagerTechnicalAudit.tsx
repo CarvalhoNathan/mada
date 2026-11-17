@@ -66,7 +66,7 @@ export const ManagerTechnicalAudit: React.FC<ManagerTechnicalAuditProps> = ({
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <ClipboardCheck size={22} color="#60A5FA" />
+                  <ClipboardCheck size={22} color="var(--tint-blue)" />
                   <h3 style={{ margin: 0, fontSize: '18px', color: 'var(--text)' }}>
                     Fila de Conferência Técnica ({preparacoesEmConferencia.length} OS)
                   </h3>
@@ -78,7 +78,7 @@ export const ManagerTechnicalAudit: React.FC<ManagerTechnicalAuditProps> = ({
                     fontSize: '12px',
                     fontWeight: 700,
                     background: 'rgba(59, 130, 246, 0.16)',
-                    color: '#60A5FA',
+                    color: 'var(--tint-blue)',
                     border: '1px solid rgba(59, 130, 246, 0.4)',
                   }}
                 >
@@ -114,7 +114,7 @@ export const ManagerTechnicalAudit: React.FC<ManagerTechnicalAuditProps> = ({
                         {it.responsavelMovimentacaoNome || prep.operadorNome}
                       </span>
                       {it.motivoReprovacao && (
-                        <span style={{ fontSize: '12px', color: '#93C5FD', display: 'block', marginTop: '2px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--tint-blue-soft)', display: 'block', marginTop: '2px' }}>
                           {it.motivoReprovacao}
                         </span>
                       )}
@@ -200,7 +200,7 @@ export const ManagerTechnicalAudit: React.FC<ManagerTechnicalAuditProps> = ({
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Beaker size={22} color="#FBBF24" />
+                  <Beaker size={22} color="var(--tint-amber)" />
                   <h3 style={{ margin: 0, fontSize: '18px', color: 'var(--text)' }}>
                     Ocorrências de Pot Life / Mistura ({residuosMistura.length})
                   </h3>
@@ -212,7 +212,7 @@ export const ManagerTechnicalAudit: React.FC<ManagerTechnicalAuditProps> = ({
                     fontSize: '12px',
                     fontWeight: 700,
                     background: 'rgba(245, 158, 11, 0.16)',
-                    color: '#FBBF24',
+                    color: 'var(--tint-amber)',
                     border: '1px solid rgba(245, 158, 11, 0.4)',
                   }}
                 >
@@ -249,7 +249,7 @@ export const ManagerTechnicalAudit: React.FC<ManagerTechnicalAuditProps> = ({
                     {oc.quantidadeRestanteMl !== undefined ? ` • Restante: ${oc.quantidadeRestanteMl} ml` : ''} •
                     Status Pot Life: <strong>{oc.situacaoPotLife}</strong> • Pintor: {oc.operadorNome}
                   </span>
-                  <span style={{ color: '#FDE68A', display: 'block', marginTop: '4px', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--tint-amber-soft)', display: 'block', marginTop: '4px', fontSize: '13px' }}>
                     Ocorrência: {oc.ocorrenciaRelacionada}
                   </span>
                 </div>

@@ -131,7 +131,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                   margin: 0,
                   fontSize: '21px',
                   fontWeight: 700,
-                  color: '#f87171',
+                  color: 'var(--tint-red)',
                   letterSpacing: '-0.01em',
                 }}
               >
@@ -159,7 +159,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
               width: '40px',
               height: '40px',
               borderRadius: '10px',
-              background: 'rgba(255, 255, 255, 0.06)',
+              background: 'rgba(var(--overlay-rgb), 0.06)',
               border: '1px solid var(--border)',
               color: 'var(--text-muted)',
               fontSize: '18px',
@@ -192,7 +192,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
               style={{
                 fontSize: '48px',
                 fontWeight: 800,
-                color: '#f87171',
+                color: 'var(--tint-red)',
                 lineHeight: 1,
               }}
             >
@@ -218,7 +218,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                   padding: '4px 12px',
                   borderRadius: '20px',
                   background: 'rgba(239, 68, 68, 0.18)',
-                  color: '#fca5a5',
+                  color: 'var(--tint-red-soft)',
                   fontSize: '15px',
                   fontWeight: 700,
                 }}
@@ -257,7 +257,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                       borderRadius: '12px',
                       border: `2px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
                       background: isSelected ? 'rgba(37, 99, 235, 0.16)' : 'var(--bg)',
-                      color: isSelected ? '#93c5fd' : 'var(--text)',
+                      color: isSelected ? 'var(--tint-blue-soft)' : 'var(--text)',
                       fontSize: '16px',
                       fontWeight: isSelected ? 700 : 500,
                       textAlign: 'left',
@@ -280,7 +280,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                         justifyContent: 'center',
                         fontSize: '12px',
                         fontWeight: 800,
-                        color: isSelected ? '#ffffff' : 'transparent',
+                        color: isSelected ? 'var(--primary-foreground)' : 'transparent',
                         background: isSelected ? 'var(--primary)' : 'transparent',
                         flexShrink: 0,
                       }}
@@ -355,12 +355,12 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                 />
                 <div style={{ fontSize: '15px', flex: 1 }}>
                   {pinStatus === 'valid' && (
-                    <span style={{ color: '#4ade80', fontWeight: 700 }}>
+                    <span style={{ color: 'var(--tint-green)', fontWeight: 700 }}>
                       ✓ Autorização confirmada pelo Supervisor Fábio
                     </span>
                   )}
                   {pinStatus === 'invalid' && (
-                    <span style={{ color: '#f87171', fontWeight: 700 }}>
+                    <span style={{ color: 'var(--tint-red)', fontWeight: 700 }}>
                       PIN inválido. Tente 9999 ou 1234.
                     </span>
                   )}
@@ -394,7 +394,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                       height: '44px',
                       borderRadius: '10px',
                       border: '1px solid var(--border-strong)',
-                      background: 'rgba(255, 255, 255, 0.06)',
+                      background: 'rgba(var(--overlay-rgb), 0.06)',
                       color: 'var(--text)',
                       fontSize: '18px',
                       fontWeight: 700,
@@ -412,7 +412,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                     height: '44px',
                     borderRadius: '10px',
                     border: '1px solid var(--border-strong)',
-                    background: 'rgba(255, 255, 255, 0.04)',
+                    background: 'rgba(var(--overlay-rgb), 0.04)',
                     color: 'var(--text-muted)',
                     fontSize: '16px',
                     fontWeight: 700,
@@ -430,7 +430,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
                     borderRadius: '10px',
                     border: '1px solid rgba(239, 68, 68, 0.35)',
                     background: 'rgba(239, 68, 68, 0.1)',
-                    color: '#fca5a5',
+                    color: 'var(--tint-red-soft)',
                     fontSize: '14px',
                     fontWeight: 700,
                     cursor: 'pointer',
@@ -449,7 +449,7 @@ export const ModalCriticalExcess: React.FC<ModalCriticalExcessProps> = ({
             display: 'flex',
             flexDirection: 'column',
             gap: '10px',
-            background: 'rgba(0, 0, 0, 0.25)',
+            background: 'var(--surface-inset)',
             borderTop: '1px solid var(--border)',
             padding: '16px 24px',
           }}

@@ -78,7 +78,7 @@ export const ReturnConferenceTab: React.FC<ReturnConferenceTabProps> = ({
                   fontWeight: 700,
                   background: 'rgba(59, 130, 246, 0.16)',
                   border: '1px solid rgba(59, 130, 246, 0.45)',
-                  color: '#60A5FA',
+                  color: 'var(--tint-blue)',
                 }}
               >
                 {itensConferencia.length} item(ns) aguardando conferência técnica
@@ -109,14 +109,14 @@ export const ReturnConferenceTab: React.FC<ReturnConferenceTabProps> = ({
                       {it.responsavelMovimentacaoNome || prep.operadorNome}
                     </span>
                     {it.motivoReprovacao && (
-                      <span style={{ fontSize: '13px', color: '#93C5FD', display: 'block', marginTop: '4px' }}>
+                      <span style={{ fontSize: '13px', color: 'var(--tint-blue-soft)', display: 'block', marginTop: '4px' }}>
                         Observação: {it.motivoReprovacao}
                       </span>
                     )}
                   </div>
 
                   {/* Botões de Decisão da Conferência Técnica */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '6px', borderTop: '1px solid rgba(var(--overlay-rgb), 0.06)' }}>
                     {it.saldoRestanteInformadoMl > 0 && (
                       <Button
                         variant="primary"

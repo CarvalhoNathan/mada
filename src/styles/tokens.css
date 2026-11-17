@@ -136,4 +136,119 @@
 
   --transition-press: 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.2s ease-out;
+
+  /* ========================================================================
+     8. TOKENS SENSÍVEIS AO TEMA (superfícies, sobreposições e tons de texto)
+     Usados no lugar de cores fixas para permitir o modo claro.
+     ======================================================================== */
+  color-scheme: dark;
+
+  /* Canal RGB da sobreposição neutra: rgba(var(--overlay-rgb), alpha) */
+  --overlay-rgb: 255, 255, 255;
+
+  --surface-sunken: #0C0D10;
+  --surface-1: #141519;
+  --surface-2: #1A1B20;
+  --surface-3: #282A32;
+  --surface-inset: rgba(0, 0, 0, 0.28);
+  --surface-fade: rgba(20, 24, 33, 0.95);
+
+  /* Superfícies semânticas tingidas (chips de status) */
+  --ok-surface: #0b2214;
+  --warn-surface: #261a06;
+  --danger-surface: #270f0f;
+
+  /* Tons de destaque usados como texto/ícone */
+  --tint-amber: #FBBF24;
+  --tint-amber-soft: #FDE68A;
+  --tint-green: #4ADE80;
+  --tint-emerald: #34D399;
+  --tint-emerald-soft: #6EE7B7;
+  --tint-red: #F87171;
+  --tint-red-soft: #FCA5A5;
+  --tint-blue: #60A5FA;
+  --tint-blue-soft: #93C5FD;
+  --tint-sky: #38BDF8;
+}
+
+/* ==========================================================================
+   MODO CLARO — ativado via <html data-theme="light">
+   ========================================================================== */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #F4F4F5;
+  --card: #FFFFFF;
+  --card-hover: #F4F4F5;
+  --border: rgba(24, 24, 27, 0.14);
+  --border-subtle: rgba(24, 24, 27, 0.08);
+  --text: #18181B;
+  --text-muted: #52525B;
+  --text-tertiary: #71717A;
+
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-bg-hover: rgba(250, 250, 250, 0.9);
+  --glass-bg-active: rgba(244, 244, 245, 0.96);
+  --glass-specular: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  --glass-specular-active: inset 0 1px 0 0 rgba(255, 255, 255, 1);
+  --glass-card-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(24, 24, 27, 0.06), 0 8px 24px -6px rgba(24, 24, 27, 0.12);
+  --glass-modal-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 1), 0 24px 64px -12px rgba(24, 24, 27, 0.28);
+
+  --primary: #18181B;
+  --primary-foreground: #FAFAFA;
+  --primary-hover: #27272A;
+  --primary-soft: rgba(24, 24, 27, 0.06);
+  --primary-border: rgba(24, 24, 27, 0.24);
+
+  --accent-blue: #2563EB;
+  --accent-blue-soft: rgba(37, 99, 235, 0.1);
+
+  --ok: #059669;
+  --ok-hover: #047857;
+  --ok-soft: rgba(5, 150, 105, 0.1);
+  --ok-border: rgba(5, 150, 105, 0.35);
+
+  --warn: #D97706;
+  --warn-hover: #B45309;
+  --warn-soft: rgba(217, 119, 6, 0.1);
+  --warn-border: rgba(217, 119, 6, 0.38);
+
+  --danger: #DC2626;
+  --danger-hover: #B91C1C;
+  --danger-soft: rgba(220, 38, 38, 0.08);
+  --danger-border: rgba(220, 38, 38, 0.35);
+
+  --btn-secondary-bg: #F4F4F5;
+  --btn-secondary-hover: #E4E4E7;
+  --btn-disabled-bg: rgba(24, 24, 27, 0.05);
+  --btn-disabled-text: #A1A1AA;
+
+  --focus-ring: 0 0 0 3px rgba(24, 24, 27, 0.25);
+  --focus-ring-danger: 0 0 0 3px rgba(220, 38, 38, 0.35);
+  --shadow-subtle: 0 4px 12px rgba(24, 24, 27, 0.08);
+  --shadow-modal: 0 25px 50px -12px rgba(24, 24, 27, 0.25);
+
+  --overlay-rgb: 24, 24, 27;
+
+  --surface-sunken: #ECECEF;
+  --surface-1: #FFFFFF;
+  --surface-2: #F4F4F5;
+  --surface-3: #E4E4E7;
+  --surface-inset: rgba(24, 24, 27, 0.05);
+  --surface-fade: rgba(255, 255, 255, 0.96);
+
+  --ok-surface: #ECFDF5;
+  --warn-surface: #FFFBEB;
+  --danger-surface: #FEF2F2;
+
+  --tint-amber: #B45309;
+  --tint-amber-soft: #92400E;
+  --tint-green: #15803D;
+  --tint-emerald: #047857;
+  --tint-emerald-soft: #065F46;
+  --tint-red: #B91C1C;
+  --tint-red-soft: #991B1B;
+  --tint-blue: #1D4ED8;
+  --tint-blue-soft: #1E40AF;
+  --tint-sky: #0369A1;
 }

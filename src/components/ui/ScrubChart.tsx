@@ -157,7 +157,7 @@ export const ScrubChart: React.FC<ScrubChartProps> = ({ points, periodLabel }) =
                 format={(n) => `${Math.round(n).toLocaleString('pt-BR')} ml`}
               />
             </span>
-            <span style={{ fontSize: '16px', fontWeight: 700, color: '#60a5fa' }}>
+            <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--tint-blue)' }}>
               <CountNumber
                 value={Math.round((activePoint ? activePoint.cost : totalCost) * 100)}
                 format={(n) => `R$ ${(n / 100).toFixed(2).replace('.', ',')}`}
@@ -246,7 +246,7 @@ export const ScrubChart: React.FC<ScrubChartProps> = ({ points, periodLabel }) =
                 bottom: 0,
                 left: `${(scrubX / width) * 100}%`,
                 width: '1px',
-                background: 'rgba(255, 255, 255, 0.24)',
+                background: 'rgba(var(--overlay-rgb), 0.24)',
                 pointerEvents: 'none',
               }}
             />

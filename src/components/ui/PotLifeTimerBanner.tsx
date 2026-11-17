@@ -96,10 +96,10 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
       aria-label="Controle de vida útil da mistura química"
       style={{
         background: isExpired
-          ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.25) 0%, rgba(20, 24, 33, 0.95) 100%)'
+          ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.25) 0%, var(--surface-fade) 100%)'
           : isUrgent
-          ? 'linear-gradient(90deg, rgba(245, 158, 11, 0.2) 0%, rgba(20, 24, 33, 0.95) 100%)'
-          : 'linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(20, 24, 33, 0.95) 100%)',
+          ? 'linear-gradient(90deg, rgba(245, 158, 11, 0.2) 0%, var(--surface-fade) 100%)'
+          : 'linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, var(--surface-fade) 100%)',
         border: `2px solid ${isExpired ? '#EF4444' : isUrgent ? '#F59E0B' : '#10B981'}`,
         borderRadius: '14px',
         padding: '12px 18px',
@@ -155,7 +155,7 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
                   : isUrgent
                   ? 'rgba(245, 158, 11, 0.3)'
                   : 'rgba(16, 185, 129, 0.3)',
-                color: isExpired ? '#FCA5A5' : isUrgent ? '#FDE68A' : '#6EE7B7',
+                color: isExpired ? 'var(--tint-red-soft)' : isUrgent ? 'var(--tint-amber-soft)' : 'var(--tint-emerald-soft)',
               }}
             >
               {isExpired
@@ -175,7 +175,7 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
               margin: '4px 0 0',
               fontSize: '14px',
               fontWeight: 700,
-              color: isExpired ? '#FCA5A5' : isUrgent ? '#FDE68A' : 'var(--text)',
+              color: isExpired ? 'var(--tint-red-soft)' : isUrgent ? 'var(--tint-amber-soft)' : 'var(--text)',
               lineHeight: 1.35,
             }}
           >
@@ -201,7 +201,7 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
             style={{
               fontSize: '16px',
               fontWeight: 800,
-              color: isExpired ? '#EF4444' : isUrgent ? '#FDE68A' : '#6EE7B7',
+              color: isExpired ? '#EF4444' : isUrgent ? 'var(--tint-amber-soft)' : 'var(--tint-emerald-soft)',
               fontVariantNumeric: 'tabular-nums',
             }}
           >
@@ -213,7 +213,7 @@ export const PotLifeTimerBanner: React.FC<PotLifeTimerBannerProps> = ({
         <div
           style={{
             height: '8px',
-            background: 'rgba(255, 255, 255, 0.1)',
+            background: 'rgba(var(--overlay-rgb), 0.1)',
             borderRadius: '4px',
             overflow: 'hidden',
           }}

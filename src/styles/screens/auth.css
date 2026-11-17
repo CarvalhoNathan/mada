@@ -23,7 +23,7 @@
   gap: 12px;
   padding: 14px clamp(16px, 3vw, 32px);
   min-height: 68px;
-  background: rgba(14, 14, 18, 0.82);
+  background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--border);
@@ -168,7 +168,7 @@
 
 .operator-card-apple:hover {
   background: var(--glass-bg-hover);
-  border-color: rgba(255, 255, 255, 0.22);
+  border-color: rgba(var(--overlay-rgb), 0.22);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 12px 32px -4px rgba(0, 0, 0, 0.5);
 }
 
@@ -181,7 +181,7 @@
 }
 
 .operator-card-apple.is-active {
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(var(--overlay-rgb), 0.65);
   background: var(--glass-bg-active);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.35), 0 14px 36px -6px rgba(0, 0, 0, 0.65);
 }
@@ -206,26 +206,26 @@
 .operator-avatar-circle--carlos {
   background: rgba(59, 130, 246, 0.14);
   border-color: rgba(59, 130, 246, 0.35);
-  color: #93C5FD;
+  color: var(--tint-blue-soft);
 }
 
 .operator-avatar-circle--ana {
   background: rgba(16, 185, 129, 0.14);
   border-color: rgba(16, 185, 129, 0.35);
-  color: #6EE7B7;
+  color: var(--tint-emerald-soft);
 }
 
 .operator-avatar-circle--marcos {
   background: rgba(245, 158, 11, 0.14);
   border-color: rgba(245, 158, 11, 0.35);
-  color: #FDE68A;
+  color: var(--tint-amber-soft);
 }
 
 .operator-card-apple.is-active .operator-avatar-circle {
-  background-color: #FAFAFA !important;
-  color: #0A0A0C !important;
-  border-color: #FAFAFA !important;
-  box-shadow: 0 0 18px rgba(255, 255, 255, 0.32);
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 18px rgba(var(--overlay-rgb), 0.32);
 }
 
 .operator-shift-badge {
@@ -252,10 +252,10 @@
   min-height: 40px;
   padding: 0 14px;
   border-radius: var(--radius-button);
-  background: rgba(22, 22, 27, 0.75);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(var(--overlay-rgb), 0.10);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   font-family: var(--font-mono);
   font-size: 13px;
@@ -269,10 +269,10 @@
   min-height: 40px;
   padding: 0 16px;
   border-radius: var(--radius-button);
-  background: rgba(22, 22, 27, 0.75);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(var(--overlay-rgb), 0.10);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   color: var(--text-muted);
   font-size: 13px;
@@ -288,7 +288,7 @@
 .auth-station-status .boardui-clean-btn:hover {
   background: var(--glass-bg-hover);
   color: var(--text);
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(var(--overlay-rgb), 0.25);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
 }
 
@@ -303,7 +303,7 @@
   font-size: 13px;
   font-weight: 600;
   border: 1px solid var(--border);
-  background: rgba(22, 22, 27, 0.75);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
@@ -332,7 +332,7 @@
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid rgba(245, 158, 11, 0.28);
   box-shadow: inset 0 1px 0 0 rgba(245, 158, 11, 0.12);
-  color: #FBBF24;
+  color: var(--tint-amber);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -360,7 +360,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #FBBF24;
+  color: var(--tint-amber);
   flex-shrink: 0;
 }
 
@@ -373,10 +373,10 @@
   height: 48px;
   padding: 0 16px;
   border-radius: var(--radius-button);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--overlay-rgb), 0.04);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(var(--overlay-rgb), 0.10);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
   color: var(--text-muted);
   font-size: 14px;
@@ -390,8 +390,8 @@
 }
 
 .auth-help-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(var(--overlay-rgb), 0.08);
+  border-color: rgba(var(--overlay-rgb), 0.22);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.35);
   color: var(--text);
   transform: translateY(-1px);
@@ -463,8 +463,8 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.20);
-  background-color: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(var(--overlay-rgb), 0.20);
+  background-color: rgba(var(--overlay-rgb), 0.03);
   color: transparent;
   display: flex;
   align-items: center;
@@ -474,9 +474,9 @@
 }
 
 .operator-select-indicator.is-selected {
-  background-color: #FAFAFA;
-  border-color: #FAFAFA;
-  color: #0A0A0C;
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
   transform: scale(1.05);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
@@ -505,7 +505,7 @@
 .auth-help-link-subtle:hover {
   color: var(--text);
   background-color: var(--card-hover);
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(var(--overlay-rgb), 0.16);
 }
 
 .auth-help-link-subtle:focus-visible {
@@ -556,9 +556,9 @@
   gap: 6px;
   padding: 4px 12px;
   border-radius: var(--radius-pill);
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #FAFAFA;
+  background-color: rgba(var(--overlay-rgb), 0.08);
+  border: 1px solid rgba(var(--overlay-rgb), 0.18);
+  color: var(--text);
   font-size: var(--fs-small);
   font-weight: 600;
   margin-bottom: 4px;
@@ -641,8 +641,8 @@
 }
 
 .btn-auth-submit:disabled {
-  background: #18181C;
-  color: #52525B;
+  background: var(--surface-2);
+  color: var(--btn-disabled-text);
   border: 1.5px solid var(--border);
   cursor: not-allowed;
   opacity: 0.6;
@@ -662,7 +662,7 @@
 }
 
 .status-beacon--active-green {
-  background-color: #34D399;
+  background-color: var(--tint-emerald);
   box-shadow: 0 0 8px rgba(52, 211, 153, 0.7);
 }
 
@@ -674,7 +674,7 @@
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  border: 1.5px solid #34D399;
+  border: 1.5px solid var(--tint-emerald);
   animation: beaconPulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
   box-sizing: border-box;
 }
@@ -695,11 +695,11 @@
 }
 
 .status-beacon--info-blue {
-  background-color: #60A5FA;
+  background-color: var(--tint-blue);
 }
 
 .status-beacon--warn-amber {
-  background-color: #FBBF24;
+  background-color: var(--tint-amber);
 }
 
 .auth-pin-card-apple.is-ready {
@@ -725,9 +725,9 @@
 .auth-keypad-skeleton-cell {
   height: clamp(68px, 9.5vh, 88px);
   border-radius: var(--radius-card);
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(90deg, rgba(var(--overlay-rgb), 0.02) 0%, rgba(var(--overlay-rgb), 0.06) 50%, rgba(var(--overlay-rgb), 0.02) 100%);
   background-size: 200% 100%;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(var(--overlay-rgb), 0.06);
   animation: authSkeletonShimmer 2.2s infinite ease-in-out;
   box-sizing: border-box;
 }
@@ -747,8 +747,8 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px solid rgba(255, 255, 255, 0.12);
+  background: rgba(var(--overlay-rgb), 0.03);
+  border: 2px solid rgba(var(--overlay-rgb), 0.12);
   box-sizing: border-box;
 }
 

@@ -166,7 +166,7 @@ export const DosingCard: React.FC<DosingCardProps> = ({
             onClick={() => onValueChange(comp.item.id, aloc0.volumeAlocadoMl)}
             style={{
               borderColor: 'rgba(245, 158, 11, 0.45)',
-              color: '#fbbf24',
+              color: 'var(--tint-amber)',
             }}
             title={`Dosar todo o saldo da 1ª lata aberta (${aloc0.lote.codigo})`}
           >
@@ -193,7 +193,7 @@ export const DosingCard: React.FC<DosingCardProps> = ({
           className="dosing-shortcut-chip"
           onClick={() => onValueChange(comp.item.id, toleranceMax + 10)}
           title="Simular teste de excesso crítico (>5%)"
-          style={{ color: '#f87171' }}
+          style={{ color: 'var(--tint-red)' }}
         >
           +5% Excesso
         </button>
