@@ -2,17 +2,31 @@
   "name": "Mada Marcenaria — Gerenciador de Químicos & Receitas",
   "short_name": "Mada Químicos",
   "description": "Terminal industrial de dosagem homologada, controle FEFO e rastreabilidade de cabine de pintura.",
-  "start_url": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0F1419",
-  "theme_color": "#0F1419",
+  "background_color": "#0A0A0C",
+  "theme_color": "#0A0A0C",
+  "categories": ["productivity", "utilities", "business"],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563EB'><path d='M10 2v7.31L4.14 20a2 2 0 0 0 1.72 3h12.28a2 2 0 0 0 1.72-3L14 9.31V2'/><path d='M8.5 2h7'/></svg>",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "pwa-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
